@@ -44,6 +44,15 @@ const pushSessionToKafka = async (message) => {
 	}
 }
 
+const pushCompletedSessionToKafka = async (message) => {
+	try {
+		const payload = { topic: process.env.SESSION_COMPLETED_TOPIC, messages: [{ value: JSON.stringify(message) }] }
+		return await pushPayloadToKafka(payload)
+	} catch (error) {
+		throw error
+	}
+}
+
 const pushPayloadToKafka = async (payload) => {
 	try {
 		let response = await kafkaProducer.send(payload)
@@ -58,4 +67,5 @@ module.exports = {
 	pushMentorRatingToKafka,
 	clearInternalCache,
 	pushSessionToKafka,
+	pushCompletedSessionToKafka,
 }

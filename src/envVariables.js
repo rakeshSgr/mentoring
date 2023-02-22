@@ -183,6 +183,10 @@ let enviromentVariables = {
 		message: 'Required disable log level',
 		optional: false,
 	},
+	SESSION_COMPLETED_TOPIC: {
+		message: 'Required session completed topic',
+		optional: false,
+	},
 }
 
 let success = true
