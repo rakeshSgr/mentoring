@@ -913,6 +913,9 @@ module.exports = class SessionsHelper {
 					completedAt: utils.utcFormat(),
 				}
 			)
+			const sessionDetails = await sessionData.findOneSession({ _id: sessionId })
+
+			await kafkaCommunication.pushCompletedSessionToKafka(sessionDetails)
 
 			return result
 		} catch (error) {
@@ -979,9 +982,6 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const sessionDetails = await sessionData.findOneSession({ internalMeetingId: internalMeetingId })
-
-			await kafkaCommunication.pushCompletedSessionToKafka(sessionDetails)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
