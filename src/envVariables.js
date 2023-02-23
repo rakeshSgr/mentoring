@@ -187,6 +187,10 @@ let enviromentVariables = {
 		message: 'Required session completed topic',
 		optional: false,
 	},
+	KAFKA_SESSION_SUMMARY_TOPIC: {
+		message: 'Required session summary topic',
+		optional: false,
+	},
 }
 
 let success = true

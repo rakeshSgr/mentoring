@@ -10,6 +10,8 @@ const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const { Kafka } = require('kafkajs')
 
+const sessionsHelper = require('@services/helper/sessions')
+
 module.exports = async () => {
 	const kafkaIps = process.env.KAFKA_URL.split(',')
 	const KafkaClient = new Kafka({
@@ -33,13 +35,18 @@ module.exports = async () => {
 	})
 
 	const subscribeToConsumer = async () => {
-		await consumer.subscribe({ topics: [process.env.CLEAR_INTERNAL_CACHE] })
+		await consumer.subscribe({
+			topics: [process.env.CLEAR_INTERNAL_CACHE, process.env.KAFKA_SESSION_SUMMARY_TOPIC],
+		})
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
 					let streamingData = JSON.parse(message.value)
 					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 						utils.internalDel(streamingData.value)
+					}
+					if (streamingData.type == 'SESSION_SUMMARY') {
+						await sessionsHelper.summaryUpdate(streamingData.sessionId, streamingData)
 					}
 				} catch (error) {
 					throw error

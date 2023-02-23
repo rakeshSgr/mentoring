@@ -1088,4 +1088,41 @@ module.exports = class SessionsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * session summary update.
+	 * @method
+	 * @name start
+	 * @param {String} sessionId - session id.
+	 * @param {String} updateData - user id.
+	 * @returns {JSON} - session update session
+	 */
+
+	static async summaryUpdate(sessionId, updateData) {
+		try {
+			const updateStatus = await sessionData.updateOneSession(
+				{
+					_id: sessionId,
+				},
+				{
+					summary: updateData.summary,
+				}
+			)
+
+			if (updateStatus === 'SESSION_NOT_FOUND') {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

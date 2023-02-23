@@ -75,6 +75,10 @@ let sessionsSchema = new Schema({
 		type: String,
 		default: null,
 	},
+	summary: {
+		type: String,
+		default: null,
+	},
 })
 /* sessionsSchema.post(['save', 'updateOne'], function () {
 	// ["method1", "method2", "method3"...]
