@@ -1130,7 +1130,7 @@ module.exports = class SessionsHelper {
 					_id: sessionId,
 				},
 				{
-					summary: updateData.summary,
+					summary: updateData.sessionSummary,
 				}
 			)
 
