@@ -921,7 +921,7 @@ module.exports = class SessionsHelper {
 			) {
 				const sessionDetails = await sessionData.findOneSession({ _id: sessionId })
 
-				let formatData = recordingInfo.data.response.recordings.recording.playback
+				let formatData = recordingInfo.data.response.recordings.recording.playback.format
 
 				let recordingUrl = ''
 				await Promise.all(
