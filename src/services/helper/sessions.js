@@ -1125,12 +1125,14 @@ module.exports = class SessionsHelper {
 
 	static async sessionUpdateFromKafka(sessionId, updateData) {
 		try {
+			console.log('---------', updateData, '-----', sessionId)
 			const updateStatus = await sessionData.updateOneSession(
 				{
 					_id: sessionId,
 				},
 				updateData
 			)
+			console.log('--------- updateStatus--------', updateStatus)
 
 			if (updateStatus === 'SESSION_NOT_FOUND') {
 				return common.failureResponse({

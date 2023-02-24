@@ -45,19 +45,28 @@ module.exports = async () => {
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
-					let streamingData = JSON.parse(message.value)
+					let messageData = message.value.toString()
+
+					console.log('---- messageData ---------', messageData)
+
+					let streamingData = JSON.parse(messageData)
+					console.log('---- streamingData ---------', streamingData)
+
 					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 						utils.internalDel(streamingData.value)
 					} else if (streamingData.type == 'SESSION_SUMMARY') {
-						await sessionsHelper.sessionUpdateFromKafka(streamingData.sessionId, {
+						let update = {
 							summary: streamingData.sessionSummary,
-						})
+						}
+
+						await sessionsHelper.sessionUpdateFromKafka(streamingData.sessionId, update)
 					} else if (streamingData.type == 'SESSION_DISCORD') {
-						await sessionsHelper.sessionUpdateFromKafka(streamingData.sessionId, {
+						let update = {
 							channelId: streamingData.channelId,
 							inviteLink: streamingData.inviteLink,
 							channelName: streamingData.channelName,
-						})
+						}
+						await sessionsHelper.sessionUpdateFromKafka(streamingData.sessionId, update)
 					}
 				} catch (error) {
 					throw error
