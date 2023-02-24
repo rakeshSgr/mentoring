@@ -914,6 +914,34 @@ module.exports = class SessionsHelper {
 				}
 			)
 
+			if (
+				recordingInfo.data.response.recordings &&
+				recordingInfo.data.response.recordings.recording &&
+				recordingInfo.data.response.recordings.recording.playback
+			) {
+				const sessionDetails = await sessionData.findOneSession({ _id: sessionId })
+
+				let formatData = recordingInfo.data.response.recordings.recording.playback
+
+				let recordingUrl = ''
+				await Promise.all(
+					formatData.map(function (item) {
+						if (item.type == 'video') {
+							recordingUrl = item.url
+						}
+					})
+				)
+
+				let data = {
+					_id: sessionId,
+					description: sessionDetails.description,
+					title: sessionDetails.title,
+					recordingUrl: recordingUrl,
+				}
+
+				await kafkaCommunication.pushCompletedSessionToKafka(data)
+			}
+
 			return result
 		} catch (error) {
 			return error
@@ -979,10 +1007,6 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const sessionDetails = await sessionData.findOneSession({ internalMeetingId: internalMeetingId })
-
-			await kafkaCommunication.pushCompletedSessionToKafka(sessionDetails)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
