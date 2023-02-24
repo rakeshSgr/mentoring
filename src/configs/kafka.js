@@ -45,13 +45,13 @@ module.exports = async () => {
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
-					let messageData = message.value.toString()
-
-					console.log('---- messageData ---------', messageData)
+					let messageData = message.value
 
 					let streamingData = JSON.parse(messageData)
-					console.log('---- streamingData ---------', streamingData)
 
+					if (typeof streamingData == 'string') {
+						streamingData = JSON.parse(streamingData)
+					}
 					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 						utils.internalDel(streamingData.value)
 					} else if (streamingData.type == 'SESSION_SUMMARY') {
