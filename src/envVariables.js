@@ -191,6 +191,10 @@ let enviromentVariables = {
 		message: 'Required session summary topic',
 		optional: false,
 	},
+	KAFKA_DISCORD_DETAILS_TOPIC: {
+		message: 'Required session discord details topic',
+		optional: false,
+	},
 }
 
 let success = true

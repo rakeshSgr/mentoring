@@ -1117,21 +1117,19 @@ module.exports = class SessionsHelper {
 	/**
 	 * session summary update.
 	 * @method
-	 * @name start
+	 * @name sessionUpdateFromKafka
 	 * @param {String} sessionId - session id.
 	 * @param {String} updateData - user id.
 	 * @returns {JSON} - session update session
 	 */
 
-	static async summaryUpdate(sessionId, updateData) {
+	static async sessionUpdateFromKafka(sessionId, updateData) {
 		try {
 			const updateStatus = await sessionData.updateOneSession(
 				{
 					_id: sessionId,
 				},
-				{
-					summary: updateData.sessionSummary,
-				}
+				updateData
 			)
 
 			if (updateStatus === 'SESSION_NOT_FOUND') {

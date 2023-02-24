@@ -79,6 +79,18 @@ let sessionsSchema = new Schema({
 		type: String,
 		default: null,
 	},
+	channelId: {
+		type: String,
+		default: null,
+	},
+	inviteLink: {
+		type: String,
+		default: null,
+	},
+	channelName: {
+		type: String,
+		default: null,
+	},
 })
 /* sessionsSchema.post(['save', 'updateOne'], function () {
 	// ["method1", "method2", "method3"...]
