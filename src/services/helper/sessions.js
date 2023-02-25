@@ -1164,11 +1164,54 @@ module.exports = class SessionsHelper {
 								sessionTitle: session.title,
 								summary: session.summary,
 								inviteLink: session.inviteLink,
+								channalId: session.channalId,
+								channelName: session.channelName,
 							}),
 						},
 					}
-
 					await kafkaCommunication.pushEmailToKafka(payload)
+
+					let allAttendess = []
+					const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({
+						sessionId: sessionId,
+						isEnrolled: true,
+					})
+					if (sessionAttendees && sessionAttendees.length > 0) {
+						sessionAttendees.forEach((attendee) => {
+							allAttendess.push(attendee.userId.toString())
+							attendeesInfo.push({
+								userId: attendee.userId.toString(),
+								title: session.title,
+							})
+						})
+					}
+					const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(allAttendess)
+
+					if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
+						attendeesInfo.forEach(async function (attendee) {
+							var foundElement = attendeesAccounts.result.find(
+								(e) => e._id === attendee.userId.toString()
+							)
+							if (foundElement && foundElement.email.address && foundElement.name) {
+								const payload = {
+									type: 'email',
+									email: {
+										to: foundElement.email.address,
+										subject: emailTemplate.subject,
+										body: utils.composeEmailBody(templateData.body, {
+											name: foundElement.name,
+											sessionTitle: session.title,
+											summary: session.summary,
+											inviteLink: session.inviteLink,
+											channalId: session.channalId,
+											channelName: session.channelName,
+										}),
+									},
+								}
+								await kafkaCommunication.pushEmailToKafka(payload)
+							}
+						})
+					}
 				}
 			}
 
