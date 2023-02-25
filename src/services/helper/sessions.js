@@ -1142,6 +1142,36 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			const session = await sessionData.findSessionById(sessionId)
+
+			if (session && session.summary) {
+				const templateData = await notificationTemplateData.findOneEmailTemplate(
+					process.env.POST_SESSION_EMAIL_TEMPLATE
+				)
+
+				let userDetails = await userProfile.details('', session.userId)
+				let email = userDetails.data.result.email.address
+
+				if (templateData) {
+					// Push successful unenrollment to session in kafka
+					const payload = {
+						type: 'email',
+						email: {
+							to: email,
+							subject: templateData.subject,
+							body: utils.composeEmailBody(templateData.body, {
+								name: userDetails.data.result.name,
+								sessionTitle: session.title,
+								summary: session.summary,
+								inviteLink: session.inviteLink,
+							}),
+						},
+					}
+
+					await kafkaCommunication.pushEmailToKafka(payload)
+				}
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_UPDATED_SUCCESSFULLY',

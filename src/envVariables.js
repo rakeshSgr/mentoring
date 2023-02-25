@@ -195,6 +195,10 @@ let enviromentVariables = {
 		message: 'Required session discord details topic',
 		optional: false,
 	},
+	POST_SESSION_EMAIL_TEMPLATE: {
+		message: 'Required post session email template',
+		optional: false,
+	},
 }
 
 let success = true
