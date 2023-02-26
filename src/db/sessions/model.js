@@ -91,6 +91,14 @@ let sessionsSchema = new Schema({
 		type: String,
 		default: null,
 	},
+	recordingUrl: {
+		type: String,
+		default: null,
+	},
+	transcript: {
+		type: String,
+		default: null,
+	},
 })
 /* sessionsSchema.post(['save', 'updateOne'], function () {
 	// ["method1", "method2", "method3"...]

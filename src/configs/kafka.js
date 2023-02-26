@@ -55,8 +55,10 @@ module.exports = async () => {
 					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 						utils.internalDel(streamingData.value)
 					} else if (streamingData.type == 'SESSION_SUMMARY') {
+						let transcriptData = streamingData.transcript ? streamingData.transcript : ''
 						let update = {
 							summary: streamingData.sessionSummary,
+							transcript: transcriptData,
 						}
 
 						await sessionsHelper.sessionUpdateFromKafka(streamingData.sessionId, update)

@@ -941,6 +941,15 @@ module.exports = class SessionsHelper {
 					title: sessionDetails.title,
 					recordingUrl: recordingUrl,
 				}
+
+				const result = await sessionData.updateOneSession(
+					{
+						_id: sessionId,
+					},
+					{
+						recordingUrl: recordingUrl,
+					}
+				)
 				await kafkaCommunication.pushCompletedSessionToKafka(data)
 
 				/* 				let transformedSessionData = await sessionDTO.transformSessionData(sessionId, sessionDetails.userId)
