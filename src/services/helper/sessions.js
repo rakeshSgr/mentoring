@@ -401,9 +401,9 @@ module.exports = class SessionsHelper {
 			}
 			if (arrayOfStatus.length > 0) {
 				if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
-					filters['endDateUtc'] = {
-						// $lt: moment().utc().format(),
-					}
+					// filters['endDateUtc'] = {
+					// 	$lt: moment().utc().format(),
+					// }
 				} else if (
 					arrayOfStatus.includes(common.PUBLISHED_STATUS) &&
 					arrayOfStatus.includes(common.LIVE_STATUS)
