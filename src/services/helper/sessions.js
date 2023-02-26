@@ -1186,6 +1186,7 @@ module.exports = class SessionsHelper {
 					await kafkaCommunication.pushEmailToKafka(payload)
 
 					let allAttendess = []
+					let attendeesInfo = []
 					const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({
 						sessionId: sessionId,
 						isEnrolled: true,
