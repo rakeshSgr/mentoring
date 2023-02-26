@@ -1212,7 +1212,7 @@ module.exports = class SessionsHelper {
 									type: 'email',
 									email: {
 										to: foundElement.email.address,
-										subject: emailTemplate.subject,
+										subject: templateData.subject,
 										body: utils.composeEmailBody(templateData.body, {
 											name: foundElement.name,
 											sessionTitle: session.title,
