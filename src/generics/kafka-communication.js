@@ -37,6 +37,7 @@ const clearInternalCache = async (key) => {
 }
 const pushSessionToKafka = async (message) => {
 	try {
+		console.log('pushSessionToKafka called')
 		const payload = { topic: process.env.SESSION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {

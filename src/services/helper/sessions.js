@@ -18,6 +18,9 @@ const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 
 const sessionDTO = require('../../dto/sessions')
+
+const axios = require('axios')
+
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
@@ -938,8 +941,18 @@ module.exports = class SessionsHelper {
 					title: sessionDetails.title,
 					recordingUrl: recordingUrl,
 				}
-
+				let transformedSessionData = await sessionDTO.transformSessionData(sessionId, sessionDetails.userId)
+				await kafkaCommunication.pushSessionToKafka(transformedSessionData)
 				await kafkaCommunication.pushCompletedSessionToKafka(data)
+				function sleep(ms) {
+					return new Promise((resolve) => setTimeout(resolve, ms))
+				}
+				const body = {
+					sessionId: sessionId,
+				}
+				await sleep(10000)
+				const response = await axios.post(process.env.BPP_SESSION_UPDATE_URI, body, { timeout: 0 })
+				console.log('sessionComplete.response', response)
 			}
 
 			return result

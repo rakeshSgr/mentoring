@@ -77,7 +77,7 @@ let sessionsSchema = new Schema({
 	},
 	summary: {
 		type: String,
-		default: null,
+		default: 'Summary will be made available after the session gets completed!',
 	},
 	channelId: {
 		type: String,
