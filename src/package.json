@@ -45,7 +45,7 @@
 		"moment-timezone": "^0.5.34",
 		"mongodb": "^4.1.2",
 		"mongoose": "^6.1.6",
-		"mongoose-autopopulate": "^0.16.0",
+		"mongoose-autopopulate": "^0.17.1",
 		"mongoose-delete": "^0.5.4",
 		"mongoose-timestamp": "^0.6.0",
 		"p-each-series": "^2.1.0",
