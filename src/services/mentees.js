@@ -35,7 +35,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userRequests.details('', id)
+		const menteeDetails = await userRequests.fetchUserDetails({ userId: id })
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
@@ -215,7 +215,7 @@ module.exports = class MenteesHelper {
 
 	static async joinSession(sessionId, token) {
 		try {
-			const mentee = await userRequests.details(token)
+			const mentee = await userRequests.fetchUserDetails({ token })
 
 			if (mentee.data.responseCode !== 'OK') {
 				return responses.failureResponse({
@@ -402,7 +402,8 @@ module.exports = class MenteesHelper {
 				})
 			}
 			const organizationName = mentorExtension
-				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
+				? (await userRequests.fetchOrgDetails({ organizationId: mentorExtension.organization_id }))?.data
+						?.result?.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
 				throw responses.failureResponse({
@@ -577,7 +578,7 @@ module.exports = class MenteesHelper {
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -922,7 +923,9 @@ module.exports = class MenteesHelper {
 				} else if (visibilityPolicy === common.ASSOCIATED || visibilityPolicy === common.ALL) {
 					organizationIds.push(orgExtension.organization_id)
 					let relatedOrgs = []
-					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgExtension.organization_id)
+					let userOrgDetails = await userRequests.fetchOrgDetails({
+						organizationId: orgExtension.organization_id,
+					})
 					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
 						relatedOrgs = userOrgDetails.data.result.related_orgs
 					}

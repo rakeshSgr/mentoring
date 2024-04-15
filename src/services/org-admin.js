@@ -67,7 +67,9 @@ module.exports = class OrgAdminService {
 
 			if (bodyData.organization_id) {
 				mentorDetails.organization_id = bodyData.organization_id
-				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				const organizationDetails = await userRequests.fetchOrgDetails({
+					organizationId: bodyData.organization_id,
+				})
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return responses.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -149,7 +151,9 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
-				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				let organizationDetails = await userRequests.fetchOrgDetails({
+					organizationId: bodyData.organization_id,
+				})
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return responses.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -229,7 +233,9 @@ module.exports = class OrgAdminService {
 					policyData?.external_mentor_visibility == common.ASSOCIATED ||
 					policyData?.mentor_visibility_policy == common.ASSOCIATED
 				) {
-					const organizationDetails = await userRequests.fetchDefaultOrgDetails(decodedToken.organization_id)
+					const organizationDetails = await userRequests.fetchOrgDetails({
+						organizationId: decodedToken.organization_id,
+					})
 					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
 				}
 
@@ -315,7 +321,9 @@ module.exports = class OrgAdminService {
 				})
 			}
 			// Get default organisation details
-			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+			let defaultOrgDetails = await userRequests.fetchOrgDetails({
+				organizationCode: process.env.DEFAULT_ORGANISATION_CODE,
+			})
 
 			let defaultOrgId
 			if (defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
@@ -386,7 +394,7 @@ module.exports = class OrgAdminService {
 			const orgId = bodyData.organization_id
 			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
-			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',

@@ -20,7 +20,7 @@ module.exports = class issuesHelper {
 
 	static async create(bodyData, decodedToken) {
 		try {
-			const userDetails = (await userRequests.details('', decodedToken.id)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: decodedToken.id })).data.result
 
 			const name = userDetails.name
 			const role = decodedToken.roles.some((role) => role.title === 'mentor') ? 'Mentor' : 'Mentee'
