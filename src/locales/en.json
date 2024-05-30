@@ -57,7 +57,7 @@
 	"USER_ROLE_UPDATED": "User role was updated, please login again.",
 	"FEEDBACK_AS_NOT_PASSED": "feedbackAs key is not passed for mentor",
 	"SESSION_DURATION_TIME": "Session should start and end on same day",
-	"SESSION__MINIMUM_DURATION_TIME": "End time should be atleast 30 minutes after start time.",
+	"BELOW_MINIMUM_SESSION_TIME": "End time should be atleast 30 minutes after start time.",
 	"PROFILE_FTECHED_SUCCESSFULLY": "Profile fetched successfully.",
 	"UPCOMING_SESSION_FETCHED": "Upcoming session fetched successfully.",
 	"UPDATE_FORM_VERSION": "Update form version.",
@@ -171,5 +171,6 @@
 	"CSV_UPDATE_FAILED": "Sample Session Creation CSV Upload Failed",
 	"SESSION_CSV_UPLOADED_FAILED": "Bulk Session Creation CSV Upload Failed",
 	"CSV_ROW_LIMIT_EXCEEDED": "The CSV file exceeds the maximum allowed rows of ",
-	"EMPTY_CSV": "No data found"
+	"EMPTY_CSV": "No data found",
+	"SESSION_CREATION_LIMIT_EXCEDED_FOR_GIVEN_MENTOR": "The selected mentor has a session scheduled at the specified time."
 }
