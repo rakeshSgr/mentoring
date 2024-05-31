@@ -250,8 +250,9 @@ module.exports = class UserInviteHelper {
 							!meetingLinkOrId
 						) {
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.ZOOM_MEET
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.value = common.MEETING_VALUES.ZOOM_MEET
+								common.MEETING_VALUES.ZOOM_LABEL
+							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
+								common.MEETING_VALUES.ZOOM_LABEL
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.meta.meetingId = meetingId
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.meta.password = `"${meetingPasscode}"`
 						} else {
@@ -266,9 +267,9 @@ module.exports = class UserInviteHelper {
 						const platformName = !match ? '' : match[1]
 						if (platformName === common.MEETING_VALUES.WHATSAPP_VALUE || !meetingLinkOrId) {
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.WHATSAPP_MEET
+								common.MEETING_VALUES.WHATSAPP_LABEL
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
-								common.MEETING_VALUES.WHATSAPP_MEET
+								common.MEETING_VALUES.WHATSAPP_LABEL
 						} else {
 							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
 							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
@@ -283,7 +284,7 @@ module.exports = class UserInviteHelper {
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
 								common.MEETING_VALUES.GOOGLE_VALUE
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.GOOGLE_MEET
+								common.MEETING_VALUES.GOOGLE_LABEL
 						} else {
 							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
 							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
@@ -295,7 +296,7 @@ module.exports = class UserInviteHelper {
 						if (!meetingLinkOrId) {
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.value = common.BBB_VALUE
 							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.BBB_MEET
+								common.MEETING_VALUES.BBB_LABEL
 						} else {
 							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
 							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
@@ -305,7 +306,7 @@ module.exports = class UserInviteHelper {
 						}
 					} else if (!meetingLinkOrId && !meetingName) {
 						parsedCSVData[parsedCSVData.length - 1].meeting_info.value = common.BBB_VALUE
-						parsedCSVData[parsedCSVData.length - 1].meeting_info.platform = common.MEETING_VALUES.BBB_MEET
+						parsedCSVData[parsedCSVData.length - 1].meeting_info.platform = common.MEETING_VALUES.BBB_LABEL
 					} else if (!meetingName && meetingLinkOrId) {
 						parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
 						parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
@@ -361,7 +362,7 @@ module.exports = class UserInviteHelper {
 			}
 			invalidRowsCount++
 		} else {
-			if (session.meeting_info.platform !== common.MEETING_VALUES.BBB_MEET && session.meeting_info.link === '') {
+			if (session.meeting_info.platform !== common.MEETING_VALUES.BBB_LABEL && session.meeting_info.link === '') {
 				session.status = 'Invalid'
 				session.statusMessage = this.appendWithComma(
 					session.statusMessage,
@@ -395,11 +396,11 @@ module.exports = class UserInviteHelper {
 					session.statusMessage = this.appendWithComma(session.statusMessage, ' Invalid Date')
 				}
 
-				if (session.mentees && Array.isArray(session.mentees)) {
+				if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
 					const menteeEmails = session.mentees.map((mentee) => mentee.toLowerCase())
 					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(menteeEmails)
 					session.mentees = menteeDetails.result.userIdsAndInvalidEmails
-					if (menteeDetails.result.invalidEmails.length != 0) {
+					if (menteeDetails.result.userIdsAndInvalidEmails.some((item) => typeof item === 'string')) {
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
 							' Mentee Details are incorrect'
@@ -432,20 +433,15 @@ module.exports = class UserInviteHelper {
 					session.statusMessage = this.appendWithComma(session.statusMessage, ' Mentor Email')
 				}
 
-				if (session.type.toUpperCase() === common.SESSION_TYPE.PRIVATE) {
-					if (session.mentees.length === 0) {
-						session.status = 'Invalid'
-						session.statusMessage = this.appendWithComma(
-							session.statusMessage,
-							' Private Session should have at least one mentee.'
-						)
-					} else if (!session.mentees.some((item) => typeof item === 'number')) {
-						session.status = 'Invalid'
-						session.statusMessage = this.appendWithComma(
-							session.statusMessage,
-							' At least one valid mentee should be for private session.'
-						)
-					}
+				if (
+					session.type.toUpperCase() === common.SESSION_TYPE.PRIVATE &&
+					!session.mentees.some((item) => typeof item === 'number')
+				) {
+					session.status = 'Invalid'
+					session.statusMessage = this.appendWithComma(
+						session.statusMessage,
+						' At least one valid mentee should be for private session.'
+					)
 				}
 
 				const defaultOrgId = await getDefaultOrgId()
@@ -587,7 +583,7 @@ module.exports = class UserInviteHelper {
 					session.statusMessage = await session.statusMessage.then((result) => result)
 				}
 			}
-			const BodyDataArray = rowsWithStatus.map((item) => ({
+			const SessionBodyData = rowsWithStatus.map((item) => ({
 				title: item.title,
 				description: item.description,
 				start_date: item.start_date,
@@ -612,7 +608,7 @@ module.exports = class UserInviteHelper {
 			}))
 
 			const sessionCreationOutput = await this.processCreateData(
-				BodyDataArray,
+				SessionBodyData,
 				userId,
 				orgId,
 				isMentor,
@@ -689,7 +685,7 @@ module.exports = class UserInviteHelper {
 				const meetingPlatform = meeting_info.platform
 				const meetingLinkOrId = meeting_info.link
 				let meetingPasscode = ''
-				if (meetingPlatform == common.MEETING_VALUES.ZOOM_MEET) {
+				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL) {
 					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/)[0] : ''
 				}
 
@@ -738,9 +734,9 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async processCreateData(dataArray, userId, orgId, isMentor, notifyUser) {
+	static async processCreateData(SessionsArray, userId, orgId, isMentor, notifyUser) {
 		const output = []
-		for (const data of dataArray) {
+		for (const data of SessionsArray) {
 			if (data.status != 'Invalid') {
 				if (data.action.toLowerCase() == common.ACTIONS.CREATE) {
 					data.status = common.PUBLISHED_STATUS
@@ -748,7 +744,14 @@ module.exports = class UserInviteHelper {
 						data.time_zone == common.TIMEZONE
 							? (data.time_zone = common.IST_TIMEZONE)
 							: (data.time_zone = common.UTC_TIMEZONE)
-					const sessionCreation = await sessionService.create(data, userId, orgId, isMentor, notifyUser)
+					const { id, ...dataWithoutId } = data
+					const sessionCreation = await sessionService.create(
+						dataWithoutId,
+						userId,
+						orgId,
+						isMentor,
+						notifyUser
+					)
 					if (sessionCreation.statusCode === httpStatusCode.created) {
 						data.statusMessage = sessionCreation.message
 						data.id = sessionCreation.result.id

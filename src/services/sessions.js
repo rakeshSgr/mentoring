@@ -60,11 +60,6 @@ module.exports = class SessionsHelper {
 
 	static async create(bodyData, loggedInUserId, orgId, isAMentor, notifyUser) {
 		try {
-			if (bodyData.id && bodyData.id === '') {
-				const { id, ...bodyDataWithoutId } = bodyData
-				bodyData = bodyDataWithoutId
-			}
-
 			// check if session mentor is added in the mentee list
 			if (bodyData?.mentees?.includes(bodyData?.mentor_id)) {
 				return responses.failureResponse({
@@ -484,7 +479,7 @@ module.exports = class SessionsHelper {
 				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return responses.failureResponse({
-						message: 'SESSION__MINIMUM_DURATION_TIME',
+						message: 'BELOW_MINIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
