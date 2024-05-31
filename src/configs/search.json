@@ -1,0 +1,44 @@
+{
+	"search": {
+		"sessionSearch": {
+			"fields": [
+				{
+					"name": "title",
+					"label": "Title",
+					"sortPriority": 1
+				},
+				{
+					"name": "description",
+					"label": "Description",
+					"sortPriority": 2
+				},
+				{
+					"name": "mentor_name",
+					"label": "Menor name",
+					"sortPriority": 3
+				},
+				{
+					"name": "categories",
+					"label": "Categories",
+					"sortPriority": 4,
+					"isAnEntityType": true
+				}
+			]
+		},
+		"mentorSearch": {
+			"fields": [
+				{
+					"name": "name",
+					"label": "Menor name",
+					"sortPriority": 1
+				},
+				{
+					"name": "categories",
+					"label": "Categories",
+					"sortPriority": 2,
+					"isAnEntityType": true
+				}
+			]
+		}
+	}
+}

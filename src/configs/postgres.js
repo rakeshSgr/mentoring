@@ -24,6 +24,7 @@ module.exports = {
 			createdAt: 'created_at',
 			updatedAt: 'updated_at',
 			deletedAt: 'deleted_at',
+			loggging: true,
 		},
 		defaultOrgId: parseInt(defaultOrgId), // Convert to integer
 	},
