@@ -25,6 +25,8 @@ const entityType = require('@database/models/entityType')
 const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
+const { buildSearchFilter } = require('@helpers/search')
+const searchConfig = require('@configs/search.json')
 
 module.exports = class MenteesHelper {
 	/**
@@ -326,7 +328,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
+	static async getAllSessions(page, limit, search, searchOn, userId, queryParams, isAMentor) {
 		let additionalProjectionString = ''
 
 		// check for fields query
@@ -348,14 +350,29 @@ module.exports = class MenteesHelper {
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
 
+		const searchFilter = await buildSearchFilter({
+			searchOn: searchOn ? searchOn.split(',') : false,
+			searchConfig: searchConfig.search.sessionSearch,
+			search,
+			modelName: sessionModelName,
+		})
+		// return false repose when buildSearchFilter() returns nagative response
+		// buildSearchFilter() false when search on only contains entity type and no maches were made.
+		if (!searchFilter) {
+			return {
+				rows: [],
+				count: 0,
+			}
+		}
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,
-			search,
+			searchFilter,
 			userId,
 			filteredQuery,
 			saasFilter,
-			additionalProjectionString
+			additionalProjectionString,
+			search
 		)
 		if (sessions.rows.length > 0) {
 			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_organization_id))]
