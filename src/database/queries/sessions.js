@@ -710,7 +710,7 @@ exports.getUpcomingSessionsFromView = async (
 		LIMIT
 			:limit;
 	`
-		console.log(query)
+
 		const replacements = {
 			search: `%${searchText}%`,
 			userId: userId,
