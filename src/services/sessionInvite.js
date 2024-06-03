@@ -157,164 +157,190 @@ module.exports = class UserInviteHelper {
 		try {
 			const parsedCSVData = []
 			const csvToJsonData = await csv().fromFile(csvFilePath)
-			if (csvToJsonData.length > 0) {
-				const processStatusMessage = async (statusMessage, newMessage) => {
-					if (typeof statusMessage === 'string') {
-						return this.appendWithComma(statusMessage, newMessage)
-					} else if (statusMessage instanceof Promise) {
-						const resolvedMessage = await statusMessage
-						return this.appendWithComma(resolvedMessage, newMessage)
-					}
-					return newMessage
+
+			for (const row of csvToJsonData) {
+				const {
+					Action: action,
+					id,
+					title,
+					description,
+					type,
+					'Mentor(Email/Mobile Num)': mentor_id,
+					'Mentees(Email/Mobile Num)': mentees,
+					'Date(DD-MM-YYYY)': date,
+					'Time Zone(IST/UTC)': time_zone,
+					'Time (24 hrs)': time24hrs,
+					'Duration(Min)': duration,
+					recommended_for,
+					categories,
+					medium,
+					'Meeting Platform': meetingPlatform,
+					'Meeting Link or Meeting ID': meetingLinkOrId,
+					'Meeting Passcode (if needed)': meetingPasscode,
+				} = row
+
+				const menteesList = mentees
+					? mentees
+							.replace(/"/g, '')
+							.split(',')
+							.map((item) => item.trim())
+					: []
+				const recommendedList = recommended_for
+					? recommended_for
+							.replace(/"/g, '')
+							.split(',')
+							.map((item) => item.trim())
+					: []
+				const categoriesList = categories
+					? categories
+							.replace(/"/g, '')
+							.split(',')
+							.map((item) => item.trim())
+					: []
+				const mediumList = medium
+					? medium
+							.replace(/"/g, '')
+							.split(',')
+							.map((item) => item.trim())
+					: []
+
+				const meetingInfo = {
+					platform: meetingPlatform,
+					value: '',
+					link: meetingLinkOrId || '',
+					meta: {
+						passcode: meetingPasscode || '',
+					},
 				}
 
-				for (const row of csvToJsonData) {
-					const {
-						Action: action,
-						id,
-						title,
-						description,
-						type,
-						'Mentor(Email/Mobile Num)': mentor_id,
-						'Mentees(Email/Mobile Num)': mentees,
-						'Date(DD-MM-YYYY)': date,
-						'Time Zone(IST/UTC)': time_zone,
-						'Time (24 hrs)': time24hrs,
-						'Duration(Min)': duration,
-						recommended_for,
-						categories,
-						medium,
-						'Meeting Platform': meetingPlatform,
-						'Meeting Link or Meeting ID': meetingLinkOrId,
-						'Meeting Passcode (if needed)': meetingPasscode,
-					} = row
+				parsedCSVData.push({
+					action,
+					id,
+					title,
+					description,
+					type,
+					mentor_id,
+					mentees: menteesList,
+					date,
+					time_zone,
+					time24hrs,
+					duration,
+					recommended_for: recommendedList,
+					categories: categoriesList,
+					medium: mediumList,
+					meeting_info: meetingInfo,
+				})
 
-					const menteesList = mentees
-						? mentees
-								.replace(/"/g, '')
-								.split(',')
-								.map((item) => item.trim())
-						: []
-					const recommendedList = recommended_for
-						? recommended_for
-								.replace(/"/g, '')
-								.split(',')
-								.map((item) => item.trim())
-						: []
-					const categoriesList = categories
-						? categories
-								.replace(/"/g, '')
-								.split(',')
-								.map((item) => item.trim())
-						: []
-					const mediumList = medium
-						? medium
-								.replace(/"/g, '')
-								.split(',')
-								.map((item) => item.trim())
-						: []
+				const platformNameRegex = /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/
+				const zoomMeetingRegex = /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/
+				const lastEntry = parsedCSVData[parsedCSVData.length - 1]
+				const meetingName = meetingPlatform ? meetingPlatform.toLowerCase().replace(/\s+/g, '') : ''
+				const setMeetingInfo = (label, value, meta = {}, link) => {
+					lastEntry.meeting_info = { platform: label, value: value, meta: meta, link: meetingLinkOrId }
+				}
+				const processStatusMessage = async (statusMessage, message) => {
+					return statusMessage ? `${statusMessage}, ${message}` : message
+				}
+				const processInvalidLink = async (statusMessage, message) =>
+					await processStatusMessage(statusMessage, message)
+				//Zoom Validation
+				const validateZoom = async () => {
+					const match = meetingLinkOrId.match(zoomMeetingRegex)
+					const platformName = match ? match[1] : ''
+					const meetingId = match ? match[2] : ''
+					if (platformName === common.MEETING_VALUES.ZOOM_VALUE || !meetingLinkOrId) {
+						setMeetingInfo(common.MEETING_VALUES.ZOOM_LABEL, common.MEETING_VALUES.ZOOM_LABEL, {
+							meetingId: meetingId,
+							password: `"${meetingPasscode}"`,
+						})
+					} else {
+						lastEntry.status = 'Invalid'
+						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+					}
+				}
+				//WhatsApp Validation
+				const validateWhatsApp = async () => {
+					const match = meetingLinkOrId.match(platformNameRegex)
+					const platformName = match ? match[1] : ''
 
-					parsedCSVData.push({
-						action,
-						id,
-						title,
-						description,
-						type,
-						mentor_id,
-						mentees: menteesList,
-						date,
-						time_zone,
-						time24hrs,
-						duration,
-						recommended_for: recommendedList,
-						categories: categoriesList,
-						medium: mediumList,
-						meeting_info: {
-							platform: meetingPlatform,
-							value: '',
-							link: meetingLinkOrId,
-							meta: {},
-						},
-					})
+					if (platformName === common.MEETING_VALUES.WHATSAPP_VALUE || !meetingLinkOrId) {
+						setMeetingInfo(common.MEETING_VALUES.WHATSAPP_LABEL, common.MEETING_VALUES.WHATSAPP_LABEL)
+					} else {
+						lastEntry.status = 'Invalid'
+						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+					}
+				}
+				//GoogleMeet Validation
+				const validateGoogleMeet = async () => {
+					const match = meetingLinkOrId.match(platformNameRegex)
+					const platformName = match ? match[1] : ''
 
-					const platformNameRegex = /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/
-					let meetingName = !meetingPlatform ? '' : meetingPlatform.toLowerCase().replace(/\s+/g, '')
-					if (meetingName.includes(common.MEETING_VALUES.ZOOM_VALUE)) {
-						const zoomMeetingRegex = /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/
-						const match = meetingLinkOrId.match(zoomMeetingRegex)
-						const platformName = !match ? '' : match[1]
-						const meetingId = match[2]
-						if (
-							(typeof meetingLinkOrId === 'string' &&
-								platformName === common.MEETING_VALUES.ZOOM_VALUE) ||
-							!meetingLinkOrId
-						) {
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.ZOOM_LABEL
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
-								common.MEETING_VALUES.ZOOM_LABEL
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.meta.meetingId = meetingId
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.meta.password = `"${meetingPasscode}"`
-						} else {
-							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
-							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
-								parsedCSVData[parsedCSVData.length - 1].statusMessage,
-								'Invalid Link'
-							)
-						}
-					} else if (meetingName.includes(common.MEETING_VALUES.WHATSAPP_VALUE)) {
-						const match = meetingLinkOrId.match(platformNameRegex)
-						const platformName = !match ? '' : match[1]
-						if (platformName === common.MEETING_VALUES.WHATSAPP_VALUE || !meetingLinkOrId) {
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.WHATSAPP_LABEL
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
-								common.MEETING_VALUES.WHATSAPP_LABEL
-						} else {
-							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
-							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
-								parsedCSVData[parsedCSVData.length - 1].statusMessage,
-								'Invalid Link'
-							)
-						}
-					} else if (common.MEETING_VALUES.GOOGLE_MEET_VALUES.some((value) => meetingName.includes(value))) {
-						const match = meetingLinkOrId.match(platformNameRegex)
-						const platformName = !match ? '' : match[1]
-						if (platformName === common.MEETING_VALUES.GOOGLE_PLATFORM || !meetingLinkOrId) {
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.value =
-								common.MEETING_VALUES.GOOGLE_VALUE
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.GOOGLE_LABEL
-						} else {
-							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
-							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
-								parsedCSVData[parsedCSVData.length - 1].statusMessage,
-								'Invalid Link'
-							)
-						}
-					} else if (common.MEETING_VALUES.BBB_PLATFORM_VALUES.some((value) => meetingName.includes(value))) {
-						if (!meetingLinkOrId) {
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.value = common.BBB_VALUE
-							parsedCSVData[parsedCSVData.length - 1].meeting_info.platform =
-								common.MEETING_VALUES.BBB_LABEL
-						} else {
-							parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
-							parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
-								parsedCSVData[parsedCSVData.length - 1].statusMessage,
-								' Link should be empty for Big Blue Button '
-							)
-						}
-					} else if (!meetingLinkOrId && !meetingName) {
-						parsedCSVData[parsedCSVData.length - 1].meeting_info.value = common.BBB_VALUE
-						parsedCSVData[parsedCSVData.length - 1].meeting_info.platform = common.MEETING_VALUES.BBB_LABEL
-					} else if (!meetingName && meetingLinkOrId) {
-						parsedCSVData[parsedCSVData.length - 1].status = 'Invalid'
-						parsedCSVData[parsedCSVData.length - 1].statusMessage = await processStatusMessage(
-							parsedCSVData[parsedCSVData.length - 1].statusMessage,
-							' Platform is not filled'
+					if (platformName === common.MEETING_VALUES.GOOGLE_PLATFORM || !meetingLinkOrId) {
+						setMeetingInfo(common.MEETING_VALUES.GOOGLE_LABEL, common.MEETING_VALUES.GOOGLE_VALUE)
+					} else {
+						lastEntry.status = 'Invalid'
+						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+					}
+				}
+				//BBB Validation
+				const validateBBB = async () => {
+					if (!meetingLinkOrId) {
+						setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
+					} else {
+						lastEntry.status = 'Invalid'
+						lastEntry.statusMessage = await processInvalidLink(
+							lastEntry.statusMessage,
+							'Link should be empty for Big Blue Button'
 						)
 					}
 				}
+				//Default Validation
+				const validateDefaultBBB = () => {
+					setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
+				}
+				//Platform Validation
+				const validateNoPlatformWithLink = async () => {
+					lastEntry.status = 'Invalid'
+					lastEntry.statusMessage = await processInvalidLink(
+						lastEntry.statusMessage,
+						'Platform is not filled'
+					)
+				}
+				//Invalid Platform Validation
+				const validateInvalidPlatform = async () => {
+					lastEntry.status = 'Invalid'
+					lastEntry.statusMessage = await processInvalidLink(
+						lastEntry.statusMessage,
+						'Invalid Meeting Platform'
+					)
+				}
+				//Validating logic using switch case
+				const validateMeetingLink = async () => {
+					switch (true) {
+						case meetingName.includes(common.MEETING_VALUES.ZOOM_VALUE):
+							await validateZoom()
+							break
+						case meetingName.includes(common.MEETING_VALUES.WHATSAPP_VALUE):
+							await validateWhatsApp()
+							break
+						case common.MEETING_VALUES.GOOGLE_MEET_VALUES.some((value) => meetingName.includes(value)):
+							await validateGoogleMeet()
+							break
+						case common.MEETING_VALUES.BBB_PLATFORM_VALUES.some((value) => meetingName.includes(value)):
+							await validateBBB()
+							break
+						case !meetingLinkOrId && !meetingName:
+							validateDefaultBBB()
+							break
+						case !meetingName && meetingLinkOrId:
+							await validateNoPlatformWithLink()
+							break
+						default:
+							await validateInvalidPlatform()
+							break
+					}
+				}
+				await validateMeetingLink()
 			}
 			return {
 				success: true,
