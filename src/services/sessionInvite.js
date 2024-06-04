@@ -425,8 +425,8 @@ module.exports = class UserInviteHelper {
 				if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
 					const menteeEmails = session.mentees.map((mentee) => mentee.toLowerCase())
 					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(menteeEmails)
-					session.mentees = menteeDetails.result.userIdsAndInvalidEmails
-					if (menteeDetails.result.userIdsAndInvalidEmails.some((item) => typeof item === 'string')) {
+					session.mentees = menteeDetails.result
+					if (menteeDetails.result.some((item) => typeof item === 'string')) {
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
 							' Mentee Details are incorrect'
@@ -445,7 +445,7 @@ module.exports = class UserInviteHelper {
 					const mentorEmail = [session.mentor_id.toLowerCase()]
 					const mentorId = await userRequests.getListOfUserDetailsByEmail(mentorEmail)
 
-					const mentor_Id = mentorId.result.userIdsAndInvalidEmails[0]
+					const mentor_Id = mentorId.result[0]
 					if (typeof mentor_Id != 'number') {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(session.statusMessage, ' Invalid Mentor Email')
