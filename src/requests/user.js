@@ -129,7 +129,7 @@ const getListOfUserDetailsByEmail = function (emailIds) {
 			},
 		}
 
-		const apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS_BY_EMAIL
+		const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
 		try {
 			await request.post(apiUrl, options, callback)
 			function callback(err, data) {
