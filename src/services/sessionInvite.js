@@ -231,8 +231,8 @@ module.exports = class UserInviteHelper {
 					meeting_info: meetingInfo,
 				})
 
-				const platformNameRegex = /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/
-				const zoomMeetingRegex = /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/
+				const platformNameRegex = common.PLATFORMS_REGEX
+				const zoomMeetingRegex = common.ZOOM_REGEX
 				const lastEntry = parsedCSVData[parsedCSVData.length - 1]
 				const meetingName = meetingPlatform ? meetingPlatform.toLowerCase().replace(/\s+/g, '') : ''
 				const setMeetingInfo = (label, value, meta = {}, link) => {

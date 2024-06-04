@@ -150,6 +150,8 @@ module.exports = {
 		BBB_PLATFORM_VALUES: ['bigbluebutton', 'bbb'],
 		GOOGLE_MEET_VALUES: ['googlemeet', 'gmeet'],
 	},
+	PLATFORMS_REGEX: /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/,
+	ZOOM_REGEX: /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/,
 	ACTIONS: { CREATE: 'create', EDIT: 'edit', DELETE: 'delete' },
 	CSV_DATE_FORMAT: 'DD-MM-YYYY HH:mm',
 	SESSION_TYPE: {
