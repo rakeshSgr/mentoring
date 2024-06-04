@@ -131,7 +131,7 @@ module.exports = class SessionsHelper {
 			// Based on session duration check recommended conditions
 			if (elapsedMinutes < 30) {
 				return responses.failureResponse({
-					message: 'SESSION__MINIMUM_DURATION_TIME',
+					message: 'BELOW_MINIMUM_SESSION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -479,7 +479,7 @@ module.exports = class SessionsHelper {
 				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return responses.failureResponse({
-						message: 'SESSION__MINIMUM_DURATION_TIME',
+						message: 'BELOW_MINIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -2442,9 +2442,10 @@ module.exports = class SessionsHelper {
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
 
-			if (csvData.length > process.env.CSV_MAX_ROW) {
+			if (csvData.length === 0 || csvData.length > process.env.CSV_MAX_ROW) {
+				const messages = csvData.length === 0 ? 'EMPTY_CSV' : 'CSV_ROW_LIMIT_EXCEEDED' + process.env.CSV_MAX_ROW
 				return responses.failureResponse({
-					message: 'CSV_ROW_LIMIT_EXCEEDED',
+					message: messages,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
