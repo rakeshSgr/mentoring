@@ -52,8 +52,8 @@ module.exports = class UserInviteHelper {
 					notifyUser,
 					isMentor
 				)
+				if (createResponse.success == false) console.log(':::::::::', createResponse.message)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
-
 				// upload output file to cloud
 				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, userId, orgId)
 				const output_path = uploadRes.result.uploadDest
@@ -755,7 +755,7 @@ module.exports = class UserInviteHelper {
 		} catch (error) {
 			return {
 				success: false,
-				message: error,
+				message: error.message,
 			}
 		}
 	}
