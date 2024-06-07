@@ -341,6 +341,7 @@ module.exports = class SessionsHelper {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
 		try {
+			console.log('Inside Update :::::::::::::::')
 			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
 			// If manager is the session creator then no need to check Mentor extension data
@@ -458,7 +459,7 @@ module.exports = class SessionsHelper {
 				}
 				const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 				let res = utils.validateInput(bodyData, validationData, sessionModelName)
-
+				console.log('validationData :::::::::::::::', validationData)
 				if (!res.success) {
 					return responses.failureResponse({
 						message: 'SESSION_CREATION_FAILED',
@@ -545,10 +546,11 @@ module.exports = class SessionsHelper {
 						await this.removeMentees(sessionId, menteesToRemove, bodyData.time_zone)
 					}
 				}
+				console.log('bodyData::::::::::::::::', bodyData)
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-				console.log('===============', rowsAffected, updatedRows[0])
+				console.log('updatedRows ::::::::::::::::', rowsAffected, updatedRows)
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
