@@ -548,7 +548,7 @@ module.exports = class SessionsHelper {
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-
+				console.log('===============', rowsAffected, updatedRows[0])
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
