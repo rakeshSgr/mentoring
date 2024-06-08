@@ -813,7 +813,7 @@ module.exports = class UserInviteHelper {
 					const { id, ...dataWithoutId } = data
 					const sessionUpdateOrDelete = await sessionService.update(
 						sessionId,
-						data,
+						dataWithoutId,
 						userId,
 						data.method,
 						orgId,
