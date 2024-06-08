@@ -341,7 +341,7 @@ module.exports = class SessionsHelper {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
 		try {
-			console.log('Inside Update :::::::::::::::')
+			console.log('Inside Update :::::::::::::::', sessionId)
 			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
 			// If manager is the session creator then no need to check Mentor extension data
@@ -419,8 +419,12 @@ module.exports = class SessionsHelper {
 			}
 
 			if (method != common.DELETE_METHOD) {
-				//	const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
-				const timeSlot = true
+				const timeSlot = await this.isTimeSlotAvailable(
+					userId,
+					bodyData.start_date,
+					bodyData.end_date,
+					sessionId
+				)
 				if (timeSlot.isTimeSlotAvailable === false) {
 					return responses.failureResponse({
 						message: {

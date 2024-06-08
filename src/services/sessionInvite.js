@@ -809,8 +809,10 @@ module.exports = class UserInviteHelper {
 					const recommends = data.recommended_for
 					const categoriess = data.categories
 					const mediums = data.medium
+					const sessionId = data.id
+					const { id, ...dataWithoutId } = data
 					const sessionUpdateOrDelete = await sessionService.update(
-						data.id,
+						sessionId,
 						data,
 						userId,
 						data.method,
