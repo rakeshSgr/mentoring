@@ -74,7 +74,6 @@ exports.updateOne = async (filter, update, options = {}) => {
 			...options,
 			individualHooks: true,
 		})
-
 		const [rowsAffected, updatedRows] = result
 
 		return options.returning ? { rowsAffected, updatedRows } : rowsAffected

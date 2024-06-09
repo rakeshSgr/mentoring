@@ -418,8 +418,12 @@ module.exports = class SessionsHelper {
 			}
 
 			if (method != common.DELETE_METHOD) {
-				//	const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
-				const timeSlot = true
+				const timeSlot = await this.isTimeSlotAvailable(
+					userId,
+					bodyData.start_date,
+					bodyData.end_date,
+					sessionId
+				)
 				if (timeSlot.isTimeSlotAvailable === false) {
 					return responses.failureResponse({
 						message: {
@@ -458,7 +462,6 @@ module.exports = class SessionsHelper {
 				}
 				const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 				let res = utils.validateInput(bodyData, validationData, sessionModelName)
-
 				if (!res.success) {
 					return responses.failureResponse({
 						message: 'SESSION_CREATION_FAILED',
@@ -548,7 +551,6 @@ module.exports = class SessionsHelper {
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',

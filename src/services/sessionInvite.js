@@ -456,7 +456,7 @@ module.exports = class UserInviteHelper {
 					}
 				} else {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Mentor Email')
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Empty Mentor Email')
 				}
 
 				if (
@@ -809,9 +809,11 @@ module.exports = class UserInviteHelper {
 					const recommends = data.recommended_for
 					const categoriess = data.categories
 					const mediums = data.medium
+					const sessionId = data.id
+					const { id, ...dataWithoutId } = data
 					const sessionUpdateOrDelete = await sessionService.update(
-						data.id,
-						data,
+						sessionId,
+						dataWithoutId,
 						userId,
 						data.method,
 						orgId,
