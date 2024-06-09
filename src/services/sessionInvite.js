@@ -456,7 +456,7 @@ module.exports = class UserInviteHelper {
 					}
 				} else {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Mentor Email')
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Empty Mentor Email')
 				}
 
 				if (
