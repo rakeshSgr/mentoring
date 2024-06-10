@@ -755,7 +755,7 @@ module.exports = class UserInviteHelper {
 		} catch (error) {
 			return {
 				success: false,
-				message: error.message,
+				message: error,
 			}
 		}
 	}
@@ -779,7 +779,7 @@ module.exports = class UserInviteHelper {
 						notifyUser
 					)
 					if (sessionCreation.statusCode === httpStatusCode.created) {
-						data.statusMessage = sessionCreation.message
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionCreation.message)
 						data.id = sessionCreation.result.id
 						data.recommended_for = sessionCreation.result.recommended_for.map((item) => item.label)
 						data.categories = sessionCreation.result.categories.map((item) => item.label)
@@ -795,7 +795,7 @@ module.exports = class UserInviteHelper {
 							data.time_zone == common.IST_TIMEZONE
 								? (data.time_zone = common.TIMEZONE)
 								: (data.time_zone = common.TIMEZONE_UTC)
-						data.statusMessage = sessionCreation.message
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionCreation.message)
 						output.push(data)
 					}
 				} else if (
@@ -820,7 +820,7 @@ module.exports = class UserInviteHelper {
 						notifyUser
 					)
 					if (sessionUpdateOrDelete.statusCode === httpStatusCode.accepted) {
-						data.statusMessage = sessionUpdateOrDelete.message
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionUpdateOrDelete.message)
 						data.recommended_for = recommends
 						data.categories = categoriess
 						data.medium = mediums
@@ -835,12 +835,16 @@ module.exports = class UserInviteHelper {
 							data.time_zone == common.IST_TIMEZONE
 								? (data.time_zone = common.TIMEZONE)
 								: (data.time_zone = common.TIMEZONE_UTC)
-						data.statusMessage = sessionUpdateOrDelete.message
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionUpdateOrDelete.message)
 						output.push(data)
 					}
 				}
 			} else {
 				output.push(data)
+			}
+
+			if (data.statusMessage && typeof data.statusMessage != 'string') {
+				data.statusMessage = await data.statusMessage.then((result) => result)
 			}
 		}
 		return output
