@@ -14,7 +14,7 @@
 				},
 				{
 					"name": "mentor_name",
-					"label": "Menor name",
+					"label": "Mentor name",
 					"sortPriority": 3
 				},
 				{
@@ -29,7 +29,7 @@
 			"fields": [
 				{
 					"name": "name",
-					"label": "Menor name",
+					"label": "Mentor name",
 					"sortPriority": 1
 				},
 				{

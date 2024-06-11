@@ -836,10 +836,28 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
-
+		const countQuery = `
+		SELECT count(*) AS "count"
+		FROM
+			m_${Session.tableName}
+		WHERE
+			mentor_id = :mentorId
+			AND status = 'PUBLISHED'
+			AND start_date > :currentEpochTime
+			AND started_at IS NULL
+			AND (
+				LOWER(title) LIKE :search
+			)
+			${filterClause}
+			${saasFilterClause};
+	`
+		const count = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 		return {
 			data: sessionAttendeesData,
-			count: sessionAttendeesData.length,
+			count: Number(count[0].count),
 		}
 	} catch (error) {
 		return error
