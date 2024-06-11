@@ -341,7 +341,6 @@ module.exports = class SessionsHelper {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
 		try {
-			console.log('Inside Update :::::::::::::::', sessionId)
 			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
 			// If manager is the session creator then no need to check Mentor extension data
@@ -552,7 +551,6 @@ module.exports = class SessionsHelper {
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-				console.log('bodyData::::::::::::::::', bodyData)
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
@@ -561,7 +559,6 @@ module.exports = class SessionsHelper {
 					})
 				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
-				console.log('updatedRows ::::::::::::::::', rowsAffected, updatedRows)
 				updatedSessionData = updatedRows[0].dataValues
 				// check what are the values changed only if session is updated/deleted by manager
 				// This is to decide on which email to trigger
