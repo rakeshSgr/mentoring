@@ -353,7 +353,7 @@ module.exports = class MenteesHelper {
 
 		const searchFilter = await buildSearchFilter({
 			searchOn: searchOn ? searchOn.split(',') : false,
-			searchConfig: searchConfig.search.sessionSearch,
+			searchConfig: searchConfig.search.session,
 			search,
 			modelName: sessionModelName,
 		})
@@ -594,8 +594,9 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
-			data.email = emailEncryption.encrypt(data.email.toLowerCase())
-
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 			// Return error if user org does not exists
@@ -687,6 +688,9 @@ module.exports = class MenteesHelper {
 	 */
 	static async updateMenteeExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',

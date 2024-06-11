@@ -191,8 +191,7 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fiel
 const createViewGINIndexOnSearch = async (model, config, fields) => {
 	try {
 		const modelName = model.name
-		const searchType =
-			modelName === 'Session' ? 'sessionSearch' : modelName === 'mentorExtension' ? 'mentorSearch' : null
+		const searchType = modelName === 'Session' ? 'session' : modelName === 'mentorExtension' ? 'mentor' : null
 
 		if (!searchType) {
 			console.warn('Unknown model name')

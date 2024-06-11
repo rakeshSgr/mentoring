@@ -79,7 +79,7 @@ const details = function (token = '', userId = '') {
  * @returns
  */
 
-const getListOfUserDetails = function (userIds, paranoid = false) {
+const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
@@ -92,7 +92,7 @@ const getListOfUserDetails = function (userIds, paranoid = false) {
 		}
 
 		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
-		if (paranoid) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?paranoid=true'
+		if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
 		try {
 			request.get(apiUrl, options, callback)
 			function callback(err, data) {

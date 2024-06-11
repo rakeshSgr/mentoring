@@ -9,8 +9,10 @@ module.exports = {
 
 		await queryInterface.addColumn('mentor_extensions', 'name', { type: STRING, allowNull: true })
 		await queryInterface.addColumn('mentor_extensions', 'email', { type: STRING, allowNull: true })
+		await queryInterface.addColumn('mentor_extensions', 'phone', { type: STRING, allowNull: true })
 		await queryInterface.addColumn('user_extensions', 'name', { type: STRING, allowNull: true })
 		await queryInterface.addColumn('user_extensions', 'email', { type: STRING, allowNull: true })
+		await queryInterface.addColumn('user_extensions', 'phone', { type: STRING, allowNull: true })
 
 		//Update existing users name and email
 		const [[mentorCountResult], [menteeCountResult]] = await Promise.all([
@@ -85,8 +87,10 @@ module.exports = {
 		try {
 			await queryInterface.removeColumn('mentor_extensions', 'name')
 			await queryInterface.removeColumn('mentor_extensions', 'email')
+			await queryInterface.removeColumn('mentor_extensions', 'phone')
 			await queryInterface.removeColumn('user_extensions', 'name')
 			await queryInterface.removeColumn('user_extensions', 'email')
+			await queryInterface.removeColumn('user_extensions', 'phone')
 		} catch (err) {
 			console.log(err)
 		}

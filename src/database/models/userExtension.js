@@ -70,6 +70,9 @@ module.exports = (sequelize, DataTypes) => {
 			email: {
 				type: DataTypes.STRING,
 			},
+			phone: {
+				type: DataTypes.STRING,
+			},
 		},
 		{
 			sequelize,

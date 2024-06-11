@@ -309,7 +309,9 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
-			data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 
@@ -402,6 +404,9 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
@@ -788,7 +793,7 @@ module.exports = class MentorsHelper {
 			if (!hasValidEmails) {
 				const { whereClause, positionQuery, sortQuery } = await buildSearchFilter({
 					searchOn: searchOn ? searchOn.split(',') : false,
-					searchConfig: searchConfig.search.mentorSearch,
+					searchConfig: searchConfig.search.mentor,
 					search: searchText,
 					modelName: mentorExtensionsModelName,
 				})
