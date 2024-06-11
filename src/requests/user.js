@@ -75,10 +75,11 @@ const details = function (token = '', userId = '') {
  * @method
  * @name getAllAccountsDetail
  * @param {Array} userIds
+ * @param {Array} paranoid : if true, discards deleted users.
  * @returns
  */
 
-const getListOfUserDetails = function (userIds) {
+const getListOfUserDetails = function (userIds, paranoid = false) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
@@ -90,7 +91,8 @@ const getListOfUserDetails = function (userIds) {
 			},
 		}
 
-		const apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		if (paranoid) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?paranoid=true'
 		try {
 			request.get(apiUrl, options, callback)
 			function callback(err, data) {
