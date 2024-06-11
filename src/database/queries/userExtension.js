@@ -290,9 +290,23 @@ module.exports = class MenteeExtensionQueries {
 				replacements: replacements,
 			})
 
+			const countQuery = `
+			SELECT count(*) AS "count"
+			FROM
+				${common.materializedViewsPrefix + MenteeExtension.tableName}
+			WHERE
+				${userFilterClause}
+				${filterClause}
+				${saasFilterClause};
+		`
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
 			return {
 				data: mentees,
-				count: mentees.length,
+				count: Number(count[0].count),
 			}
 		} catch (error) {
 			return error

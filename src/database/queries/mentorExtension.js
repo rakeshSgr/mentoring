@@ -144,7 +144,9 @@ module.exports = class MentorExtensionQueries {
 		filter,
 		saasFilter = '',
 		additionalProjectionclause = '',
-		returnOnlyUserId
+		returnOnlyUserId,
+		searchFilter = '',
+		searchText
 	) {
 		try {
 			const filterConditions = []
@@ -158,7 +160,15 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			const excludeUserIds = ids.length === 0
-			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let additionalFilter = ''
+			if (searchFilter.whereClause && searchFilter.whereClause != '') {
+				additionalFilter = `${searchFilter.whereClause}`
+			}
+
+			if (Array.isArray(searchText)) {
+				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
 
 			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
 
@@ -175,7 +185,6 @@ module.exports = class MentorExtensionQueries {
 			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}
-
 			if (userFilterClause && filterClause.length > 0) {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
 			}
@@ -188,10 +197,18 @@ module.exports = class MentorExtensionQueries {
 					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
+					${additionalFilter}
 			`
 
 			const replacements = {
 				...filter, // Add filter parameters to replacements
+				search: `%${searchText}%`,
+			}
+
+			if (searchFilter && searchFilter?.sortQuery !== '') {
+				query += `
+				ORDER BY
+					${searchFilter.sortQuery}`
 			}
 
 			if (page !== null && limit !== null) {
@@ -201,19 +218,34 @@ module.exports = class MentorExtensionQueries {
 					LIMIT
 						:limit;
 				`
-
 				replacements.offset = limit * (page - 1)
 				replacements.limit = limit
 			}
-
+			console.log(query)
 			const mentors = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
+			const countQuery = `
+			SELECT count(*) AS "count"
+			FROM
+				${common.materializedViewsPrefix + MentorExtension.tableName}
+			WHERE
+				${userFilterClause}
+				${filterClause}
+				${saasFilterClause}
+				${additionalFilter}	
+			;
+		`
+			const count = await Sequelize.query(countQuery, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
 			})
 
 			return {
 				data: mentors,
-				count: mentors.length,
+				count: Number(count[0].count),
 			}
 		} catch (error) {
 			return error
