@@ -646,6 +646,11 @@ function convertKeysToSnakeCase(obj) {
 	return obj
 }
 
+function isValidEmail(email) {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+	return emailRegex.test(email)
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -688,4 +693,5 @@ module.exports = {
 	generateCSVContent,
 	clearFile,
 	convertKeysToSnakeCase,
+	isValidEmail,
 }

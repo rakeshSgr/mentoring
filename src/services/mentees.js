@@ -27,6 +27,7 @@ const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
 const searchConfig = require('@configs/search.json')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class MenteesHelper {
 	/**
@@ -593,6 +594,8 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
+			data.email = emailEncryption.encrypt(data.email.toLowerCase())
+
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 			// Return error if user org does not exists
