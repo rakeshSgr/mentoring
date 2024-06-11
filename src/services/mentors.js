@@ -760,14 +760,12 @@ module.exports = class MentorsHelper {
 					directory = true
 				}
 			}
-			console.log(searchText)
 
 			const emailIds = []
 			const searchTextArray = searchText ? searchText.split(',') : []
 
 			searchTextArray.forEach((element) => {
 				if (utils.isValidEmail(element)) {
-					console.log('Valid emial:::')
 					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
 				}
 			})
@@ -796,7 +794,7 @@ module.exports = class MentorsHelper {
 				})
 				searchFilter = { whereClause, positionQuery, sortQuery }
 			}
-			console.log(emailIds)
+
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
 				pageNo,
@@ -819,7 +817,7 @@ module.exports = class MentorsHelper {
 					},
 				})
 			}
-			console.log(extensionDetails)
+
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
 			const userDetails = await userRequests.getListOfUserDetails(mentorIds, true)
