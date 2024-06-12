@@ -1075,10 +1075,10 @@ module.exports = class SessionsHelper {
 				page,
 				limit,
 				search,
-				searchOn,
 				loggedInUserId,
 				queryParams,
-				isAMentor
+				isAMentor,
+				searchOn
 			)
 
 			// add index number to the response

@@ -329,7 +329,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, searchOn, userId, queryParams, isAMentor) {
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn) {
 		let additionalProjectionString = ''
 
 		// check for fields query
