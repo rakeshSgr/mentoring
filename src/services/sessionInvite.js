@@ -209,7 +209,7 @@ module.exports = class UserInviteHelper {
 					value: '',
 					link: meetingLinkOrId || '',
 					meta: {
-						passcode: meetingPasscode || '',
+						password: meetingPasscode || '',
 					},
 				}
 
@@ -423,10 +423,11 @@ module.exports = class UserInviteHelper {
 				}
 
 				if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
-					const menteeEmails = session.mentees.map((mentee) => mentee.toLowerCase())
-					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(menteeEmails)
-					session.mentees = menteeDetails.result
-					if (menteeDetails.result.some((item) => typeof item === 'string')) {
+					const validEmails = await this.validateAndCategorizeEmails(session)
+					if (validEmails.length != 0) {
+						const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails)
+						session.mentees = menteeDetails.result
+					} else if (session.mentees.some((item) => typeof item === 'string')) {
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
 							' Mentee Details are incorrect'
@@ -441,22 +442,28 @@ module.exports = class UserInviteHelper {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(session.statusMessage, ' Only 6 mentees are allowed')
 				}
-				if (session.mentor_id.length != 0) {
-					const mentorEmail = [session.mentor_id.toLowerCase()]
-					const mentorId = await userRequests.getListOfUserDetailsByEmail(mentorEmail)
-
-					const mentor_Id = mentorId.result[0]
-					if (typeof mentor_Id != 'number') {
+				const emailArray = session.mentor_id.split(',')
+				if (session.mentor_id && emailArray.length === 1) {
+					const mentorEmail = session.mentor_id.toLowerCase()
+					if (!common.EMAIL_REGEX.test(mentorEmail)) {
 						session.status = 'Invalid'
-						session.statusMessage = this.appendWithComma(session.statusMessage, ' Invalid Mentor Email')
-						invalidRowsCount++
-						session.mentor_id = mentor_Id
+						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
 					} else {
-						session.mentor_id = mentor_Id
+						const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail])
+						const mentor_Id = mentorId.result[0]
+
+						if (typeof mentor_Id !== 'number') {
+							session.status = 'Invalid'
+							session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
+							session.mentor_id = mentor_Id
+						} else {
+							session.mentor_id = mentor_Id
+						}
 					}
 				} else {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, 'Empty Mentor Email')
+					const message = emailArray.length != 1 ? 'Multiple Mentor Emails Not Allowed' : 'Empty Mentor Email'
+					session.statusMessage = this.appendWithComma(session.statusMessage, message)
 				}
 
 				if (
@@ -514,6 +521,22 @@ module.exports = class UserInviteHelper {
 		return session
 	}
 
+	static async validateAndCategorizeEmails(session) {
+		const validEmails = []
+		const invalidEmails = []
+
+		for (const mentee of session.mentees) {
+			const lowerCaseEmail = mentee.toLowerCase()
+			if (common.EMAIL_REGEX.test(lowerCaseEmail)) {
+				validEmails.push(lowerCaseEmail)
+			} else {
+				invalidEmails.push(mentee)
+			}
+		}
+		session.mentees = invalidEmails
+		return validEmails.length === 0 ? [] : validEmails
+	}
+
 	static async revertEntityValuesToOriginal(mappedSession, entitiesList) {
 		entitiesList.forEach((entityType) => {
 			const sessionKey = entityType.value
@@ -560,7 +583,7 @@ module.exports = class UserInviteHelper {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
-							'MANDATORY_FIELDS_SESSION_ID_NOT_FILLED'
+							'Session ID should be empty'
 						)
 						rowsWithStatus.push(session)
 					}
@@ -711,8 +734,8 @@ module.exports = class UserInviteHelper {
 				const meetingPlatform = meeting_info.platform
 				const meetingLinkOrId = meeting_info.link
 				let meetingPasscode = ''
-				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL) {
-					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/)[0] : ''
+				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL && meetingLinkOrId) {
+					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/) : ''
 				}
 
 				const mappedRow = {

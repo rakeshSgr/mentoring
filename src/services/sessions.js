@@ -85,6 +85,14 @@ module.exports = class SessionsHelper {
 			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
 			const isSessionCreatedByManager = !!bodyData.mentor_id
 
+			if (bodyData.type == common.SESSION_TYPE.PRIVATE && menteeIdsToEnroll.length === 0) {
+				return responses.failureResponse({
+					message: 'MENTEES_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return responses.failureResponse({
@@ -109,6 +117,38 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			const validMenteeIds = menteeIdsToEnroll.filter((id) => typeof id === 'number')
+			if (menteeIdsToEnroll.length != 0 && validMenteeIds.length != 0) {
+				const menteesDetailsInMentor = await mentorExtensionQueries.getMentorsExtensions(menteeIdsToEnroll)
+				const invalidMentorId =
+					menteesDetailsInMentor.invalidMentors.length === 0 ? [] : menteesDetailsInMentor.invalidMentors
+				const menteesDetailsInMentee = await menteeExtensionQueries.getMenteesExtensions(invalidMentorId)
+				if (
+					(menteesDetailsInMentor.validMentors.length === 0) &
+					(menteesDetailsInMentee.validMentees.length === 0)
+				) {
+					return responses.failureResponse({
+						message: 'INVALID_PERMISSION',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				const allValidMenteesDetails = menteesDetailsInMentor.validMentors.concat(
+					menteesDetailsInMentee.validMentees
+				)
+				const isMenteeAccessible = await menteeService.checkIfMenteeIsAccessible(
+					allValidMenteesDetails,
+					loggedInUserId,
+					isAMentor
+				)
+				if (!isMenteeAccessible) {
+					return responses.failureResponse({
+						message: 'USER_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 			// Check if mentor is available for this session's time slot
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
 
