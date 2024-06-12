@@ -791,13 +791,23 @@ module.exports = class MentorsHelper {
 
 			let searchFilter
 			if (!hasValidEmails) {
-				const { whereClause, positionQuery, sortQuery } = await buildSearchFilter({
+				searchFilter = await buildSearchFilter({
 					searchOn: searchOn ? searchOn.split(',') : false,
 					searchConfig: searchConfig.search.mentor,
 					search: searchText,
 					modelName: mentorExtensionsModelName,
 				})
-				searchFilter = { whereClause, positionQuery, sortQuery }
+
+				if (!searchFilter) {
+					return responses.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'MENTOR_LIST',
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
 			}
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
