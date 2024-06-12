@@ -43,6 +43,7 @@ const { Queue } = require('bullmq')
 const fs = require('fs')
 const csv = require('csvtojson')
 const axios = require('axios')
+const messages = require('../locales/en.json')
 
 module.exports = class SessionsHelper {
 	/**
@@ -131,7 +132,7 @@ module.exports = class SessionsHelper {
 			// Based on session duration check recommended conditions
 			if (elapsedMinutes < 30) {
 				return responses.failureResponse({
-					message: 'SESSION__MINIMUM_DURATION_TIME',
+					message: 'BELOW_MINIMUM_SESSION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -417,8 +418,12 @@ module.exports = class SessionsHelper {
 			}
 
 			if (method != common.DELETE_METHOD) {
-				//	const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
-				const timeSlot = true
+				const timeSlot = await this.isTimeSlotAvailable(
+					userId,
+					bodyData.start_date,
+					bodyData.end_date,
+					sessionId
+				)
 				if (timeSlot.isTimeSlotAvailable === false) {
 					return responses.failureResponse({
 						message: {
@@ -457,7 +462,6 @@ module.exports = class SessionsHelper {
 				}
 				const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 				let res = utils.validateInput(bodyData, validationData, sessionModelName)
-
 				if (!res.success) {
 					return responses.failureResponse({
 						message: 'SESSION_CREATION_FAILED',
@@ -479,7 +483,7 @@ module.exports = class SessionsHelper {
 				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return responses.failureResponse({
-						message: 'SESSION__MINIMUM_DURATION_TIME',
+						message: 'BELOW_MINIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -547,7 +551,6 @@ module.exports = class SessionsHelper {
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
@@ -2441,15 +2444,21 @@ module.exports = class SessionsHelper {
 			const { id, organization_id } = tokenInformation
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
+			const getLocalizedMessage = (key) => {
+				return messages[key] || key
+			}
 
 			if (csvData.length === 0 || csvData.length > process.env.CSV_MAX_ROW) {
-				const messages = csvData.length === 0 ? 'EMPTY_CSV' : 'CSV_ROW_LIMIT_EXCEEDED' + process.env.CSV_MAX_ROW
+				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
+				const message =
+					csvData.length === 0 ? getLocalizedMessage('EMPTY_CSV') : `${baseMessage}${process.env.CSV_MAX_ROW}`
 				return responses.failureResponse({
-					message: messages,
+					message: message,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const creationData = {
 				name: utils.extractFilename(filePath),
 				input_path: filePath,
