@@ -223,9 +223,19 @@ module.exports = class MenteeExtensionQueries {
 		filter,
 		saasFilter = '',
 		additionalProjectionclause = '',
-		returnOnlyUserId
+		returnOnlyUserId,
+		searchText = ''
 	) {
 		try {
+			let additionalFilter = ''
+
+			if (searchText) {
+				additionalFilter = `AND name ILIKE :search`
+			}
+			if (Array.isArray(searchText)) {
+				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
+
 			const filterConditions = []
 
 			if (filter && typeof filter === 'object') {
@@ -267,10 +277,12 @@ module.exports = class MenteeExtensionQueries {
 					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
+					${additionalFilter}
 			`
 
 			const replacements = {
 				...filter, // Add filter parameters to replacements
+				search: `%${searchText}%`,
 			}
 
 			if (page !== null && limit !== null) {
@@ -297,7 +309,9 @@ module.exports = class MenteeExtensionQueries {
 			WHERE
 				${userFilterClause}
 				${filterClause}
-				${saasFilterClause};
+				${saasFilterClause}
+				${additionalFilter}
+;
 		`
 			const count = await Sequelize.query(countQuery, {
 				type: QueryTypes.SELECT,
@@ -309,7 +323,7 @@ module.exports = class MenteeExtensionQueries {
 				count: Number(count[0].count),
 			}
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 }

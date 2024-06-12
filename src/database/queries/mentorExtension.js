@@ -162,12 +162,14 @@ module.exports = class MentorExtensionQueries {
 			const excludeUserIds = ids.length === 0
 			let userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
 			let additionalFilter = ''
-			if (searchFilter.whereClause && searchFilter.whereClause != '') {
-				additionalFilter = `${searchFilter.whereClause}`
+			if (searchText) {
+				additionalFilter = `AND name ILIKE :search`
 			}
-
 			if (Array.isArray(searchText)) {
 				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
+			if (searchFilter.whereClause && searchFilter.whereClause != '') {
+				additionalFilter = `${searchFilter.whereClause}`
 			}
 
 			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''

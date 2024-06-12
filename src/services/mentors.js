@@ -736,7 +736,7 @@ module.exports = class MentorsHelper {
 			let additionalProjectionString = ''
 			let userServiceQueries = {}
 
-			// check for fields query (Addes to the projection)
+			// check for fields query (Adds to the projection)
 			if (queryParams.fields && queryParams.fields !== '') {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields

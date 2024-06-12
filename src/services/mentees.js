@@ -1115,22 +1115,14 @@ module.exports = class MenteesHelper {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields
 			}
-			let userServiceQueries = {}
 			let organization_ids = []
-			let designation = []
-			let searchQuery = ''
 
 			const [sortBy, order] = ['name'].includes(queryParams.sort_by)
 				? [queryParams.sort_by, queryParams.order || 'ASC']
 				: [false, 'ASC']
 
-			for (let key in queryParams) {
-				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
-					searchQuery = queryParams[key]
-				}
-				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
-					organization_ids = queryParams[key].split(',')
-				}
+			if (queryParams.hasOwnProperty('organization_ids')) {
+				organization_ids = queryParams['organization_ids'].split(',')
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
@@ -1148,27 +1140,38 @@ module.exports = class MenteesHelper {
 				userExtensionModelName
 			)
 
-			const userType = [common.MENTEE_ROLE, common.MENTOR_ROLE]
+			const emailIds = []
+			const searchTextArray = searchText ? searchText.split(',') : []
+
+			searchTextArray.forEach((element) => {
+				if (utils.isValidEmail(element)) {
+					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
+				}
+			})
+			const hasValidEmails = emailIds.length > 0
 
 			const saasFilter = await this.filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids)
 			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
 				[],
-				null,
-				null,
+				pageNo,
+				pageSize,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
-				true
+				false,
+				hasValidEmails ? emailIds : searchText
 			)
 
 			let mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
-				null,
-				null,
+				pageNo,
+				pageSize,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
-				true
+				false,
+				'',
+				hasValidEmails ? emailIds : searchText
 			)
 
 			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
@@ -1186,45 +1189,7 @@ module.exports = class MenteesHelper {
 			}
 
 			const menteeIds = extensionDetails.data.map((item) => item.user_id)
-			if (menteeIds) {
-				userServiceQueries['user_ids'] = menteeIds
-			}
-
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
-			if (userDetails.data.result.count == 0) {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'MENTEE_LIST',
-					result: {
-						data: [],
-						count: 0,
-					},
-				})
-			}
-
-			const userIds = userDetails.data.result.data.map((item) => item.id)
-			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
-				userIds,
-				null,
-				null,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false
-			)
-
-			mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				userIds,
-				null,
-				null,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false
-			)
-
-			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
-			extensionDetails.count += mentorExtensionDetails.count
+			const userDetails = await userRequests.getListOfUserDetails(menteeIds, true)
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
@@ -1236,7 +1201,7 @@ module.exports = class MenteesHelper {
 				)
 			}
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
-			userDetails.data.result.data = userDetails.data.result.data
+			userDetails.result = userDetails.result
 				.map((value) => {
 					// Map over each value in the values array of the current group
 					const user_id = value.id
@@ -1259,7 +1224,7 @@ module.exports = class MenteesHelper {
 			if (queryParams.session_id) {
 				const enrolledMentees = await getEnrolledMentees(queryParams.session_id, '', userId)
 
-				userDetails.data.result.data.forEach((user) => {
+				userDetails.result.forEach((user) => {
 					user.is_enrolled = false
 					const enrolledUser = _.find(enrolledMentees, { id: user.id })
 					if (enrolledUser) {
@@ -1271,7 +1236,7 @@ module.exports = class MenteesHelper {
 
 			// Check if sortBy have values before applying sorting
 			if (sortBy) {
-				userDetails.data.result.data = userDetails.data.result.data.sort((a, b) => {
+				userDetails.result = userDetails.result.sort((a, b) => {
 					// Determine the sorting order based on the 'order' value
 					const sortOrder = order.toLowerCase() === 'asc' ? 1 : order.toLowerCase() === 'desc' ? -1 : 1
 
@@ -1282,8 +1247,11 @@ module.exports = class MenteesHelper {
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: userDetails.data.message,
-				result: userDetails.data.result,
+				message: userDetails.message,
+				result: {
+					data: userDetails.result,
+					count: extensionDetails.count,
+				},
 			})
 		} catch (error) {
 			throw error
