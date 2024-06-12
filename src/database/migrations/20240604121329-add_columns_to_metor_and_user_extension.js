@@ -1,5 +1,6 @@
 'use strict'
 require('module-alias/register')
+require('dotenv').config({ path: '../../.env' })
 const userRequests = require('@requests/user')
 const emailEncryption = require('../../utils/emailEncryption')
 
