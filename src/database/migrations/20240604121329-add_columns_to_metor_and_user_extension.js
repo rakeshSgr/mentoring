@@ -18,10 +18,10 @@ module.exports = {
 			//Update existing users name and email
 			const [[mentorCountResult], [menteeCountResult]] = await Promise.all([
 				queryInterface.sequelize.query(
-					'SELECT count(*) AS "count" FROM mentor_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NOT NULL;'
+					'SELECT count(*) AS "count" FROM mentor_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NULL;'
 				),
 				queryInterface.sequelize.query(
-					'SELECT count(*) AS "count" FROM user_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NOT NULL;'
+					'SELECT count(*) AS "count" FROM user_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NULL;'
 				),
 			])
 
@@ -69,7 +69,7 @@ module.exports = {
 
 			if (mentorCount > 0) {
 				const [mentors] = await queryInterface.sequelize.query(
-					'SELECT user_id FROM mentor_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NOT NULL;'
+					'SELECT user_id FROM mentor_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NULL;'
 				)
 				const mentorIds = mentors.map((item) => item.user_id)
 				await updateUsers('mentor_extensions', mentorIds)
@@ -77,7 +77,7 @@ module.exports = {
 
 			if (menteeCount > 0) {
 				const [mentees] = await queryInterface.sequelize.query(
-					'SELECT user_id FROM user_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NOT NULL;'
+					'SELECT user_id FROM user_extensions WHERE (name IS NULL OR email IS NULL) AND deleted_at IS NULL;'
 				)
 				const menteeIds = mentees.map((item) => item.user_id)
 				await updateUsers('user_extensions', menteeIds)
