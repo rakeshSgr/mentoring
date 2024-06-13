@@ -420,7 +420,7 @@ module.exports = class UserInviteHelper {
 					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Duration')
 				}
 
-				if (session.time_zone != common.TIMEZONE || session.time_zone != common.TIMEZONE_UTC) {
+				if (session.time_zone != common.TIMEZONE && session.time_zone != common.TIMEZONE_UTC) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid TimeZone')
 				}
