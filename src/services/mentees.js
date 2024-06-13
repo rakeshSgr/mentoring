@@ -357,8 +357,8 @@ module.exports = class MenteesHelper {
 			search,
 			modelName: sessionModelName,
 		})
-		// return false repose when buildSearchFilter() returns nagative response
-		// buildSearchFilter() false when search on only contains entity type and no maches were made.
+		// return false response when buildSearchFilter() returns negative response
+		// buildSearchFilter() false when search on only contains entity type and no valid matches.
 		if (!searchFilter) {
 			return {
 				rows: [],

@@ -822,13 +822,13 @@ module.exports = class MentorsHelper {
 				hasValidEmails ? emailIds : searchText //array for email search
 			)
 
-			if (extensionDetails.count == 0) {
+			if (extensionDetails.count == 0 || extensionDetails.data.length == 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTOR_LIST',
 					result: {
 						data: [],
-						count: 0,
+						count: extensionDetails.count,
 					},
 				})
 			}
