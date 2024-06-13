@@ -298,28 +298,4 @@ module.exports = class MenteeExtensionQueries {
 			return error
 		}
 	}
-
-	static async getMenteesExtensions(userIds, attributes = []) {
-		try {
-			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
-			if (attributes.length > 0) {
-				queryOptions.attributes = attributes
-			}
-			const mentees = await MenteeExtension.findAll(queryOptions)
-			const menteeMap = new Map(mentees.map((mentee) => [mentee.user_id, mentee]))
-			const validMentees = []
-			const invalidMentees = []
-			userIds.forEach((userId) => {
-				const mentee = menteeMap.get(userId)
-				if (mentee) {
-					validMentees.push(mentee)
-				} else {
-					invalidMentees.push(userId)
-				}
-			})
-			return { validMentees, invalidMentees }
-		} catch (error) {
-			throw error
-		}
-	}
 }

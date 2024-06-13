@@ -4,7 +4,8 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-
+const MentorExtension = require('@database/models/index').MentorExtension
+const MenteeExtension = require('@database/models/index').UserExtension
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -42,6 +43,7 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const { Queue } = require('bullmq')
 const fs = require('fs')
 const csv = require('csvtojson')
+const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
 
@@ -119,10 +121,10 @@ module.exports = class SessionsHelper {
 
 			const validMenteeIds = menteeIdsToEnroll.filter((id) => typeof id === 'number')
 			if (menteeIdsToEnroll.length != 0 && validMenteeIds.length != 0) {
-				const menteesDetailsInMentor = await mentorExtensionQueries.getMentorsExtensions(menteeIdsToEnroll)
+				const menteesDetailsInMentor = await this.getMentorsExtensions(menteeIdsToEnroll)
 				const invalidMentorId =
 					menteesDetailsInMentor.invalidMentors.length === 0 ? [] : menteesDetailsInMentor.invalidMentors
-				const menteesDetailsInMentee = await menteeExtensionQueries.getMenteesExtensions(invalidMentorId)
+				const menteesDetailsInMentee = await this.getMenteesExtensions(invalidMentorId)
 				if (
 					(menteesDetailsInMentor.validMentors.length === 0) &
 					(menteesDetailsInMentee.validMentees.length === 0)
@@ -2484,6 +2486,60 @@ module.exports = class SessionsHelper {
 			const { id, organization_id } = tokenInformation
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
+
+			const expectedHeadings = [
+				'Action',
+				'id',
+				'title',
+				'description',
+				'type',
+				'Mentor(Email/Mobile Num)',
+				'Mentees(Email/Mobile Num)',
+				'Date(DD-MM-YYYY)',
+				'Time Zone(IST/UTC)',
+				'Time (24 hrs)',
+				'Duration(Min)',
+				'recommended_for',
+				'categories',
+				'medium',
+				'Meeting Platform',
+				'Meeting Link or Meeting ID',
+				'Meeting Passcode (if needed)',
+			]
+
+			const validateCsvHeadings = async (filePath, expectedHeadings) => {
+				const csvStream = fs.createReadStream(filePath)
+				return new Promise((resolve, reject) => {
+					csv()
+						.fromStream(csvStream)
+						.preFileLine((line, index) => {
+							if (index === 0) {
+								const headers = line.split(',')
+								resolve(headers)
+							}
+							return line
+						})
+						.on('error', (error) => {
+							reject(error)
+						})
+				})
+			}
+
+			const headings = await validateCsvHeadings(downloadCsv.result.downloadPath, expectedHeadings)
+
+			// Compare the fetched headings with the expected ones
+			const areHeadingsValid =
+				expectedHeadings.every((heading) => headings.includes(heading)) &&
+				headings.every((heading) => expectedHeadings.includes(heading))
+
+			if (!areHeadingsValid) {
+				return responses.failureResponse({
+					message: `Invalid CSV Headings.`,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const getLocalizedMessage = (key) => {
 				return messages[key] || key
 			}
@@ -2498,6 +2554,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			console.log('csvData', csvData)
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -2616,6 +2674,54 @@ module.exports = class SessionsHelper {
 				success: false,
 				message: error.message,
 			}
+		}
+	}
+
+	static async getMentorsExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentors = await MentorExtension.findAll(queryOptions)
+			const mentorMap = new Map(mentors.map((mentor) => [mentor.user_id, mentor]))
+			const validMentors = []
+			const invalidMentors = []
+			userIds.forEach((userId) => {
+				const mentor = mentorMap.get(userId)
+				if (mentor) {
+					validMentors.push(mentor)
+				} else {
+					invalidMentors.push(userId)
+				}
+			})
+			return { validMentors, invalidMentors }
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async getMenteesExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentees = await MenteeExtension.findAll(queryOptions)
+			const menteeMap = new Map(mentees.map((mentee) => [mentee.user_id, mentee]))
+			const validMentees = []
+			const invalidMentees = []
+			userIds.forEach((userId) => {
+				const mentee = menteeMap.get(userId)
+				if (mentee) {
+					validMentees.push(mentee)
+				} else {
+					invalidMentees.push(userId)
+				}
+			})
+			return { validMentees, invalidMentees }
+		} catch (error) {
+			throw error
 		}
 	}
 }

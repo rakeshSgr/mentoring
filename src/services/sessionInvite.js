@@ -400,6 +400,20 @@ module.exports = class UserInviteHelper {
 					validRowsCount++
 					session.status = 'Valid'
 				}
+				const validateField = (field, fieldName) => {
+					if (!common.STRING_NUMERIC_REGEX.test(field)) {
+						session.status = 'Invalid'
+						session.statusMessage = this.appendWithComma(
+							session.statusMessage,
+							`${fieldName} can only contain alphanumeric characters`
+						)
+					}
+				}
+
+				validateField(session.title, 'title')
+				validateField(session.description, 'description')
+				// await validateField(session.title, 'title',session.status, session.statusMessage)
+				// await validateField(session.description, 'description',session.status, session.statusMessage)
 				const { date, time_zone, time24hrs } = session
 				const time = time24hrs.replace(' Hrs', '')
 				const dateTimeString = date + ' ' + time
@@ -437,10 +451,16 @@ module.exports = class UserInviteHelper {
 				const containsUserId = session.mentees.includes(userId)
 				if (!containsUserId && session.mentees.length >= 5) {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Only 5 mentees are allowed')
+					session.statusMessage = this.appendWithComma(
+						session.statusMessage,
+						` Only ${process.env.SESSION_MENTEE_LIMIT} mentees are allowed`
+					)
 				} else if (containsUserId && session.mentees.length > 6) {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Only 6 mentees are allowed')
+					session.statusMessage = this.appendWithComma(
+						session.statusMessage,
+						`Only ${process.env.SEESION_MANAGER_AND_MENTEE_LIMIT} mentees are allowed`
+					)
 				}
 				const emailArray = session.mentor_id.split(',')
 				if (session.mentor_id && emailArray.length === 1) {
@@ -787,7 +807,7 @@ module.exports = class UserInviteHelper {
 		const output = []
 		for (const data of SessionsArray) {
 			if (data.status != 'Invalid') {
-				if (data.action.toLowerCase() == common.ACTIONS.CREATE) {
+				if (data.action.replace(/\s+/g, '').toLowerCase() === common.ACTIONS.CREATE) {
 					data.status = common.PUBLISHED_STATUS
 					data.time_zone =
 						data.time_zone == common.TIMEZONE
@@ -822,8 +842,8 @@ module.exports = class UserInviteHelper {
 						output.push(data)
 					}
 				} else if (
-					data.action.toLowerCase() == common.ACTIONS.EDIT ||
-					data.action.toLowerCase() == common.ACTIONS.DELETE
+					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.EDIT ||
+					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.DELETE
 				) {
 					data.time_zone =
 						data.time_zone == common.TIMEZONE

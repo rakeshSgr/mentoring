@@ -1345,10 +1345,11 @@ module.exports = class MenteesHelper {
 	 * @method
 	 * @name checkIfMenteeIsAccessible
 	 * @param {Number} userId 					- User id.
-	 * @param {Array}							- Session data
+	 * @param {Array} userData					- User data
 	 * @param {Boolean} isAMentor 				- user mentor or not.
-	 * @returns {JSON} 							- List of filtered sessions
+	 * @returns {Boolean} 						- user Accessible
 	 */
+
 	static async checkIfMenteeIsAccessible(userData, userId, isAMentor) {
 		try {
 			// user can be mentor or mentee, based on isAMentor key get policy details
