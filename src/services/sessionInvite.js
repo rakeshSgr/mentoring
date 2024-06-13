@@ -415,6 +415,11 @@ module.exports = class UserInviteHelper {
 				validateField(session.categories, 'categories')
 				validateField(session.medium, 'medium')
 
+				if (!common.NUMERIC_REGEX.test(session.duration)) {
+					session.status = 'Invalid'
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Duration')
+				}
+
 				if (time_zone != common.TIMEZONE || time_zone != common.TIMEZONE_UTC) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid TimeZone')

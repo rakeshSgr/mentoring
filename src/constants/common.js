@@ -155,6 +155,7 @@ module.exports = {
 	EMAIL_REGEX:
 		/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
 	STRING_NUMERIC_REGEX: /^[a-zA-Z0-9\-.,\s]+$/,
+	NUMERIC_REGEX: /^\d+$/,
 	ACTIONS: { CREATE: 'create', EDIT: 'edit', DELETE: 'delete' },
 	CSV_DATE_FORMAT: 'DD-MM-YYYY HH:mm',
 	SESSION_TYPE: {
