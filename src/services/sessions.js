@@ -4,7 +4,6 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -42,6 +41,7 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const { Queue } = require('bullmq')
 const fs = require('fs')
 const csv = require('csvtojson')
+const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
 
@@ -85,6 +85,14 @@ module.exports = class SessionsHelper {
 			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
 			const isSessionCreatedByManager = !!bodyData.mentor_id
 
+			if (bodyData.type == common.SESSION_TYPE.PRIVATE && menteeIdsToEnroll.length === 0) {
+				return responses.failureResponse({
+					message: 'MENTEES_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return responses.failureResponse({
@@ -109,6 +117,38 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			const validMenteeIds = menteeIdsToEnroll.filter((id) => typeof id === 'number')
+			if (menteeIdsToEnroll.length != 0 && validMenteeIds.length != 0) {
+				const menteesDetailsInMentor = await this.validateMentorExtensions(menteeIdsToEnroll)
+				const invalidMentorId =
+					menteesDetailsInMentor.invalidMentors.length === 0 ? [] : menteesDetailsInMentor.invalidMentors
+				const menteesDetailsInMentee = await this.validateMenteeExtensions(invalidMentorId)
+				if (
+					(menteesDetailsInMentor.validMentors.length === 0) &
+					(menteesDetailsInMentee.validMentees.length === 0)
+				) {
+					return responses.failureResponse({
+						message: 'MENTEES_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				const allValidMenteesDetails = menteesDetailsInMentor.validMentors.concat(
+					menteesDetailsInMentee.validMentees
+				)
+				const isMenteeAccessible = await menteeService.checkIfMenteeIsAccessible(
+					allValidMenteesDetails,
+					loggedInUserId,
+					isAMentor
+				)
+				if (!isMenteeAccessible) {
+					return responses.failureResponse({
+						message: 'USER_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 			// Check if mentor is available for this session's time slot
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
 
@@ -2444,6 +2484,60 @@ module.exports = class SessionsHelper {
 			const { id, organization_id } = tokenInformation
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
+
+			const expectedHeadings = [
+				'Action',
+				'id',
+				'title',
+				'description',
+				'type',
+				'Mentor(Email/Mobile Num)',
+				'Mentees(Email/Mobile Num)',
+				'Date(DD-MM-YYYY)',
+				'Time Zone(IST/UTC)',
+				'Time (24 hrs)',
+				'Duration(Min)',
+				'recommended_for',
+				'categories',
+				'medium',
+				'Meeting Platform',
+				'Meeting Link or Meeting ID',
+				'Meeting Passcode (if needed)',
+			]
+
+			const validateCsvHeadings = async (filePath, expectedHeadings) => {
+				const csvStream = fs.createReadStream(filePath)
+				return new Promise((resolve, reject) => {
+					csv()
+						.fromStream(csvStream)
+						.preFileLine((line, index) => {
+							if (index === 0) {
+								const headers = line.split(',')
+								resolve(headers)
+							}
+							return line
+						})
+						.on('error', (error) => {
+							reject(error)
+						})
+				})
+			}
+
+			const headings = await validateCsvHeadings(downloadCsv.result.downloadPath, expectedHeadings)
+
+			// Compare the fetched headings with the expected ones
+			const areHeadingsValid =
+				expectedHeadings.every((heading) => headings.includes(heading)) &&
+				headings.every((heading) => expectedHeadings.includes(heading))
+
+			if (!areHeadingsValid) {
+				return responses.failureResponse({
+					message: `Invalid CSV Headings.`,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const getLocalizedMessage = (key) => {
 				return messages[key] || key
 			}
@@ -2576,6 +2670,48 @@ module.exports = class SessionsHelper {
 				success: false,
 				message: error.message,
 			}
+		}
+	}
+
+	static async validateMentorExtensions(userIds) {
+		try {
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentors = await mentorExtensionQueries.getMentorExtensions(filteredUserIds)
+			const mentorMap = new Map(mentors.map((mentor) => [mentor.user_id, mentor]))
+			const validMentors = []
+			const invalidMentors = []
+			userIds.forEach((userId) => {
+				const mentor = mentorMap.get(userId)
+				if (mentor) {
+					validMentors.push(mentor)
+				} else {
+					invalidMentors.push(userId)
+				}
+			})
+			return { validMentors, invalidMentors }
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async validateMenteeExtensions(userIds) {
+		try {
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentees = await menteeExtensionQueries.getMenteeExtensions(filteredUserIds)
+			const menteeMap = new Map(mentees.map((mentee) => [mentee.user_id, mentee]))
+			const validMentees = []
+			const invalidMentees = []
+			userIds.forEach((userId) => {
+				const mentee = menteeMap.get(userId)
+				if (mentee) {
+					validMentees.push(mentee)
+				} else {
+					invalidMentees.push(userId)
+				}
+			})
+			return { validMentees, invalidMentees }
+		} catch (error) {
+			throw error
 		}
 	}
 }

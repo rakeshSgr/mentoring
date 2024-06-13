@@ -209,7 +209,7 @@ module.exports = class UserInviteHelper {
 					value: '',
 					link: meetingLinkOrId || '',
 					meta: {
-						passcode: meetingPasscode || '',
+						password: meetingPasscode || '',
 					},
 				}
 
@@ -400,6 +400,30 @@ module.exports = class UserInviteHelper {
 					validRowsCount++
 					session.status = 'Valid'
 				}
+				const validateField = (field, fieldName) => {
+					if (!common.STRING_NUMERIC_REGEX.test(field)) {
+						session.status = 'Invalid'
+						session.statusMessage = this.appendWithComma(
+							session.statusMessage,
+							`${fieldName} can only contain alphanumeric characters`
+						)
+					}
+				}
+				validateField(session.title, 'title')
+				validateField(session.description, 'description')
+				validateField(session.recommended_for, 'recommended_for')
+				validateField(session.categories, 'categories')
+				validateField(session.medium, 'medium')
+
+				if (!common.NUMERIC_REGEX.test(session.duration)) {
+					session.status = 'Invalid'
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Duration')
+				}
+
+				if (time_zone != common.TIMEZONE || time_zone != common.TIMEZONE_UTC) {
+					session.status = 'Invalid'
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid TimeZone')
+				}
 				const { date, time_zone, time24hrs } = session
 				const time = time24hrs.replace(' Hrs', '')
 				const dateTimeString = date + ' ' + time
@@ -423,10 +447,11 @@ module.exports = class UserInviteHelper {
 				}
 
 				if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
-					const menteeEmails = session.mentees.map((mentee) => mentee.toLowerCase())
-					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(menteeEmails)
-					session.mentees = menteeDetails.result
-					if (menteeDetails.result.some((item) => typeof item === 'string')) {
+					const validEmails = await this.validateAndCategorizeEmails(session)
+					if (validEmails.length != 0) {
+						const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails)
+						session.mentees = menteeDetails.result
+					} else if (session.mentees.some((item) => typeof item === 'string')) {
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
 							' Mentee Details are incorrect'
@@ -436,27 +461,39 @@ module.exports = class UserInviteHelper {
 				const containsUserId = session.mentees.includes(userId)
 				if (!containsUserId && session.mentees.length >= 5) {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Only 5 mentees are allowed')
+					session.statusMessage = this.appendWithComma(
+						session.statusMessage,
+						` Only ${process.env.SESSION_MENTEE_LIMIT} mentees are allowed`
+					)
 				} else if (containsUserId && session.mentees.length > 6) {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Only 6 mentees are allowed')
+					session.statusMessage = this.appendWithComma(
+						session.statusMessage,
+						`Only ${process.env.SEESION_MANAGER_AND_MENTEE_LIMIT} mentees are allowed`
+					)
 				}
-				if (session.mentor_id.length != 0) {
-					const mentorEmail = [session.mentor_id.toLowerCase()]
-					const mentorId = await userRequests.getListOfUserDetailsByEmail(mentorEmail)
-
-					const mentor_Id = mentorId.result[0]
-					if (typeof mentor_Id != 'number') {
+				const emailArray = session.mentor_id.split(',')
+				if (session.mentor_id && emailArray.length === 1) {
+					const mentorEmail = session.mentor_id.toLowerCase()
+					if (!common.EMAIL_REGEX.test(mentorEmail)) {
 						session.status = 'Invalid'
-						session.statusMessage = this.appendWithComma(session.statusMessage, ' Invalid Mentor Email')
-						invalidRowsCount++
-						session.mentor_id = mentor_Id
+						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
 					} else {
-						session.mentor_id = mentor_Id
+						const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail])
+						const mentor_Id = mentorId.result[0]
+
+						if (typeof mentor_Id !== 'number') {
+							session.status = 'Invalid'
+							session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
+							session.mentor_id = mentor_Id
+						} else {
+							session.mentor_id = mentor_Id
+						}
 					}
 				} else {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, 'Empty Mentor Email')
+					const message = emailArray.length != 1 ? 'Multiple Mentor Emails Not Allowed' : 'Empty Mentor Email'
+					session.statusMessage = this.appendWithComma(session.statusMessage, message)
 				}
 
 				if (
@@ -514,6 +551,22 @@ module.exports = class UserInviteHelper {
 		return session
 	}
 
+	static async validateAndCategorizeEmails(session) {
+		const validEmails = []
+		const invalidEmails = []
+
+		for (const mentee of session.mentees) {
+			const lowerCaseEmail = mentee.toLowerCase()
+			if (common.EMAIL_REGEX.test(lowerCaseEmail)) {
+				validEmails.push(lowerCaseEmail)
+			} else {
+				invalidEmails.push(mentee)
+			}
+		}
+		session.mentees = invalidEmails
+		return validEmails.length === 0 ? [] : validEmails
+	}
+
 	static async revertEntityValuesToOriginal(mappedSession, entitiesList) {
 		entitiesList.forEach((entityType) => {
 			const sessionKey = entityType.value
@@ -560,7 +613,7 @@ module.exports = class UserInviteHelper {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(
 							session.statusMessage,
-							'MANDATORY_FIELDS_SESSION_ID_NOT_FILLED'
+							'Session ID should be empty'
 						)
 						rowsWithStatus.push(session)
 					}
@@ -711,8 +764,8 @@ module.exports = class UserInviteHelper {
 				const meetingPlatform = meeting_info.platform
 				const meetingLinkOrId = meeting_info.link
 				let meetingPasscode = ''
-				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL) {
-					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/)[0] : ''
+				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL && meetingLinkOrId) {
+					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/) : ''
 				}
 
 				const mappedRow = {
@@ -764,7 +817,7 @@ module.exports = class UserInviteHelper {
 		const output = []
 		for (const data of SessionsArray) {
 			if (data.status != 'Invalid') {
-				if (data.action.toLowerCase() == common.ACTIONS.CREATE) {
+				if (data.action.replace(/\s+/g, '').toLowerCase() === common.ACTIONS.CREATE) {
 					data.status = common.PUBLISHED_STATUS
 					data.time_zone =
 						data.time_zone == common.TIMEZONE
@@ -799,8 +852,8 @@ module.exports = class UserInviteHelper {
 						output.push(data)
 					}
 				} else if (
-					data.action.toLowerCase() == common.ACTIONS.EDIT ||
-					data.action.toLowerCase() == common.ACTIONS.DELETE
+					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.EDIT ||
+					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.DELETE
 				) {
 					data.time_zone =
 						data.time_zone == common.TIMEZONE
