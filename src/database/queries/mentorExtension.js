@@ -214,7 +214,7 @@ module.exports = class MentorExtensionQueries {
 			} else {
 				query += `
 				ORDER BY
-					name ASC`
+					LOWER(name) ASC`
 			}
 
 			if (page !== null && limit !== null) {
