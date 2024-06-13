@@ -409,11 +409,8 @@ module.exports = class UserInviteHelper {
 						)
 					}
 				}
-
 				validateField(session.title, 'title')
 				validateField(session.description, 'description')
-				// await validateField(session.title, 'title',session.status, session.statusMessage)
-				// await validateField(session.description, 'description',session.status, session.statusMessage)
 				const { date, time_zone, time24hrs } = session
 				const time = time24hrs.replace(' Hrs', '')
 				const dateTimeString = date + ' ' + time
