@@ -305,7 +305,7 @@ module.exports = class MenteeExtensionQueries {
 			if (attributes.length > 0) {
 				queryOptions.attributes = attributes
 			}
-			const mentee = await MenteeExtension.findOne(queryOptions)
+			const mentee = await MenteeExtension.findAll(queryOptions)
 			return mentee
 		} catch (error) {
 			throw error
