@@ -119,10 +119,10 @@ module.exports = class SessionsHelper {
 
 			const validMenteeIds = menteeIdsToEnroll.filter((id) => typeof id === 'number')
 			if (menteeIdsToEnroll.length != 0 && validMenteeIds.length != 0) {
-				const menteesDetailsInMentor = await this.getMentorsExtensions(menteeIdsToEnroll)
+				const menteesDetailsInMentor = await this.validateMentorExtensions(menteeIdsToEnroll)
 				const invalidMentorId =
 					menteesDetailsInMentor.invalidMentors.length === 0 ? [] : menteesDetailsInMentor.invalidMentors
-				const menteesDetailsInMentee = await this.getMenteesExtensions(invalidMentorId)
+				const menteesDetailsInMentee = await this.validateMenteeExtensions(invalidMentorId)
 				if (
 					(menteesDetailsInMentor.validMentors.length === 0) &
 					(menteesDetailsInMentee.validMentees.length === 0)
@@ -2673,7 +2673,7 @@ module.exports = class SessionsHelper {
 		}
 	}
 
-	static async getMentorsExtensions(userIds) {
+	static async validateMentorExtensions(userIds) {
 		try {
 			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
 			const mentors = await mentorExtensionQueries.getMentorExtensions(filteredUserIds)
@@ -2694,7 +2694,7 @@ module.exports = class SessionsHelper {
 		}
 	}
 
-	static async getMenteesExtensions(userIds) {
+	static async validateMenteeExtensions(userIds) {
 		try {
 			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
 			const mentees = await menteeExtensionQueries.getMenteeExtensions(filteredUserIds)
