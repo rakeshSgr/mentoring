@@ -1339,6 +1339,81 @@ module.exports = class MenteesHelper {
 			return err
 		}
 	}
+
+	/**
+	 * @description 							- check if mentee is accessible based on user's saas policy.
+	 * @method
+	 * @name checkIfMenteeIsAccessible
+	 * @param {Number} userId 					- User id.
+	 * @param {Array} userData					- User data
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {Boolean} 						- user Accessible
+	 */
+
+	static async checkIfMenteeIsAccessible(userData, userId, isAMentor) {
+		try {
+			// user can be mentor or mentee, based on isAMentor key get policy details
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, ['external_mentee_visibility', 'organization_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_mentee_visibility', 'organization_id'])
+
+			// Throw error if mentor/mentee extension not found
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// check the accessibility conditions
+			const accessibleUsers = userData.map((mentor) => {
+				let isAccessible = false
+
+				if (userPolicyDetails.external_mentee_visibility && userPolicyDetails.organization_id) {
+					const { external_mentee_visibility, organization_id } = userPolicyDetails
+
+					switch (external_mentee_visibility) {
+						/**
+						 * if user external_mentee_visibility is current. He can only see his/her organizations mentee
+						 * so we will check mentee's organization_id and user organization_id are matching
+						 */
+						case common.CURRENT:
+							isAccessible = mentor.organization_id === organization_id
+							break
+						/**
+						 * If user external_mentee_visibility is associated
+						 * <<point**>> first we need to check if mentee's visible_to_organizations contain the user organization_id and verify mentee's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+						 */
+						case common.ASSOCIATED:
+							isAccessible =
+								(mentor.visible_to_organizations.includes(organization_id) &&
+									mentor.mentor_visibility != common.CURRENT) ||
+								mentor.organization_id === organization_id
+							break
+						/**
+						 * We need to check if mentee's visible_to_organizations contain the user organization_id and verify mentee's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+						 * OR if mentee visibility is ALL that mentor is also accessible
+						 */
+						case common.ALL:
+							isAccessible =
+								(mentor.visible_to_organizations.includes(organization_id) &&
+									mentor.mentor_visibility != common.CURRENT) ||
+								mentor.mentor_visibility === common.ALL ||
+								mentor.organization_id === organization_id
+							break
+						default:
+							break
+					}
+				}
+				return { mentor, isAccessible }
+			})
+			const isAccessible = accessibleUsers.some((user) => user.isAccessible)
+			return isAccessible
+		} catch (error) {
+			return error
+		}
+	}
 }
 function convertEntitiesForFilter(entityTypes) {
 	const result = {}

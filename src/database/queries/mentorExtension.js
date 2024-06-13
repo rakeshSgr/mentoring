@@ -310,4 +310,16 @@ module.exports = class MentorExtensionQueries {
 			type: Sequelize.QueryTypes.UPDATE,
 		})
 	}
+	static async getMentorExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentors = await MentorExtension.findAll(queryOptions)
+			return mentors
+		} catch (error) {
+			throw error
+		}
+	}
 }
