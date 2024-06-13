@@ -141,7 +141,7 @@ module.exports = class SessionsHelper {
 					loggedInUserId,
 					isAMentor
 				)
-				if (!isMenteeAccessible) {
+				if (!isMenteeAccessible && bodyData.type === common.SESSION_TYPE.PRIVATE) {
 					return responses.failureResponse({
 						message: 'USER_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
@@ -180,7 +180,7 @@ module.exports = class SessionsHelper {
 
 			if (elapsedMinutes > 1440) {
 				return responses.failureResponse({
-					message: 'SESSION_DURATION_TIME',
+					message: 'EXCEEDED_MAXIMUM_SESSION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -531,7 +531,7 @@ module.exports = class SessionsHelper {
 
 				if (elapsedMinutes > 1440) {
 					return responses.failureResponse({
-						message: 'SESSION_DURATION_TIME',
+						message: 'EXCEEDED_MAXIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
