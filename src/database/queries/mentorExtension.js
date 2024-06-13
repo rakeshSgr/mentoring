@@ -194,7 +194,7 @@ module.exports = class MentorExtensionQueries {
 			let query = `
 				SELECT ${projectionClause}
 				FROM
-				${common.materializedViewsPrefix + MentorExtension.tableName}
+					${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
 					${userFilterClause}
 					${filterClause}
@@ -211,19 +211,23 @@ module.exports = class MentorExtensionQueries {
 				query += `
 				ORDER BY
 					${searchFilter.sortQuery}`
+			} else {
+				query += `
+				ORDER BY
+					name ASC`
 			}
 
 			if (page !== null && limit !== null) {
 				query += `
-					OFFSET
-						:offset
-					LIMIT
-						:limit;
+				OFFSET
+					:offset
+				LIMIT
+					:limit;
 				`
 				replacements.offset = limit * (page - 1)
 				replacements.limit = limit
 			}
-			console.log(query)
+
 			const mentors = await Sequelize.query(query, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
