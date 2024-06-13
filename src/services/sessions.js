@@ -4,8 +4,6 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-const MentorExtension = require('@database/models/index').MentorExtension
-const MenteeExtension = require('@database/models/index').UserExtension
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -130,7 +128,7 @@ module.exports = class SessionsHelper {
 					(menteesDetailsInMentee.validMentees.length === 0)
 				) {
 					return responses.failureResponse({
-						message: 'INVALID_PERMISSION',
+						message: 'MENTEES_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -2555,8 +2553,6 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			console.log('csvData', csvData)
-
 			const creationData = {
 				name: utils.extractFilename(filePath),
 				input_path: filePath,
@@ -2677,13 +2673,10 @@ module.exports = class SessionsHelper {
 		}
 	}
 
-	static async getMentorsExtensions(userIds, attributes = []) {
+	static async getMentorsExtensions(userIds) {
 		try {
-			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
-			if (attributes.length > 0) {
-				queryOptions.attributes = attributes
-			}
-			const mentors = await MentorExtension.findAll(queryOptions)
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentors = await mentorExtensionQueries.getMentorExtensions(filteredUserIds)
 			const mentorMap = new Map(mentors.map((mentor) => [mentor.user_id, mentor]))
 			const validMentors = []
 			const invalidMentors = []
@@ -2701,13 +2694,10 @@ module.exports = class SessionsHelper {
 		}
 	}
 
-	static async getMenteesExtensions(userIds, attributes = []) {
+	static async getMenteesExtensions(userIds) {
 		try {
-			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
-			if (attributes.length > 0) {
-				queryOptions.attributes = attributes
-			}
-			const mentees = await MenteeExtension.findAll(queryOptions)
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentees = await menteeExtensionQueries.getMenteeExtensions(filteredUserIds)
 			const menteeMap = new Map(mentees.map((mentee) => [mentee.user_id, mentee]))
 			const validMentees = []
 			const invalidMentees = []

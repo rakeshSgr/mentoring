@@ -411,6 +411,14 @@ module.exports = class UserInviteHelper {
 				}
 				validateField(session.title, 'title')
 				validateField(session.description, 'description')
+				validateField(session.recommended_for, 'recommended_for')
+				validateField(session.categories, 'categories')
+				validateField(session.medium, 'medium')
+
+				if (time_zone != common.TIMEZONE || time_zone != common.TIMEZONE_UTC) {
+					session.status = 'Invalid'
+					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid TimeZone')
+				}
 				const { date, time_zone, time24hrs } = session
 				const time = time24hrs.replace(' Hrs', '')
 				const dateTimeString = date + ' ' + time

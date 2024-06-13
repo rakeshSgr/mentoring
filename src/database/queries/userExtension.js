@@ -298,4 +298,17 @@ module.exports = class MenteeExtensionQueries {
 			return error
 		}
 	}
+	static async getMenteeExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			// If attributes are passed update query
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentee = await MenteeExtension.findOne(queryOptions)
+			return mentee
+		} catch (error) {
+			throw error
+		}
+	}
 }
