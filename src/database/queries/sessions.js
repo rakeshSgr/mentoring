@@ -628,11 +628,12 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 exports.getUpcomingSessionsFromView = async (
 	page,
 	limit,
-	search,
+	searchFilter,
 	userId,
 	filter,
 	saasFilter = '',
-	additionalProjectionclause = ''
+	additionalProjectionclause = '',
+	searchText
 ) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
@@ -652,26 +653,57 @@ exports.getUpcomingSessionsFromView = async (
 		let publicSessionFilter = " AND type = '" + common.SESSION_TYPE.PUBLIC + "'"
 
 		// Create selection clause
-		let projectionClause = `
-			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
-			(meeting_info - 'link' ) AS meeting_info
-		`
+		let projectionClause = [
+			'id',
+			'title',
+			'description',
+			'start_date',
+			'end_date',
+			'meta',
+			'recommended_for',
+			'medium',
+			'categories',
+			'status',
+			'image',
+			'mentor_id',
+			'visibility',
+			'mentor_organization_id',
+			'created_at',
+			'mentor_name',
+			"(meeting_info - 'link') AS meeting_info",
+		]
+
 		if (additionalProjectionclause !== '') {
-			projectionClause += `,${additionalProjectionclause}`
+			projectionClause.push(additionalProjectionclause)
 		}
 
+		//if (searchFilter.positionQuery !== '') {
+		//projectionClause.push(searchFilter.positionQuery)
+		//}
+
+		projectionClause = projectionClause.join(',')
+
+		let orderClause = []
+		if (searchFilter.sortQuery !== '') {
+			orderClause.push(searchFilter.sortQuery)
+		}
+		orderClause.push('start_date ASC')
+		orderClause = orderClause.join(',')
+
 		const query = `
-		SELECT ${projectionClause}
+		SELECT 
+			${projectionClause}
 		FROM
-				m_${Session.tableName}
+			m_${Session.tableName}
 		WHERE
-			title ILIKE :search
-			AND mentor_id != :userId
-			AND end_date > :currentEpochTime
-			AND status IN ('PUBLISHED', 'LIVE')
-			${filterClause}
+			mentor_id != :userId
 			${saasFilterClause}
+			${filterClause}
+			AND status IN ('PUBLISHED', 'LIVE')
 			${publicSessionFilter}
+			${searchFilter.whereClause}
+		ORDER BY
+			${orderClause}
 		OFFSET
 			:offset
 		LIMIT
@@ -679,7 +711,7 @@ exports.getUpcomingSessionsFromView = async (
 	`
 
 		const replacements = {
-			search: `%${search}%`,
+			search: `%${searchText}%`,
 			userId: userId,
 			currentEpochTime: currentEpochTime,
 			offset: limit * (page - 1),
@@ -698,10 +730,27 @@ exports.getUpcomingSessionsFromView = async (
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
+		const countQuery = `
+		SELECT count(*) AS "count"
+		FROM
+			m_${Session.tableName}
+		WHERE
+			mentor_id != :userId
+			${saasFilterClause}
+			${filterClause}
+			AND status IN ('PUBLISHED', 'LIVE')
+			${publicSessionFilter}
+			${searchFilter.whereClause}
+		;
+	`
+		const count = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 
 		return {
 			rows: sessionIds,
-			count: sessionIds.length,
+			count: Number(count[0].count),
 		}
 	} catch (error) {
 		console.error(error)
@@ -786,10 +835,28 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
-
+		const countQuery = `
+		SELECT count(*) AS "count"
+		FROM
+			m_${Session.tableName}
+		WHERE
+			mentor_id = :mentorId
+			AND status = 'PUBLISHED'
+			AND start_date > :currentEpochTime
+			AND started_at IS NULL
+			AND (
+				LOWER(title) LIKE :search
+			)
+			${filterClause}
+			${saasFilterClause};
+	`
+		const count = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 		return {
 			data: sessionAttendeesData,
-			count: sessionAttendeesData.length,
+			count: Number(count[0].count),
 		}
 	} catch (error) {
 		return error

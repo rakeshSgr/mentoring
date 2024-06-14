@@ -116,6 +116,7 @@ module.exports = class Mentors {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
+				req.searchOn,
 				req.query,
 				req.decodedToken.id,
 				isAMentor(req.decodedToken.roles)

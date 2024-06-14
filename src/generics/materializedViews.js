@@ -4,6 +4,7 @@ const { sequelize } = require('@database/models/index')
 const utils = require('@generics/utils')
 const common = require('@constants/common')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const searchConfig = require('@configs/search.json')
 
 let refreshInterval
 const groupByModelNames = async (entityTypes) => {
@@ -160,19 +161,64 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 	}
 }
 
-const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes) => {
+const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fieldsWithDatatype) => {
 	try {
 		const uniqueEntityTypeValueList = [...new Set(modelEntityTypes.entityTypeValueList)]
 
 		await Promise.all(
 			uniqueEntityTypeValueList.map(async (attribute) => {
-				return await sequelize.query(
-					`CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} (${attribute});`
-				)
+				// Find the item with the specified key
+				const item = fieldsWithDatatype.find((element) => element.key === attribute)
+
+				// Retrieve the type
+				const type = item ? item.type : null
+
+				// Determine the query based on the type
+				let query
+				if (type === 'character varying') {
+					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute} gin_trgm_ops);`
+				} else {
+					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute});`
+				}
+
+				return await sequelize.query(query)
 			})
 		)
 	} catch (err) {
 		console.log(err)
+	}
+}
+const createViewGINIndexOnSearch = async (model, config, fields) => {
+	try {
+		const modelName = model.name
+		const searchType = modelName === 'Session' ? 'session' : modelName === 'mentorExtension' ? 'mentor' : null
+
+		if (!searchType) {
+			console.warn('Unknown model name')
+			return
+		}
+
+		const fieldsConfig = config.search[searchType].fields
+		const fieldsForIndex = fieldsConfig.filter((field) => !field.isAnEntityType).map((field) => field.name)
+
+		if (fieldsForIndex.length === 0) {
+			console.warn('No fields available for indexing')
+			return
+		}
+
+		for (const field of fieldsForIndex) {
+			try {
+				await sequelize.query(`
+                    CREATE INDEX ${common.materializedViewsPrefix}gin_index_${model.tableName}_${field}
+                    ON ${common.materializedViewsPrefix}${model.tableName}
+                    USING gin(${field} gin_trgm_ops);
+                `)
+			} catch (err) {
+				console.warn(`An error occurred while creating the index for field ${field}:`, err)
+			}
+		}
+	} catch (err) {
+		console.warn('An error occurred while creating the index:', err)
 	}
 }
 
@@ -248,11 +294,12 @@ const generateMaterializedView = async (modelEntityTypes) => {
 		)
 
 		await sequelize.query(materializedViewGenerationQuery)
-
+		const allFields = [...modifiedMetaFields, ...concreteFields]
 		const randomViewName = await renameMaterializedView(temporaryMaterializedViewName, model.tableName)
 		if (randomViewName) await deleteMaterializedView(randomViewName)
-		await createIndexesOnAllowFilteringFields(model, modelEntityTypes)
+		await createIndexesOnAllowFilteringFields(model, modelEntityTypes, allFields)
 		await createViewUniqueIndexOnPK(model)
+		await createViewGINIndexOnSearch(model, searchConfig, allFields)
 	} catch (err) {
 		console.log(err)
 	}
@@ -278,6 +325,10 @@ const triggerViewBuild = async () => {
 	try {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
+		// Check if pg_trgm extension is available
+		await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', {
+			type: sequelize.QueryTypes.SELECT,
+		})
 
 		await Promise.all(
 			entityTypesGroupedByModel.map(async (modelEntityTypes) => {
