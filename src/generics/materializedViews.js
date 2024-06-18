@@ -5,6 +5,7 @@ const utils = require('@generics/utils')
 const common = require('@constants/common')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const searchConfig = require('@configs/search.json')
+const indexQueries = require('@generics/mViewsIndexQueries')
 
 let refreshInterval
 const groupByModelNames = async (entityTypes) => {
@@ -191,7 +192,7 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fiel
 const createViewGINIndexOnSearch = async (model, config, fields) => {
 	try {
 		const modelName = model.name
-		const searchType = modelName === 'Session' ? 'session' : modelName === 'mentorExtension' ? 'mentor' : null
+		const searchType = modelName === 'Session' ? 'session' : modelName === 'MentorExtension' ? 'mentor' : null
 
 		if (!searchType) {
 			console.warn('Unknown model name')
@@ -221,7 +222,25 @@ const createViewGINIndexOnSearch = async (model, config, fields) => {
 		console.warn('An error occurred while creating the index:', err)
 	}
 }
+// Function to execute index queries for a specific model
+const executeIndexQueries = async (modelName) => {
+	// Find the index queries for the specified model
+	const modelQueries = indexQueries.find((item) => item.modelName === modelName)
 
+	if (modelQueries) {
+		console.log(`Executing index queries for ${modelName}`)
+		for (const query of modelQueries.queries) {
+			try {
+				await sequelize.query(query)
+				console.log(`Successfully executed query for ${modelName}: ${query}`)
+			} catch (error) {
+				console.error(`Error executing query for ${modelName}: ${query}`, error)
+			}
+		}
+	} else {
+		console.log(`No index queries found for model: ${modelName}`)
+	}
+}
 const deleteMaterializedView = async (viewName) => {
 	try {
 		await sequelize.query(`DROP MATERIALIZED VIEW ${viewName};`)
@@ -300,6 +319,7 @@ const generateMaterializedView = async (modelEntityTypes) => {
 		await createIndexesOnAllowFilteringFields(model, modelEntityTypes, allFields)
 		await createViewUniqueIndexOnPK(model)
 		await createViewGINIndexOnSearch(model, searchConfig, allFields)
+		await executeIndexQueries(model.name)
 	} catch (err) {
 		console.log(err)
 	}
