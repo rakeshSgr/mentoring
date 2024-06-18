@@ -145,7 +145,7 @@
 	"PRIVATE_TYPE_NOT_ALLOWED": "Sorry, the specified type is not accessible for this session. Please check the type permissions.",
 	"CANNOT_EDIT_DELETE_SESSION_CREATED_BY_MANAGER": "Sorry, you are not authorized to edit or delete sessions created by the session manager.",
 	"SESSION_LIST_FETCHED": "Session list fetched successfully",
-	"CANNOT_EDIT_DELETE_SESSION": "Sorry, you are not authorized to edit or delete this session.",
+	"CANNOT_EDIT_DELETE_LIVE_SESSION": "Sorry, you are not authorized to edit or delete this session.",
 	"ROLE_PERMISSION_CREATED_SUCCESSFULLY": "Permission added to the role",
 	"ROLE_PERMISSION_DELETED_SUCCESSFULLY": "Permission delete from the role",
 	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists",
@@ -173,5 +173,6 @@
 	"CSV_ROW_LIMIT_EXCEEDED": "The CSV file exceeds the maximum allowed rows of ",
 	"EMPTY_CSV": "No data found",
 	"SESSION_CREATION_LIMIT_EXCEDED_FOR_GIVEN_MENTOR": "The selected mentor has a session scheduled at the specified time.",
-	"MENTEES_NOT_FOUND": "Mentee not found."
+	"MENTEES_NOT_FOUND": "Mentee not found.",
+	"CANNOT_EDIT_MENTOR_AND_TYPE": "Session cannot edit mentor and type."
 }
