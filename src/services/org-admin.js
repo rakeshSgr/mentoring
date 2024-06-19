@@ -139,7 +139,7 @@ module.exports = class OrgAdminService {
 	static async changeRoleToMentor(bodyData) {
 		try {
 			// Get mentee_extension data
-			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
+			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id, '', true)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return responses.failureResponse({
