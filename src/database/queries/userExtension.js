@@ -139,7 +139,7 @@ module.exports = class MenteeExtensionQueries {
 			type: Sequelize.QueryTypes.UPDATE,
 		})
 	}
-	static async getMenteeExtension(userId, attributes = []) {
+	static async getMenteeExtension(userId, attributes = [], unScoped = false) {
 		try {
 			const queryOptions = {
 				where: { user_id: userId },
@@ -149,7 +149,12 @@ module.exports = class MenteeExtensionQueries {
 			if (attributes.length > 0) {
 				queryOptions.attributes = attributes
 			}
-			const mentee = await MenteeExtension.findOne(queryOptions)
+			let mentee
+			if (unScoped) {
+				mentee = await MenteeExtension.unscoped().findOne(queryOptions)
+			} else {
+				mentee = await MenteeExtension.findOne(queryOptions)
+			}
 			return mentee
 		} catch (error) {
 			throw error
