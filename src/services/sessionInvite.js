@@ -611,15 +611,15 @@ module.exports = class UserInviteHelper {
 						rowsWithStatus.push(session)
 					} else {
 						session.status = 'Invalid'
-						session.statusMessage = this.appendWithComma(
-							session.statusMessage,
-							'Session ID should be empty'
-						)
+						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Row Action')
 						rowsWithStatus.push(session)
 					}
 				} else if (session.action.replace(/\s+/g, '').toLowerCase() === common.ACTIONS.EDIT) {
 					if (!session.id) {
-						session.statusMessage = this.appendWithComma(session.statusMessage, ' Session ID not filled')
+						session.statusMessage = this.appendWithComma(
+							session.statusMessage,
+							' Mandatory fields Session ID not filled'
+						)
 						session.status = 'Invalid'
 						rowsWithStatus.push(session)
 					} else {
@@ -637,7 +637,10 @@ module.exports = class UserInviteHelper {
 					}
 				} else if (session.action.replace(/\s+/g, '').toLowerCase() === common.ACTIONS.DELETE) {
 					if (!session.id) {
-						session.statusMessage = this.appendWithComma(session.statusMessage, ' Session ID not filled')
+						session.statusMessage = this.appendWithComma(
+							session.statusMessage,
+							' Mandatory fields Session ID not filled'
+						)
 						session.status = 'Invalid'
 						rowsWithStatus.push(session)
 					} else {

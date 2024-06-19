@@ -392,7 +392,17 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			if (
+				sessionDetail.dataValues.mentor_id != bodyData.mentor_id[0] ||
+				sessionDetail.dataValues.type != bodyData.type
+			) {
+				return responses.failureResponse({
+					message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			//	if(sessionDetail)
 			// check if session mentor is added in the mentee list
 			if (bodyData?.mentees?.includes(bodyData?.mentor_id)) {
 				return responses.failureResponse({
@@ -404,7 +414,7 @@ module.exports = class SessionsHelper {
 			sessionDetail = sessionDetail.dataValues
 			if (sessionDetail.created_by !== userId) {
 				return responses.failureResponse({
-					message: 'CANNOT_EDIT_DELETE_SESSION',
+					message: 'CANNOT_EDIT_DELETE_LIVE_SESSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -1109,7 +1119,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, queryParams, isAMentor) {
+	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor) {
 		try {
 			let allSessions = await menteeService.getAllSessions(
 				page,
@@ -1117,7 +1127,8 @@ module.exports = class SessionsHelper {
 				search,
 				loggedInUserId,
 				queryParams,
-				isAMentor
+				isAMentor,
+				searchOn
 			)
 
 			// add index number to the response
@@ -1137,7 +1148,6 @@ module.exports = class SessionsHelper {
 				result,
 			})
 		} catch (error) {
-			console.log
 			throw error
 		}
 	}
@@ -1821,7 +1831,11 @@ module.exports = class SessionsHelper {
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
 			const sessions = await sessionQueries.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
-			if (!sessions || sessions.startDateResponse.length < process.env.SESSION_CREATION_MENTOR_LIMIT) {
+			if (
+				!sessions ||
+				(sessions.startDateResponse.length < process.env.SESSION_CREATION_MENTOR_LIMIT &&
+					sessions.endDateResponse.length < process.env.SESSION_CREATION_MENTOR_LIMIT)
+			) {
 				return true
 			}
 
@@ -2528,7 +2542,7 @@ module.exports = class SessionsHelper {
 			// Compare the fetched headings with the expected ones
 			const areHeadingsValid =
 				expectedHeadings.every((heading) => headings.includes(heading)) &&
-				headings.every((heading) => expectedHeadings.includes(heading))
+				headings.every((heading) => expectedHeadings.includes(heading) || true)
 
 			if (!areHeadingsValid) {
 				return responses.failureResponse({

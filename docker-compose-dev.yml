@@ -77,6 +77,8 @@ services:
       - KAFKA_URL=kafka:9092
       - REDIS_HOST=redis://redis:6379
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/user-local
+      - SCHEDULER_SERVICE_HOST=http://scheduler:4000
+
     depends_on:
       - kafka
       - redis

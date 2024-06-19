@@ -105,6 +105,7 @@ module.exports = class Sessions {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
+				req.searchOn,
 				req.query,
 				isAMentor(req.decodedToken.roles)
 			)
