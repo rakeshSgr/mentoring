@@ -392,16 +392,20 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (
-				sessionDetail.dataValues.mentor_id != bodyData.mentor_id ||
-				sessionDetail.dataValues.type != bodyData.type
-			) {
-				return responses.failureResponse({
-					message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+
+			if (bodyData.mentor_id && bodyData.type) {
+				if (
+					sessionDetail.dataValues.mentor_id != bodyData.mentor_id ||
+					sessionDetail.dataValues.type != bodyData.type
+				) {
+					return responses.failureResponse({
+						message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
+
 			//	if(sessionDetail)
 			// check if session mentor is added in the mentee list
 			if (bodyData?.mentees?.includes(bodyData?.mentor_id)) {
