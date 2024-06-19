@@ -866,6 +866,7 @@ module.exports = class UserInviteHelper {
 					const categoriess = data.categories
 					const mediums = data.medium
 					const sessionId = data.id
+					data.type = data.type.toUpperCase()
 					const { id, ...dataWithoutId } = data
 					const sessionUpdateOrDelete = await sessionService.update(
 						sessionId,
