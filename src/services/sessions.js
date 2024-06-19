@@ -393,7 +393,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			if (
-				sessionDetail.dataValues.mentor_id != bodyData.mentor_id[0] ||
+				sessionDetail.dataValues.mentor_id != bodyData.mentor_id ||
 				sessionDetail.dataValues.type != bodyData.type
 			) {
 				return responses.failureResponse({
