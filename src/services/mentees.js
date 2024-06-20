@@ -862,11 +862,24 @@ module.exports = class MenteesHelper {
 
 					const defaultOrgId = await getDefaultOrgId()
 
+					const modelName = []
+
+					const queryMap = {
+						[common.MENTEE_ROLE]: menteeQueries.getModelName,
+						[common.MENTOR_ROLE]: mentorQueries.getModelName,
+						[common.SESSION]: sessionQueries.getModelName,
+					}
+
+					if (queryMap[filter_type]) {
+						const modelNameResult = await queryMap[filter_type]()
+						modelName.push(modelNameResult)
+					}
 					// get entity type with entities list
 					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
 						organization_ids,
 						entity_type,
-						defaultOrgId ? defaultOrgId : ''
+						defaultOrgId ? defaultOrgId : '',
+						modelName
 					)
 
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
@@ -902,7 +915,7 @@ module.exports = class MenteesHelper {
 			let organizationIds = []
 			filterType = filterType.toLowerCase()
 			const attributes =
-				filterType == common.MENTEE_ROLE
+				filterType == common.MENTEE_ROLE || common.SESSION
 					? ['organization_id', 'external_mentee_visibility_policy']
 					: ['organization_id', 'external_mentor_visibility_policy']
 
@@ -914,7 +927,7 @@ module.exports = class MenteesHelper {
 			)
 
 			const visibilityPolicy =
-				filterType == common.MENTEE_ROLE
+				filterType == common.MENTEE_ROLE || common.SESSION
 					? orgExtension.external_mentee_visibility_policy
 					: orgExtension.external_mentor_visibility_policy
 
@@ -1036,7 +1049,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '', modelName) {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
@@ -1055,6 +1068,9 @@ module.exports = class MenteesHelper {
 				}
 			}
 
+			if (modelName) {
+				filter.model_names = { [Op.contains]: [modelName] }
+			}
 			//fetch entity types and entities
 			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
