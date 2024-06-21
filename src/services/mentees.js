@@ -886,11 +886,24 @@ module.exports = class MenteesHelper {
 
 					const defaultOrgId = await getDefaultOrgId()
 
+					const modelName = []
+
+					const queryMap = {
+						[common.MENTEE_ROLE]: menteeQueries.getModelName,
+						[common.MENTOR_ROLE]: mentorQueries.getModelName,
+						[common.SESSION]: sessionQueries.getModelName,
+					}
+
+					if (queryMap[filter_type]) {
+						const modelNameResult = await queryMap[filter_type]()
+						modelName.push(modelNameResult)
+					}
 					// get entity type with entities list
 					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
 						organization_ids,
 						entity_type,
-						defaultOrgId ? defaultOrgId : ''
+						defaultOrgId ? defaultOrgId : '',
+						modelName
 					)
 
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
@@ -925,10 +938,17 @@ module.exports = class MenteesHelper {
 		try {
 			let organizationIds = []
 			filterType = filterType.toLowerCase()
-			const attributes =
-				filterType == common.MENTEE_ROLE
-					? ['organization_id', 'external_mentee_visibility_policy']
-					: ['organization_id', 'external_mentor_visibility_policy']
+
+			let visibilityPolicies = []
+			let orgVisibilityPolicies = []
+
+			const policyMap = {
+				[common.MENTEE_ROLE]: ['organization_id', 'external_mentee_visibility_policy'],
+				[common.SESSION]: ['organization_id', 'external_session_visibility_policy'],
+				[common.MENTOR_ROLE]: ['organization_id', 'external_mentor_visibility_policy'],
+			}
+			visibilityPolicies = policyMap[filterType] || []
+			const attributes = visibilityPolicies
 
 			const orgExtension = await organisationExtensionQueries.findOne(
 				{ organization_id },
@@ -937,10 +957,13 @@ module.exports = class MenteesHelper {
 				}
 			)
 
-			const visibilityPolicy =
-				filterType == common.MENTEE_ROLE
-					? orgExtension.external_mentee_visibility_policy
-					: orgExtension.external_mentor_visibility_policy
+			const orgPolicyMap = {
+				[common.MENTEE_ROLE]: orgExtension.external_mentee_visibility_policy,
+				[common.SESSION]: orgExtension.external_session_visibility_policy,
+				[common.MENTOR_ROLE]: orgExtension.external_mentor_visibility_policy,
+			}
+			orgVisibilityPolicies = orgPolicyMap[filterType] || []
+			const visibilityPolicy = orgVisibilityPolicies
 
 			if (orgExtension?.organization_id) {
 				if (visibilityPolicy === common.CURRENT) {
@@ -1060,7 +1083,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '', modelName) {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
@@ -1079,6 +1102,9 @@ module.exports = class MenteesHelper {
 				}
 			}
 
+			if (modelName) {
+				filter.model_names = { [Op.contains]: [modelName] }
+			}
 			//fetch entity types and entities
 			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
