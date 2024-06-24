@@ -894,8 +894,8 @@ module.exports = class MenteesHelper {
 						[common.SESSION]: sessionQueries.getModelName,
 					}
 
-					if (queryMap[filter_type]) {
-						const modelNameResult = await queryMap[filter_type]()
+					if (queryMap[filter_type.toLowerCase()]) {
+						const modelNameResult = await queryMap[filter_type.toLowerCase()]()
 						modelName.push(modelNameResult)
 					}
 					// get entity type with entities list
