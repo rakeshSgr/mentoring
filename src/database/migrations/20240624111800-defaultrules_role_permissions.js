@@ -28,12 +28,40 @@ module.exports = {
 					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'default-rule',
-						['POST', 'DELETE', 'GET', 'PATCH'],
+						['POST', 'GET'],
 						'/mentoring/v1/default-rule/*'
 					),
 					module: 'default-rule',
-					request_type: ['POST', 'DELETE', 'GET', 'PATCH'],
+					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/default-rule/*',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_title: common.ORG_ADMIN_ROLE,
+					permission_id: await getPermissionId(
+						'default-rule',
+						['PATCH'],
+						'/mentoring/v1/default-rule/update*'
+					),
+					module: 'default-rule',
+					request_type: ['PATCH'],
+					api_path: '/mentoring/v1/default-rule/update*',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_title: common.ORG_ADMIN_ROLE,
+					permission_id: await getPermissionId(
+						'default-rule',
+						['DELETE'],
+						'/mentoring/v1/default-rule/delete*'
+					),
+					module: 'default-rule',
+					request_type: ['DELETE'],
+					api_path: '/mentoring/v1/default-rule/delete*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
