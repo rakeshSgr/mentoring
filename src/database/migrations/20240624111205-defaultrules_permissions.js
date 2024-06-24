@@ -15,6 +15,15 @@ module.exports = {
 					updated_at: new Date(),
 				},
 				{
+					code: 'default-rule_read_permissions',
+					module: 'default-rule',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/default-rule/read*',
+					status: 'ACTIVE',
+					created_at: new Date(),
+					updated_at: new Date(),
+				},
+				{
 					code: 'default-rule_update_permissions',
 					module: 'default-rule',
 					request_type: ['PATCH'],

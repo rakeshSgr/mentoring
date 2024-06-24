@@ -40,6 +40,16 @@ module.exports = {
 				},
 				{
 					role_title: common.ORG_ADMIN_ROLE,
+					permission_id: await getPermissionId('default-rule', ['GET'], '/mentoring/v1/default-rule/read*'),
+					module: 'default-rule',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/default-rule/read*',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'default-rule',
 						['PATCH'],
