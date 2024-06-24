@@ -476,7 +476,7 @@ module.exports = class UserInviteHelper {
 				}
 				const emailArray = session.mentor_id.split(',')
 				if (session.mentor_id && emailArray.length === 1) {
-					const mentorEmail = session.mentor_id.toLowerCase()
+					const mentorEmail = session.mentor_id.replace(/\s+/g, '').toLowerCase()
 					if (!common.EMAIL_REGEX.test(mentorEmail)) {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
