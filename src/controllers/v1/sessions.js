@@ -107,7 +107,9 @@ module.exports = class Sessions {
 				req.searchText,
 				req.searchOn,
 				req.query,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {

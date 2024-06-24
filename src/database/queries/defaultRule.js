@@ -90,3 +90,22 @@ exports.findAndCountAll = async (filter, options = {}) => {
 		throw error
 	}
 }
+
+/**
+ * Finds all DefaultRule records that match the filter.
+ * @param {Object} filter - The filter to find the DefaultRules.
+ * @param {Object} [options={}] - Additional query options.
+ * @returns {Promise<Array<Object>|Error>} The found DefaultRules or an error.
+ */
+exports.findAll = async (filter, options = {}) => {
+	try {
+		return await DefaultRule.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
+	} catch (error) {
+		console.error('Error finding DefaultRules:', error)
+		throw error
+	}
+}

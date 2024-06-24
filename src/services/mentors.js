@@ -24,6 +24,7 @@ const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
 const searchConfig = require('@configs/search.json')
 const emailEncryption = require('@utils/emailEncryption')
+const { defaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class MentorsHelper {
 	/**
@@ -731,7 +732,7 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - User list.
 	 */
 
-	static async list(pageNo, pageSize, searchText, searchOn, queryParams, userId, isAMentor) {
+	static async list(pageNo, pageSize, searchText, searchOn, queryParams, userId, isAMentor, roles, orgId) {
 		try {
 			let additionalProjectionString = ''
 			let userServiceQueries = {}
@@ -809,7 +810,12 @@ module.exports = class MentorsHelper {
 					})
 				}
 			}
-
+			const defaultRuleFilter = await defaultRulesFilter({
+				ruleType: 'mentor',
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+			})
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
 				pageNo,
@@ -819,7 +825,8 @@ module.exports = class MentorsHelper {
 				additionalProjectionString,
 				false,
 				searchFilter,
-				hasValidEmails ? emailIds : searchText //array for email search
+				hasValidEmails ? emailIds : searchText, //array for email search
+				defaultRuleFilter
 			)
 
 			if (extensionDetails.count == 0 || extensionDetails.data.length == 0) {

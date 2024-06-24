@@ -1119,7 +1119,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor) {
+	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor, roles, orgId) {
 		try {
 			let allSessions = await menteeService.getAllSessions(
 				page,
@@ -1128,7 +1128,9 @@ module.exports = class SessionsHelper {
 				loggedInUserId,
 				queryParams,
 				isAMentor,
-				searchOn
+				searchOn,
+				roles,
+				orgId
 			)
 
 			// add index number to the response

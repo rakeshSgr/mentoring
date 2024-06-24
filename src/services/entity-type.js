@@ -1,4 +1,4 @@
-// DependenciesI
+// Dependencies
 const httpStatusCode = require('@generics/http-status')
 const entityTypeQueries = require('../database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
