@@ -11,15 +11,18 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			type: {
 				type: DataTypes.STRING,
+				allowNull: false,
 			},
 			target_field: {
 				type: DataTypes.STRING,
+				allowNull: false,
 			},
 			is_target_from_sessions_mentor: {
 				type: DataTypes.BOOLEAN,
 			},
 			requester_field: {
 				type: DataTypes.STRING,
+				allowNull: false,
 			},
 			field_configs: {
 				type: DataTypes.JSON,
@@ -36,8 +39,6 @@ module.exports = (sequelize, DataTypes) => {
 			organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				defaultValue: 0,
-				primaryKey: true,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
@@ -65,10 +66,22 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'default_rules',
 			freezeTableName: true,
 			paranoid: true,
-			timestamps: true,
-			createdAt: 'created_at',
-			updatedAt: 'updated_at',
-			deletedAt: 'deleted_at',
+			indexes: [
+				{
+					fields: ['type'],
+				},
+				{
+					fields: ['organization_id'],
+				},
+				{
+					fields: ['type', 'organization_id'],
+				},
+			],
+			uniqueKeys: {
+				unique_default_rules_constraint: {
+					fields: ['type', 'target_field', 'requester_field', 'organization_id'],
+				},
+			},
 		}
 	)
 

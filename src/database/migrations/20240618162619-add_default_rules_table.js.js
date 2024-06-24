@@ -12,15 +12,18 @@ module.exports = {
 			},
 			type: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			target_field: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			is_target_from_sessions_mentor: {
 				type: Sequelize.BOOLEAN,
 			},
 			requester_field: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			field_configs: {
 				type: Sequelize.JSON,
@@ -37,7 +40,6 @@ module.exports = {
 			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
@@ -57,9 +59,27 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
+
+		// Add indexes to improve performance
+		await queryInterface.addIndex('default_rules', ['type'])
+		await queryInterface.addIndex('default_rules', ['organization_id'])
+		await queryInterface.addIndex('default_rules', ['type', 'organization_id'])
+
+		// Add a unique constraint to prevent duplicate rules
+		await queryInterface.addConstraint('default_rules', {
+			fields: ['type', 'target_field', 'requester_field', 'organization_id'],
+			type: 'unique',
+			name: 'unique_default_rules_constraint',
+		})
 	},
 
 	async down(queryInterface, Sequelize) {
+		await queryInterface.removeConstraint('default_rules', 'unique_default_rules_constraint')
+
+		await queryInterface.removeIndex('default_rules', ['type'])
+		await queryInterface.removeIndex('default_rules', ['organization_id'])
+		await queryInterface.removeIndex('default_rules', ['type', 'organization_id'])
+
 		await queryInterface.dropTable('default_rules')
 	},
 }

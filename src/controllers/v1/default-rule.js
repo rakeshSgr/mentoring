@@ -5,37 +5,39 @@ const defaultRuleService = require('@services/default-rule')
  */
 module.exports = class DefaultRule {
 	/**
-	 * Creates an entity.
+	 * Creates a Default Rule.
 	 * @method
+	 * @async
 	 * @name create
 	 * @param {Object} req - The request object.
 	 * @param {Object} req.body - The request payload.
 	 * @param {Object} req.decodedToken - The decoded JWT token.
 	 * @param {string} req.decodedToken.id - The user ID from the token.
 	 * @param {string} req.decodedToken.organization_id - The organization ID from the token.
-	 * @returns {Promise<JSON>} - The entity creation response.
+	 * @returns {Promise<Object>} - The Default Rule creation response.
 	 */
 	async create(req) {
 		try {
 			return await defaultRuleService.create(req.body, req.decodedToken.id, req.decodedToken.organization_id)
 		} catch (error) {
-			console.error('Error creating entity:', error)
+			console.error('Error creating Default Rule:', error)
 			return error
 		}
 	}
 
 	/**
-	 * Updates an entity.
+	 * Updates a Default Rule.
 	 * @method
+	 * @async
 	 * @name update
 	 * @param {Object} req - The request object.
 	 * @param {Object} req.body - The request payload.
 	 * @param {Object} req.params - The request parameters.
-	 * @param {string} req.params.id - The entity ID to be updated.
+	 * @param {string} req.params.id - The Default Rule ID to be updated.
 	 * @param {Object} req.decodedToken - The decoded JWT token.
 	 * @param {string} req.decodedToken.id - The user ID from the token.
 	 * @param {string} req.decodedToken.organization_id - The organization ID from the token.
-	 * @returns {Promise<JSON>} - The entity update response.
+	 * @returns {Promise<Object>} - The Default Rule update response.
 	 */
 	async update(req) {
 		try {
@@ -46,55 +48,51 @@ module.exports = class DefaultRule {
 				req.decodedToken.organization_id
 			)
 		} catch (error) {
-			console.error('Error updating entity:', error)
+			console.error('Error updating Default Rule:', error)
 			return error
 		}
 	}
 
 	/**
-	 * Reads entities.
+	 * Reads Default Rules.
 	 * @method
+	 * @async
 	 * @name read
 	 * @param {Object} req - The request object.
-	 * @param {Object} req.body - The request payload.
-	 * @param {boolean} [req.body.value] - Optional value to determine entity type.
+	 * @param {Object} req.params - The request parameters.
+	 * @param {string} [req.params.id] - Optional Default Rule ID to read a specific rule.
 	 * @param {Object} req.decodedToken - The decoded JWT token.
 	 * @param {string} req.decodedToken.id - The user ID from the token.
 	 * @param {string} req.decodedToken.organization_id - The organization ID from the token.
-	 * @returns {Promise<JSON>} - The entities.
+	 * @returns {Promise<Object>} - The entities.
 	 */
 	async read(req) {
 		try {
-			if (req.body.value) {
-				return await defaultRuleService.readUserEntityTypes(
-					req.body,
-					req.decodedToken.id,
-					req.decodedToken.organization_id
-				)
-			}
-			return await defaultRuleService.readAllSystemEntityTypes(req.decodedToken.organization_id)
+			if (req.params.id) return await defaultRuleService.readOne(req.params.id, req.decodedToken.organization_id)
+			return await defaultRuleService.readAll(req.decodedToken.organization_id)
 		} catch (error) {
-			console.error('Error reading entities:', error)
+			console.error('Error reading Default Rule:', error)
 			return error
 		}
 	}
 
 	/**
-	 * Deletes an entity.
+	 * Deletes a Default Rule.
 	 * @method
+	 * @async
 	 * @name delete
 	 * @param {Object} req - The request object.
 	 * @param {Object} req.params - The request parameters.
-	 * @param {string} req.params.id - The entity ID to be deleted.
+	 * @param {string} req.params.id - The Default Rule ID to be deleted.
 	 * @param {Object} req.decodedToken - The decoded JWT token.
 	 * @param {string} req.decodedToken.organization_id - The organization ID from the token.
-	 * @returns {Promise<JSON>} - The entity deletion response.
+	 * @returns {Promise<Object>} - The Default Rule deletion response.
 	 */
 	async delete(req) {
 		try {
 			return await defaultRuleService.delete(req.params.id, req.decodedToken.organization_id)
 		} catch (error) {
-			console.error('Error deleting entity:', error)
+			console.error('Error deleting Default Rule:', error)
 			return error
 		}
 	}
