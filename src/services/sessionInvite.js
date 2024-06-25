@@ -231,116 +231,118 @@ module.exports = class UserInviteHelper {
 					meeting_info: meetingInfo,
 				})
 
-				const platformNameRegex = common.PLATFORMS_REGEX
-				const zoomMeetingRegex = common.ZOOM_REGEX
-				const lastEntry = parsedCSVData[parsedCSVData.length - 1]
-				const meetingName = meetingPlatform ? meetingPlatform.toLowerCase().replace(/\s+/g, '') : ''
-				const setMeetingInfo = (label, value, meta = {}, link) => {
-					lastEntry.meeting_info = { platform: label, value: value, meta: meta, link: meetingLinkOrId }
-				}
-				const processStatusMessage = async (statusMessage, message) => {
-					return statusMessage ? `${statusMessage}, ${message}` : message
-				}
-				const processInvalidLink = async (statusMessage, message) =>
-					await processStatusMessage(statusMessage, message)
-				//Zoom Validation
-				const validateZoom = async () => {
-					const match = meetingLinkOrId.match(zoomMeetingRegex)
-					const platformName = match ? match[1] : ''
-					const meetingId = match ? match[2] : ''
-					if (platformName === common.MEETING_VALUES.ZOOM_VALUE || !meetingLinkOrId) {
-						setMeetingInfo(common.MEETING_VALUES.ZOOM_LABEL, common.MEETING_VALUES.ZOOM_LABEL, {
-							meetingId: meetingId,
-							password: `"${meetingPasscode}"`,
-						})
-					} else {
-						lastEntry.status = 'Invalid'
-						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+				if (action.toUpperCase() !== common.DELETE_METHOD) {
+					const platformNameRegex = common.PLATFORMS_REGEX
+					const zoomMeetingRegex = common.ZOOM_REGEX
+					const lastEntry = parsedCSVData[parsedCSVData.length - 1]
+					const meetingName = meetingPlatform ? meetingPlatform.toLowerCase().replace(/\s+/g, '') : ''
+					const setMeetingInfo = (label, value, meta = {}, link) => {
+						lastEntry.meeting_info = { platform: label, value: value, meta: meta, link: meetingLinkOrId }
 					}
-				}
-				//WhatsApp Validation
-				const validateWhatsApp = async () => {
-					const match = meetingLinkOrId.match(platformNameRegex)
-					const platformName = match ? match[1] : ''
+					const processStatusMessage = async (statusMessage, message) => {
+						return statusMessage ? `${statusMessage}, ${message}` : message
+					}
+					const processInvalidLink = async (statusMessage, message) =>
+						await processStatusMessage(statusMessage, message)
+					//Zoom Validation
+					const validateZoom = async () => {
+						const match = meetingLinkOrId.match(zoomMeetingRegex)
+						const platformName = match ? match[1] : ''
+						const meetingId = match ? match[2] : ''
+						if (platformName === common.MEETING_VALUES.ZOOM_VALUE || !meetingLinkOrId) {
+							setMeetingInfo(common.MEETING_VALUES.ZOOM_LABEL, common.MEETING_VALUES.ZOOM_LABEL, {
+								meetingId: meetingId,
+								password: `${meetingPasscode}`,
+							})
+						} else {
+							lastEntry.status = 'Invalid'
+							lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+						}
+					}
+					//WhatsApp Validation
+					const validateWhatsApp = async () => {
+						const match = meetingLinkOrId.match(platformNameRegex)
+						const platformName = match ? match[1] : ''
 
-					if (platformName === common.MEETING_VALUES.WHATSAPP_VALUE || !meetingLinkOrId) {
-						setMeetingInfo(common.MEETING_VALUES.WHATSAPP_LABEL, common.MEETING_VALUES.WHATSAPP_LABEL)
-					} else {
-						lastEntry.status = 'Invalid'
-						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+						if (platformName === common.MEETING_VALUES.WHATSAPP_VALUE || !meetingLinkOrId) {
+							setMeetingInfo(common.MEETING_VALUES.WHATSAPP_LABEL, common.MEETING_VALUES.WHATSAPP_LABEL)
+						} else {
+							lastEntry.status = 'Invalid'
+							lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+						}
 					}
-				}
-				//GoogleMeet Validation
-				const validateGoogleMeet = async () => {
-					const match = meetingLinkOrId.match(platformNameRegex)
-					const platformName = match ? match[1] : ''
+					//GoogleMeet Validation
+					const validateGoogleMeet = async () => {
+						const match = meetingLinkOrId.match(platformNameRegex)
+						const platformName = match ? match[1] : ''
 
-					if (platformName === common.MEETING_VALUES.GOOGLE_PLATFORM || !meetingLinkOrId) {
-						setMeetingInfo(common.MEETING_VALUES.GOOGLE_LABEL, common.MEETING_VALUES.GOOGLE_VALUE)
-					} else {
-						lastEntry.status = 'Invalid'
-						lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+						if (platformName === common.MEETING_VALUES.GOOGLE_PLATFORM || !meetingLinkOrId) {
+							setMeetingInfo(common.MEETING_VALUES.GOOGLE_LABEL, common.MEETING_VALUES.GOOGLE_VALUE)
+						} else {
+							lastEntry.status = 'Invalid'
+							lastEntry.statusMessage = await processInvalidLink(lastEntry.statusMessage, 'Invalid Link')
+						}
 					}
-				}
-				//BBB Validation
-				const validateBBB = async () => {
-					if (!meetingLinkOrId) {
+					//BBB Validation
+					const validateBBB = async () => {
+						if (!meetingLinkOrId) {
+							setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
+						} else {
+							lastEntry.status = 'Invalid'
+							lastEntry.statusMessage = await processInvalidLink(
+								lastEntry.statusMessage,
+								'Link should be empty for Big Blue Button'
+							)
+						}
+					}
+					//Default Validation
+					const validateDefaultBBB = () => {
 						setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
-					} else {
+					}
+					//Platform Validation
+					const validateNoPlatformWithLink = async () => {
 						lastEntry.status = 'Invalid'
 						lastEntry.statusMessage = await processInvalidLink(
 							lastEntry.statusMessage,
-							'Link should be empty for Big Blue Button'
+							'Platform is not filled'
 						)
 					}
-				}
-				//Default Validation
-				const validateDefaultBBB = () => {
-					setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
-				}
-				//Platform Validation
-				const validateNoPlatformWithLink = async () => {
-					lastEntry.status = 'Invalid'
-					lastEntry.statusMessage = await processInvalidLink(
-						lastEntry.statusMessage,
-						'Platform is not filled'
-					)
-				}
-				//Invalid Platform Validation
-				const validateInvalidPlatform = async () => {
-					lastEntry.status = 'Invalid'
-					lastEntry.statusMessage = await processInvalidLink(
-						lastEntry.statusMessage,
-						'Invalid Meeting Platform'
-					)
-				}
-				//Validating logic using switch case
-				const validateMeetingLink = async () => {
-					switch (true) {
-						case meetingName.includes(common.MEETING_VALUES.ZOOM_VALUE):
-							await validateZoom()
-							break
-						case meetingName.includes(common.MEETING_VALUES.WHATSAPP_VALUE):
-							await validateWhatsApp()
-							break
-						case common.MEETING_VALUES.GOOGLE_MEET_VALUES.some((value) => meetingName.includes(value)):
-							await validateGoogleMeet()
-							break
-						case common.MEETING_VALUES.BBB_PLATFORM_VALUES.some((value) => meetingName.includes(value)):
-							await validateBBB()
-							break
-						case !meetingLinkOrId && !meetingName:
-							validateDefaultBBB()
-							break
-						case !meetingName && meetingLinkOrId:
-							await validateNoPlatformWithLink()
-							break
-						default:
-							await validateInvalidPlatform()
-							break
+					//Invalid Platform Validation
+					const validateInvalidPlatform = async () => {
+						lastEntry.status = 'Invalid'
+						lastEntry.statusMessage = await processInvalidLink(
+							lastEntry.statusMessage,
+							'Invalid Meeting Platform'
+						)
 					}
+					//Validating logic using switch case
+					const validateMeetingLink = async () => {
+						switch (true) {
+							case meetingName.includes(common.MEETING_VALUES.ZOOM_VALUE):
+								await validateZoom()
+								break
+							case meetingName.includes(common.MEETING_VALUES.WHATSAPP_VALUE):
+								await validateWhatsApp()
+								break
+							case common.MEETING_VALUES.GOOGLE_MEET_VALUES.some((value) => meetingName.includes(value)):
+								await validateGoogleMeet()
+								break
+							case common.MEETING_VALUES.BBB_PLATFORM_VALUES.some((value) => meetingName.includes(value)):
+								await validateBBB()
+								break
+							case !meetingLinkOrId && !meetingName:
+								validateDefaultBBB()
+								break
+							case !meetingName && meetingLinkOrId:
+								await validateNoPlatformWithLink()
+								break
+							default:
+								await validateInvalidPlatform()
+								break
+						}
+					}
+					await validateMeetingLink()
 				}
-				await validateMeetingLink()
 			}
 			return {
 				success: true,
@@ -414,6 +416,7 @@ module.exports = class UserInviteHelper {
 				validateField(session.recommended_for, 'recommended_for')
 				validateField(session.categories, 'categories')
 				validateField(session.medium, 'medium')
+				validateField(session.time24hrs, 'time24hrs')
 
 				if (!common.NUMERIC_REGEX.test(session.duration)) {
 					session.status = 'Invalid'
@@ -459,13 +462,13 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				const containsUserId = session.mentees.includes(userId)
-				if (!containsUserId && session.mentees.length >= 5) {
+				if (!containsUserId && session.mentees.length > process.env.SESSION_MENTEE_LIMIT) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
 						` Only ${process.env.SESSION_MENTEE_LIMIT} mentees are allowed`
 					)
-				} else if (containsUserId && session.mentees.length > 6) {
+				} else if (containsUserId && session.mentees.length > process.env.SEESION_MANAGER_AND_MENTEE_LIMIT) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
@@ -474,7 +477,7 @@ module.exports = class UserInviteHelper {
 				}
 				const emailArray = session.mentor_id.split(',')
 				if (session.mentor_id && emailArray.length === 1) {
-					const mentorEmail = session.mentor_id.toLowerCase()
+					const mentorEmail = session.mentor_id.replace(/\s+/g, '').toLowerCase()
 					if (!common.EMAIL_REGEX.test(mentorEmail)) {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
@@ -644,21 +647,12 @@ module.exports = class UserInviteHelper {
 						session.status = 'Invalid'
 						rowsWithStatus.push(session)
 					} else {
-						const { validRowsCount: valid, invalidRowsCount: invalid } = await this.processSession(
-							session,
-							userId,
-							orgId,
-							validRowsCount,
-							invalidRowsCount
-						)
-						validRowsCount = valid
-						invalidRowsCount = invalid
 						session.method = 'DELETE'
 						rowsWithStatus.push(session)
 					}
 				} else {
 					session.status = 'Invalid'
-					session.statusMessage = this.appendWithComma(session.statusMessage, ' Action is Empty/Wrong')
+					session.statusMessage = this.appendWithComma(session.statusMessage, ' Invalid Row Action')
 				}
 
 				if (session.statusMessage && typeof session.statusMessage != 'string') {
@@ -766,9 +760,9 @@ module.exports = class UserInviteHelper {
 
 				const meetingPlatform = meeting_info.platform
 				const meetingLinkOrId = meeting_info.link
-				let meetingPasscode = ''
+				let meetingPasscode
 				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL && meetingLinkOrId) {
-					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/) : ''
+					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password : ''
 				}
 
 				const mappedRow = {
@@ -854,10 +848,7 @@ module.exports = class UserInviteHelper {
 						data.statusMessage = this.appendWithComma(data.statusMessage, sessionCreation.message)
 						output.push(data)
 					}
-				} else if (
-					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.EDIT ||
-					data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.DELETE
-				) {
+				} else if (data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.EDIT) {
 					data.time_zone =
 						data.time_zone == common.TIMEZONE
 							? (data.time_zone = common.IST_TIMEZONE)
@@ -893,6 +884,24 @@ module.exports = class UserInviteHelper {
 								? (data.time_zone = common.TIMEZONE)
 								: (data.time_zone = common.TIMEZONE_UTC)
 						data.statusMessage = this.appendWithComma(data.statusMessage, sessionUpdateOrDelete.message)
+						output.push(data)
+					}
+				} else if (data.action.replace(/\s+/g, '').toLowerCase() == common.ACTIONS.DELETE) {
+					const sessionId = data.id
+					const sessionDelete = await sessionService.update(
+						sessionId,
+						{},
+						userId,
+						data.method,
+						orgId,
+						notifyUser
+					)
+					if (sessionDelete.statusCode === httpStatusCode.accepted) {
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionDelete.message)
+						output.push(data)
+					} else {
+						data.status = 'Invalid'
+						data.statusMessage = this.appendWithComma(data.statusMessage, sessionDelete.message)
 						output.push(data)
 					}
 				}

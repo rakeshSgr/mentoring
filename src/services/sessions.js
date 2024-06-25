@@ -444,15 +444,13 @@ module.exports = class SessionsHelper {
 				userId = sessionDetail.mentor_id
 			}
 
-			if (method != common.DELETE_METHOD) {
-				let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
-				if (!mentorExtension) {
-					return responses.failureResponse({
-						message: 'INVALID_PERMISSION',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
+			if (!mentorExtension) {
+				return responses.failureResponse({
+					message: 'INVALID_PERMISSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
@@ -471,23 +469,16 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD) {
-				const timeSlot = await this.isTimeSlotAvailable(
-					userId,
-					bodyData.start_date,
-					bodyData.end_date,
-					sessionId
-				)
-				if (timeSlot.isTimeSlotAvailable === false) {
-					return responses.failureResponse({
-						message: {
-							key: 'INVALID_TIME_SELECTION',
-							interpolation: { sessionName: timeSlot.sessionName },
-						},
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
+			if (timeSlot.isTimeSlotAvailable === false) {
+				return responses.failureResponse({
+					message: {
+						key: 'INVALID_TIME_SELECTION',
+						interpolation: { sessionName: timeSlot.sessionName },
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
@@ -509,25 +500,23 @@ module.exports = class SessionsHelper {
 				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
-			if (method != common.DELETE_METHOD) {
-				//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-				if (bodyData.status == common.VALID_STATUS) {
-					bodyData.status = sessionDetail.status
-				}
-				const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-				let res = utils.validateInput(bodyData, validationData, sessionModelName)
-				if (!res.success) {
-					return responses.failureResponse({
-						message: 'SESSION_CREATION_FAILED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-						result: res.errors,
-					})
-				}
-
-				let sessionModel = await sessionQueries.getColumns()
-				bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			if (bodyData.status == common.VALID_STATUS) {
+				bodyData.status = sessionDetail.status
 			}
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
+			let res = utils.validateInput(bodyData, validationData, sessionModelName)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+
+			let sessionModel = await sessionQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 
 			let isSessionDataChanged = false
 			let updatedSessionData = {}
@@ -2503,6 +2492,26 @@ module.exports = class SessionsHelper {
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
 
+			const getLocalizedMessage = (key) => {
+				return messages[key] || key
+			}
+
+			// Filter out empty rows
+			const nonEmptyCsvData = csvData.filter((row) => Object.values(row).some((value) => value !== ''))
+
+			if (nonEmptyCsvData.length === 0 || nonEmptyCsvData.length > process.env.CSV_MAX_ROW) {
+				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
+				const message =
+					nonEmptyCsvData.length === 0
+						? getLocalizedMessage('EMPTY_CSV')
+						: `${baseMessage}${process.env.CSV_MAX_ROW}`
+				return responses.failureResponse({
+					message: message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const expectedHeadings = [
 				'Action',
 				'id',
@@ -2551,21 +2560,6 @@ module.exports = class SessionsHelper {
 			if (!areHeadingsValid) {
 				return responses.failureResponse({
 					message: `Invalid CSV Headings.`,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const getLocalizedMessage = (key) => {
-				return messages[key] || key
-			}
-
-			if (csvData.length === 0 || csvData.length > process.env.CSV_MAX_ROW) {
-				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
-				const message =
-					csvData.length === 0 ? getLocalizedMessage('EMPTY_CSV') : `${baseMessage}${process.env.CSV_MAX_ROW}`
-				return responses.failureResponse({
-					message: message,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
