@@ -75,10 +75,11 @@ const details = function (token = '', userId = '') {
  * @method
  * @name getAllAccountsDetail
  * @param {Array} userIds
+ * @param {Array} paranoid : if true, discards deleted users.
  * @returns
  */
 
-const getListOfUserDetails = function (userIds) {
+const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
@@ -90,9 +91,49 @@ const getListOfUserDetails = function (userIds) {
 			},
 		}
 
-		const apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
 		try {
 			request.get(apiUrl, options, callback)
+			function callback(err, data) {
+				if (err) {
+					reject({
+						message: 'USER_SERVICE_DOWN',
+					})
+				} else {
+					data.body = JSON.parse(data.body)
+					return resolve(data.body)
+				}
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
+/**
+ * Get Accounts details.
+ * @method
+ * @name getAllAccountsDetail
+ * @param {Array} userIds
+ * @returns
+ */
+
+const getListOfUserDetailsByEmail = function (emailIds) {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				emailIds,
+			},
+		}
+
+		const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
+		try {
+			await request.post(apiUrl, options, callback)
 			function callback(err, data) {
 				if (err) {
 					reject({
@@ -343,4 +384,5 @@ module.exports = {
 	search,
 	getListOfUserRoles,
 	listOrganization,
+	getListOfUserDetailsByEmail,
 }

@@ -10,6 +10,7 @@
 			"@constants/*": ["./constants/*"],
 			"@controllers/*": ["./controllers/*"],
 			"@db/*": ["./db/*"],
+			"@dtos/*": ["./dtos/*"],
 			"@database/*": ["./database/*"],
 			"@generics/*": ["./generics/*"],
 			"@health-checks/*": ["./health-checks/*"],
@@ -19,7 +20,8 @@
 			"@requests/*": ["./requests/*"],
 			"@routes/*": ["./routes/*"],
 			"@services/*": ["./services/*"],
-			"@validators/*": ["./validators/*"]
+			"@validators/*": ["./validators/*"],
+			"@utils/*": ["./utils/*"]
 		}
 	},
 	"exclude": ["node_modules", "@shelf/jest-mongodb"]

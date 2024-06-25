@@ -27,6 +27,7 @@ if (!environmentData.success) {
 
 require('@configs')
 const materializedViewsService = require('./generics/materializedViews')
+require('@configs/cloud-service')
 
 i18next
 	.use(Backend)

@@ -89,7 +89,7 @@ module.exports = class MentorExtensionQueries {
 					stats: null,
 					tags: [],
 					configs: null,
-					visibility: null,
+					mentor_visibility: null,
 					visible_to_organizations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
@@ -144,7 +144,9 @@ module.exports = class MentorExtensionQueries {
 		filter,
 		saasFilter = '',
 		additionalProjectionclause = '',
-		returnOnlyUserId
+		returnOnlyUserId,
+		searchFilter = '',
+		searchText
 	) {
 		try {
 			const filterConditions = []
@@ -158,7 +160,17 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			const excludeUserIds = ids.length === 0
-			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let additionalFilter = ''
+			if (searchText) {
+				additionalFilter = `AND name ILIKE :search`
+			}
+			if (Array.isArray(searchText)) {
+				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
+			if (searchFilter.whereClause && searchFilter.whereClause != '') {
+				additionalFilter = `${searchFilter.whereClause}`
+			}
 
 			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
 
@@ -168,14 +180,13 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
+				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'
 			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}
-
 			if (userFilterClause && filterClause.length > 0) {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
 			}
@@ -183,25 +194,36 @@ module.exports = class MentorExtensionQueries {
 			let query = `
 				SELECT ${projectionClause}
 				FROM
-				${common.materializedViewsPrefix + MentorExtension.tableName}
+					${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
 					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
+					${additionalFilter}
 			`
 
 			const replacements = {
 				...filter, // Add filter parameters to replacements
+				search: `%${searchText}%`,
+			}
+
+			if (searchFilter && searchFilter?.sortQuery !== '') {
+				query += `
+				ORDER BY
+					${searchFilter.sortQuery}`
+			} else {
+				query += `
+				ORDER BY
+					LOWER(name) ASC`
 			}
 
 			if (page !== null && limit !== null) {
 				query += `
-					OFFSET
-						:offset
-					LIMIT
-						:limit;
+				OFFSET
+					:offset
+				LIMIT
+					:limit;
 				`
-
 				replacements.offset = limit * (page - 1)
 				replacements.limit = limit
 			}
@@ -211,9 +233,25 @@ module.exports = class MentorExtensionQueries {
 				replacements: replacements,
 			})
 
+			const countQuery = `
+			SELECT count(*) AS "count"
+			FROM
+				${common.materializedViewsPrefix + MentorExtension.tableName}
+			WHERE
+				${userFilterClause}
+				${filterClause}
+				${saasFilterClause}
+				${additionalFilter}	
+			;
+		`
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
 			return {
 				data: mentors,
-				count: mentors.length,
+				count: Number(count[0].count),
 			}
 		} catch (error) {
 			return error
@@ -309,5 +347,17 @@ module.exports = class MentorExtensionQueries {
 			replacements: { elementsToRemove },
 			type: Sequelize.QueryTypes.UPDATE,
 		})
+	}
+	static async getMentorExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentors = await MentorExtension.findAll(queryOptions)
+			return mentors
+		} catch (error) {
+			throw error
+		}
 	}
 }

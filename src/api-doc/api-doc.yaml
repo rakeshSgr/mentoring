@@ -1540,14 +1540,13 @@ paths:
   /mentoring/v1/sessions/update:
     post:
       summary: Create Session
-      tags:
-        - Session APIs
+      tags: []
       description: |-
         You can use this API to create a session 
          - The API Endpoint for creating a session is: `/mentoring/v1/sessions/update` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null.
-      parameters:
+      parameters: &ref_0
         - name: X-auth-token
           in: header
           description: >-
@@ -1714,7 +1713,7 @@ paths:
                       id: 1
                       created_at: 2023-09-20T11:56:42.257Z,
                       updated_at: '2023-09-20T11:56:42.412Z'
-        '400':
+        '400': &ref_1
           description: Bad Request. Create Session Error
           content:
             application.json:
@@ -4059,14 +4058,14 @@ paths:
                         description: Training in leadership
                         mentor_feedback_form: mentorQS2
                         form: {}
-  /user/v1/cloud-services/getSignedUrl?fileName={fileName}:
+  /mentoring/v1/cloud-services/getSignedUrl:
     get:
       summary: Cloud services get signed url
       tags:
         - Cloud Services APIs
       description: |-
         This API is associated with the cloud services for getting signed URL  
-         - Then The API Endpoint forcloud services `/user/v1/cloud-services/file/getSignedUrl` 
+         - Then The API Endpoint for cloud services `/mentoring/v1/cloud-services/file/getSignedUrl` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
@@ -4117,7 +4116,7 @@ paths:
                         https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
                       file_path: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
                       dest_file_path: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
-  /user/v1/cloud-services/getDownloadableUrl?filePath={filePath}:
+  /mentoring/v1/cloud-services/getDownloadableUrl:
     get:
       summary: Cloud services get download url
       tags:
@@ -4125,7 +4124,7 @@ paths:
       description: >-
         This API is associated with the cloud services for getting downloadable
         URL  
-         - Then The API Endpoint forcloud services `/user/v1/cloud-services/file/getDownloadableUrl` 
+         - Then The API Endpoint for cloud services `/mentoring/v1/cloud-services/file/getDownloadableUrl` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
@@ -5087,8 +5086,9 @@ paths:
       summary: Get entity type and organization filter
       tags:
         - Profile APIs
-      description: |-
-        To obtain the list of filters used in the mentee/mentor list, use this API.
+      description: >-
+        To obtain the list of filters used in the mentee/mentor list, use this
+        API.
          - The API Endpoint for get the filter is `/mentoring/v1/profile/filterList` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
@@ -7729,6 +7729,343 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/entity/createUserEntity400Response'
+  /mentoring/v1/org-admin/uploadSampleCSV:
+    post:
+      summary: Upload Sample CSV
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a session 
+         - The API Endpoint for updating a Sample CSV is: `/mentoring/v1/org-admin/uploadSampleCSV` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
+      parameters: *ref_0
+      requestBody:
+        content:
+          application.json:
+            schema:
+              file_path: session/33-1715667059999-BulkSessionNegativeCheck.csv
+              type: string
+              description: File path should be attached
+            examples:
+              example1:
+                value:
+                  file_path: session/33-1715667059999-BulkSessionNegativeCheck.csv
+      responses:
+        '200':
+          description: Uploaded
+          content:
+            application.json:
+              schema:
+                responseCode: OK
+                message: CSV_UPLOADED_SUCCESSFULLY
+                result: []
+                meta:
+                  formsVersion:
+                    - id: 3
+                      type: termsAndConditions
+                      version: 0
+                    - id: 4
+                      type: faq
+                      version: 0
+                    - id: 5
+                      type: helpVideos
+                      version: 0
+                    - id: 6
+                      type: platformApp
+                      version: 4
+                    - id: 1
+                      type: editProfile
+                      version: 0
+                    - id: 2
+                      type: session
+                      version: 0
+                    - id: 8
+                      type: sampleCsvDownload
+                      version: 0
+                    - id: 7
+                      type: helpApp
+                      version: 0
+                    - id: 9
+                      type: mentorQuestionnaire
+                      version: 0
+                    - id: 10
+                      type: managersSession
+                      version: 0
+                  correlation: 8d1d9ec0-68c4-4def-9dad-2cac06ed71a2
+                  meetingPlatform: BBB
+                type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: CSV_UPLOADED_SUCCESSFULLY
+                    result: []
+                    meta:
+                      formsVersion:
+                        - id: 3
+                          type: termsAndConditions
+                          version: 0
+                        - id: 4
+                          type: faq
+                          version: 0
+                        - id: 5
+                          type: helpVideos
+                          version: 0
+                        - id: 6
+                          type: platformApp
+                          version: 4
+                        - id: 1
+                          type: editProfile
+                          version: 0
+                        - id: 2
+                          type: session
+                          version: 0
+                        - id: 8
+                          type: sampleCsvDownload
+                          version: 0
+                        - id: 7
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: mentorQuestionnaire
+                          version: 0
+                        - id: 10
+                          type: managersSession
+                          version: 0
+                      correlation: 8d1d9ec0-68c4-4def-9dad-2cac06ed71a2
+                      meetingPlatform: BBB
+        '400': *ref_1
+  /mentoring/v1/sessions/getSampleCSV:
+    post:
+      summary: Get Sample CSV
+      tags:
+        - Sessions
+      description: |-
+        You can use this API to create a session 
+         - The API Endpoint for get a Sample CSV is: `/mentoring/v1/sessions/getSampleCSV` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
+      parameters: *ref_0
+      requestBody:
+        $ref: ''
+      responses:
+        '200':
+          description: Uploaded
+          content:
+            application.json:
+              schema:
+                responseCode: OK
+                message: Download Url Generated Successfully.
+                result: >-
+                  https://storage.googleapis.com/mentoring-dev-storage-private/sample/bulk_session_creation.csv?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1715835749&Signature=WIobhte7JimyzUU9uQVdI%2FCa3aHboxqGOx%2BjqNU%2BeY2c5xTv4guJarE9tsQBur82ALN9w2pp%2Bk4mhNIEqIPe0SZ5a7ElOtRycewSmkgHcrFiYxXRNzT6i8Nh8I53KydfCa9kCMmu3PwyqWosxeoOwBcLLc%2FmnO4U3JthLeOLj9eV2yxykUrfXO9Z7SPyB1MlLoXjlJSS%2BZIUFn51zInmumy6CVR0s3jnjHEoMt%2Fxrzllg9YsAgAjOXAwFLCVF4yEuQnSo0B4oBca%2BhDAmrRiQrOaIH9AujpcEWJl%2BlVRTjmaaMBtvsbJvD8LKGAkbShO6mcQI8gD7pvmSQmKwxAQeA%3D%3D
+                meta:
+                  formsVersion:
+                    - id: 3
+                      type: termsAndConditions
+                      version: 0
+                    - id: 4
+                      type: faq
+                      version: 0
+                    - id: 5
+                      type: helpVideos
+                      version: 0
+                    - id: 6
+                      type: platformApp
+                      version: 4
+                    - id: 1
+                      type: editProfile
+                      version: 0
+                    - id: 2
+                      type: session
+                      version: 0
+                    - id: 8
+                      type: sampleCsvDownload
+                      version: 0
+                    - id: 7
+                      type: helpApp
+                      version: 0
+                    - id: 9
+                      type: mentorQuestionnaire
+                      version: 0
+                    - id: 10
+                      type: managersSession
+                      version: 0
+                  correlation: b19561dd-ef26-4b24-9ed8-e3592ab52b39
+                  meetingPlatform: BBB
+                type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Download Url Generated Successfully.
+                    result: >-
+                      https://storage.googleapis.com/mentoring-dev-storage-private/sample/bulk_session_creation.csv?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1715835749&Signature=WIobhte7JimyzUU9uQVdI%2FCa3aHboxqGOx%2BjqNU%2BeY2c5xTv4guJarE9tsQBur82ALN9w2pp%2Bk4mhNIEqIPe0SZ5a7ElOtRycewSmkgHcrFiYxXRNzT6i8Nh8I53KydfCa9kCMmu3PwyqWosxeoOwBcLLc%2FmnO4U3JthLeOLj9eV2yxykUrfXO9Z7SPyB1MlLoXjlJSS%2BZIUFn51zInmumy6CVR0s3jnjHEoMt%2Fxrzllg9YsAgAjOXAwFLCVF4yEuQnSo0B4oBca%2BhDAmrRiQrOaIH9AujpcEWJl%2BlVRTjmaaMBtvsbJvD8LKGAkbShO6mcQI8gD7pvmSQmKwxAQeA%3D%3D
+                    meta:
+                      formsVersion:
+                        - id: 3
+                          type: termsAndConditions
+                          version: 0
+                        - id: 4
+                          type: faq
+                          version: 0
+                        - id: 5
+                          type: helpVideos
+                          version: 0
+                        - id: 6
+                          type: platformApp
+                          version: 4
+                        - id: 1
+                          type: editProfile
+                          version: 0
+                        - id: 2
+                          type: session
+                          version: 0
+                        - id: 8
+                          type: sampleCsvDownload
+                          version: 0
+                        - id: 7
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: mentorQuestionnaire
+                          version: 0
+                        - id: 10
+                          type: managersSession
+                          version: 0
+                      correlation: b19561dd-ef26-4b24-9ed8-e3592ab52b39
+                      meetingPlatform: BBB
+        '400': *ref_1
+  /mentoring/v1/sessions/bulkSessionCreate:
+    post:
+      summary: Bulk Session Upload
+      tags:
+        - Sessions
+      description: |-
+        You can use this API to create a session 
+         - The API Endpoint for creating bulk sessions is: `/mentoring/v1/sessions/bulkSessionCreate` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
+      parameters: *ref_0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              file_path: session/33-1715794478895-BulkCsvDevcheck4.csv
+              type: string
+            examples:
+              example1:
+                value:
+                  file_path: session/33-1715794478895-BulkCsvDevcheck4.csv
+      responses:
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema:
+                responseCode: OK
+                message: SESSION_CSV_UPLOADED
+                result:
+                  id: 7
+                  name: 33-1715794478895-BulkCsvDevcheck4
+                  input_path: session/33-1715794478895-BulkCsvDevcheck4.csv
+                  status: PROCESSED
+                  type: text/csv
+                  output_path: 15/output-session-creation2024_05_16_00_33.csv
+                  organization_id: 15
+                  created_by: 33
+                  updated_by: 33
+                  created_at: '2024-05-15T17:35:48.506Z'
+                  updated_at: '2024-05-15T19:03:52.540Z'
+                  deleted_at: null
+                meta:
+                  formsVersion:
+                    - id: 3
+                      type: termsAndConditions
+                      version: 0
+                    - id: 4
+                      type: faq
+                      version: 0
+                    - id: 5
+                      type: helpVideos
+                      version: 0
+                    - id: 6
+                      type: platformApp
+                      version: 4
+                    - id: 1
+                      type: editProfile
+                      version: 0
+                    - id: 2
+                      type: session
+                      version: 0
+                    - id: 8
+                      type: sampleCsvDownload
+                      version: 0
+                    - id: 7
+                      type: helpApp
+                      version: 0
+                    - id: 9
+                      type: mentorQuestionnaire
+                      version: 0
+                    - id: 10
+                      type: managersSession
+                      version: 0
+                  correlation: 110c2e7f-eaf1-43fb-a622-157296dd5090
+                  meetingPlatform: BBB
+                type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: SESSION_CSV_UPLOADED
+                    result:
+                      id: 7
+                      name: 33-1715794478895-BulkCsvDevcheck4
+                      input_path: session/33-1715794478895-BulkCsvDevcheck4.csv
+                      status: PROCESSED
+                      type: text/csv
+                      output_path: 15/output-session-creation2024_05_16_00_33.csv
+                      organization_id: 15
+                      created_by: 33
+                      updated_by: 33
+                      created_at: '2024-05-15T17:35:48.506Z'
+                      updated_at: '2024-05-15T19:03:52.540Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion:
+                        - id: 3
+                          type: termsAndConditions
+                          version: 0
+                        - id: 4
+                          type: faq
+                          version: 0
+                        - id: 5
+                          type: helpVideos
+                          version: 0
+                        - id: 6
+                          type: platformApp
+                          version: 4
+                        - id: 1
+                          type: editProfile
+                          version: 0
+                        - id: 2
+                          type: session
+                          version: 0
+                        - id: 8
+                          type: sampleCsvDownload
+                          version: 0
+                        - id: 7
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: mentorQuestionnaire
+                          version: 0
+                        - id: 10
+                          type: managersSession
+                          version: 0
+                      correlation: 110c2e7f-eaf1-43fb-a622-157296dd5090
+                      meetingPlatform: BBB
+        '400': *ref_1
 components:
   schemas:
     form:
@@ -10061,10 +10398,10 @@ components:
         properties:
           responseCode:
             type: string
-            example: 'OK'
+            example: OK
           message:
             type: string
-            example: 'Filter list fetched successfully.'
+            example: Filter list fetched successfully.
           result:
             type: object
             properties:
@@ -10078,13 +10415,13 @@ components:
                       example: 24
                     name:
                       type: string
-                      example: 'Tunerlabs'
+                      example: Tunerlabs
                     code:
                       type: string
-                      example: 'tl'
+                      example: tl
                     description:
                       type: string
-                      example: 'Tunerlabs'
+                      example: Tunerlabs
               entity_types:
                 type: object
                 properties:
@@ -10092,7 +10429,6 @@ components:
                     type: array
                     items:
                       $ref: '#/components/schemas/users/FilterDesignation'
-
       FilterDesignation:
         type: object
         properties:
@@ -10101,10 +10437,10 @@ components:
             example: 5
           label:
             type: string
-            example: 'Designation'
+            example: Designation
           value:
             type: string
-            example: 'designation'
+            example: designation
           parent_id:
             type: integer
             nullable: true
@@ -10124,16 +10460,16 @@ components:
                   example: 5
                 value:
                   type: string
-                  example: 'beo'
+                  example: beo
                 label:
                   type: string
-                  example: 'Block education officer'
+                  example: Block education officer
                 status:
                   type: string
-                  example: 'ACTIVE'
+                  example: ACTIVE
                 type:
                   type: string
-                  example: 'SYSTEM'
+                  example: SYSTEM
                 created_by:
                   type: integer
                   example: 0
@@ -10353,6 +10689,11 @@ tags:
       description: ''
       url: ''
   - name: RolePermissionMapping
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Sessions
     description: ''
     externalDocs:
       description: ''
