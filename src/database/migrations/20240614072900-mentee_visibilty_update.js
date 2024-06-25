@@ -15,8 +15,8 @@ module.exports = {
 			const updateOrganizationExtensionPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE organization_extension
-           SET mentee_visibility_policy = :session_visibility_policy,
-               external_mentee_visibility_policy = :external_session_visibility_policy
+           SET mentee_visibility_policy = :external_session_visibility_policy,
+               external_mentee_visibility_policy = :session_visibility_policy
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
@@ -33,8 +33,8 @@ module.exports = {
 			const updateMentorExtensionsPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE mentor_extensions
-           SET mentee_visibility = :session_visibility_policy,
-               external_mentee_visibility = :external_session_visibility_policy
+           SET mentee_visibility = :external_session_visibility_policy,
+               external_mentee_visibility = :session_visibility_policy
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
@@ -51,8 +51,8 @@ module.exports = {
 			const updateUserExtensionsPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE user_extensions
-           SET mentee_visibility = :session_visibility_policy,
-               external_mentee_visibility = :external_session_visibility_policy
+           SET mentee_visibility = :external_session_visibility_policy,
+               external_mentee_visibility = :session_visibility_policy
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
@@ -93,8 +93,8 @@ module.exports = {
 			const revertOrganizationExtensionPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE organization_extension
-           SET session_visibility_policy = :mentee_visibility_policy,
-               external_session_visibility_policy = :external_mentee_visibility_policy
+           SET session_visibility_policy = :external_mentee_visibility_policy,
+               external_session_visibility_policy = :mentee_visibility_policy
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
@@ -111,8 +111,8 @@ module.exports = {
 			const revertMentorExtensionsPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE mentor_extensions
-           SET session_visibility_policy = :mentee_visibility,
-               external_session_visibility_policy = :external_mentee_visibility
+           SET session_visibility_policy = :external_mentee_visibility,
+               external_session_visibility_policy = :mentee_visibility
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
@@ -129,8 +129,8 @@ module.exports = {
 			const revertUserExtensionsPromises = organizations.map((org) => {
 				return queryInterface.sequelize.query(
 					`UPDATE user_extensions
-           SET session_visibility_policy = :mentee_visibility,
-               external_session_visibility_policy = :external_mentee_visibility
+           SET session_visibility_policy = :external_mentee_visibility,
+               external_session_visibility_policy = :mentee_visibility
            WHERE organization_id = :organization_id;`,
 					{
 						replacements: {
