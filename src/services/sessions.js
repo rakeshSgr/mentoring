@@ -2492,6 +2492,26 @@ module.exports = class SessionsHelper {
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
 
+			const getLocalizedMessage = (key) => {
+				return messages[key] || key
+			}
+
+			// Filter out empty rows
+			const nonEmptyCsvData = csvData.filter((row) => Object.values(row).some((value) => value !== ''))
+
+			if (nonEmptyCsvData.length === 0 || nonEmptyCsvData.length > process.env.CSV_MAX_ROW) {
+				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
+				const message =
+					nonEmptyCsvData.length === 0
+						? getLocalizedMessage('EMPTY_CSV')
+						: `${baseMessage}${process.env.CSV_MAX_ROW}`
+				return responses.failureResponse({
+					message: message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const expectedHeadings = [
 				'Action',
 				'id',
@@ -2540,21 +2560,6 @@ module.exports = class SessionsHelper {
 			if (!areHeadingsValid) {
 				return responses.failureResponse({
 					message: `Invalid CSV Headings.`,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const getLocalizedMessage = (key) => {
-				return messages[key] || key
-			}
-
-			if (csvData.length === 0 || csvData.length > process.env.CSV_MAX_ROW) {
-				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
-				const message =
-					csvData.length === 0 ? getLocalizedMessage('EMPTY_CSV') : `${baseMessage}${process.env.CSV_MAX_ROW}`
-				return responses.failureResponse({
-					message: message,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

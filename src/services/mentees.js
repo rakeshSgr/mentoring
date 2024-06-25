@@ -1314,11 +1314,11 @@ module.exports = class MenteesHelper {
 	}
 	static async filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids = []) {
 		try {
-			let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
-			// check for external_mentee_visibility else fetch external_mentor_visibility
-			extensionColumns = extensionColumns.includes('external_mentee_visibility')
-				? ['external_mentee_visibility', 'organization_id']
-				: ['external_mentor_visibility', 'organization_id']
+			// let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
+			// // check for external_mentee_visibility else fetch external_mentor_visibility
+			// extensionColumns = extensionColumns.includes('external_mentee_visibility')
+			// 	? ['external_mentee_visibility', 'organization_id']
+			// 	: ['external_mentor_visibility', 'organization_id']
 
 			const userPolicyDetails = isAMentor
 				? await mentorQueries.getMentorExtension(userId, ['organization_id'])

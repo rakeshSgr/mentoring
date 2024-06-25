@@ -252,7 +252,7 @@ module.exports = class UserInviteHelper {
 						if (platformName === common.MEETING_VALUES.ZOOM_VALUE || !meetingLinkOrId) {
 							setMeetingInfo(common.MEETING_VALUES.ZOOM_LABEL, common.MEETING_VALUES.ZOOM_LABEL, {
 								meetingId: meetingId,
-								password: `"${meetingPasscode}"`,
+								password: `${meetingPasscode}`,
 							})
 						} else {
 							lastEntry.status = 'Invalid'
@@ -416,6 +416,7 @@ module.exports = class UserInviteHelper {
 				validateField(session.recommended_for, 'recommended_for')
 				validateField(session.categories, 'categories')
 				validateField(session.medium, 'medium')
+				validateField(session.time24hrs, 'time24hrs')
 
 				if (!common.NUMERIC_REGEX.test(session.duration)) {
 					session.status = 'Invalid'
@@ -461,13 +462,13 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				const containsUserId = session.mentees.includes(userId)
-				if (!containsUserId && session.mentees.length >= 5) {
+				if (!containsUserId && session.mentees.length >= 6) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
 						` Only ${process.env.SESSION_MENTEE_LIMIT} mentees are allowed`
 					)
-				} else if (containsUserId && session.mentees.length > 6) {
+				} else if (containsUserId && session.mentees.length >= 7) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
@@ -759,9 +760,9 @@ module.exports = class UserInviteHelper {
 
 				const meetingPlatform = meeting_info.platform
 				const meetingLinkOrId = meeting_info.link
-				let meetingPasscode = ''
+				let meetingPasscode
 				if (meetingPlatform == common.MEETING_VALUES.ZOOM_LABEL && meetingLinkOrId) {
-					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password.match(/\d+/) : ''
+					meetingPasscode = meeting_info.meta.password ? meeting_info.meta.password : ''
 				}
 
 				const mappedRow = {
