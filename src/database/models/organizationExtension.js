@@ -33,6 +33,12 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'MENTOR_QS2',
 			},
+			uploads: {
+				allowNull: true,
+				type: DataTypes.JSONB,
+			},
+			mentee_visibility_policy: { type: DataTypes.STRING },
+			external_mentee_visibility_policy: { type: DataTypes.STRING },
 		},
 		{
 			sequelize,

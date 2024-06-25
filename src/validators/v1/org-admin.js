@@ -102,4 +102,7 @@ module.exports = {
 			.withMessage('organization_id must be an integer')
 		req.checkBody('action').notEmpty().withMessage('action field is empty')
 	},
+	uploadSampleCSV: (req) => {
+		req.checkBody('file_path').notEmpty().withMessage('file_path field is empty')
+	},
 }

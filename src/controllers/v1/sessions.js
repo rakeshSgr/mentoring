@@ -105,6 +105,7 @@ module.exports = class Sessions {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
+				req.searchOn,
 				req.query,
 				isAMentor(req.decodedToken.roles)
 			)
@@ -349,6 +350,38 @@ module.exports = class Sessions {
 				req.body.mentees // Array of mentee ids
 			)
 			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Bulk session upload
+	 * @method
+	 * @name BulkSessionCreation
+	 * @param {String} req.body.file_path -Uploaded filr path .
+	 * @returns {Object} - uploaded file response.
+	 */
+	async bulkSessionCreate(req) {
+		try {
+			const sessionUploadRes = await sessionService.bulkSessionCreate(req.body.file_path, req.decodedToken)
+			return sessionUploadRes
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get sample bulk upload csv downloadable Url
+	 * @method
+	 * @name getSampleCSV
+	 * @param {JSON} req  request body.
+	 * @returns {JSON} Response with status message and result.
+	 */
+	async getSampleCSV(req) {
+		try {
+			const downloadUrlResponse = await sessionService.getSampleCSV(req.decodedToken.organization_id)
+			return downloadUrlResponse
 		} catch (error) {
 			return error
 		}

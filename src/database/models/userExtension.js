@@ -32,16 +32,10 @@ module.exports = (sequelize, DataTypes) => {
 			configs: {
 				type: DataTypes.JSON,
 			},
-			visibility: {
-				type: DataTypes.STRING,
-			},
 			visible_to_organizations: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 			},
 			external_session_visibility: {
-				type: DataTypes.STRING,
-			},
-			external_mentor_visibility: {
 				type: DataTypes.STRING,
 			},
 			custom_entity_text: {
@@ -54,6 +48,31 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
+			external_mentee_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			mentee_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			external_mentor_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			mentor_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			name: {
+				type: DataTypes.STRING,
+			},
+			email: {
+				type: DataTypes.STRING,
+			},
+			phone: {
+				type: DataTypes.STRING,
+			},
 		},
 		{
 			sequelize,
@@ -61,6 +80,9 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'user_extensions',
 			freezeTableName: true,
 			paranoid: true,
+			defaultScope: {
+				attributes: { exclude: ['name', 'email'] },
+			},
 		}
 	)
 	return UserExtension

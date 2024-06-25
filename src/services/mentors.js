@@ -21,6 +21,10 @@ const menteesService = require('@services/mentees')
 const entityTypeService = require('@services/entity-type')
 const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
+const { buildSearchFilter } = require('@helpers/search')
+const searchConfig = require('@configs/search.json')
+const emailEncryption = require('@utils/emailEncryption')
+
 module.exports = class MentorsHelper {
 	/**
 	 * upcomingSessions.
@@ -305,6 +309,9 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 
@@ -397,13 +404,18 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
-				'visibility',
+				'mentor_visibility',
+				'mentee_visibility',
 				'visible_to_organizations',
 				'external_session_visibility',
 				'external_mentor_visibility',
+				'external_mentee_visibility',
 			]
 
 			dataToRemove.forEach((key) => {
@@ -544,7 +556,8 @@ module.exports = class MentorsHelper {
 			if (userId !== '' && isAMentor !== '') {
 				// Get mentor visibility and org id
 				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, [
-					'visibility',
+					'mentor_visibility',
+					'mentee_visibility',
 					'organization_id',
 					'visible_to_organizations',
 				])
@@ -683,7 +696,7 @@ module.exports = class MentorsHelper {
 					case common.ASSOCIATED:
 						isAccessible =
 							(mentor.visible_to_organizations.includes(organization_id) &&
-								mentor.visibility != common.CURRENT) ||
+								mentor.mentor_visibility != common.CURRENT) ||
 							mentor.organization_id === organization_id
 						break
 					/**
@@ -693,8 +706,8 @@ module.exports = class MentorsHelper {
 					case common.ALL:
 						isAccessible =
 							(mentor.visible_to_organizations.includes(organization_id) &&
-								mentor.visibility != common.CURRENT) ||
-							mentor.visibility === common.ALL ||
+								mentor.mentor_visibility != common.CURRENT) ||
+							mentor.mentor_visibility === common.ALL ||
 							mentor.organization_id === organization_id
 						break
 					default:
@@ -718,19 +731,18 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - User list.
 	 */
 
-	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
+	static async list(pageNo, pageSize, searchText, searchOn, queryParams, userId, isAMentor) {
 		try {
 			let additionalProjectionString = ''
 			let userServiceQueries = {}
 
-			// check for fields query
+			// check for fields query (Adds to the projection)
 			if (queryParams.fields && queryParams.fields !== '') {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields
 			}
 
 			let organization_ids = []
-			let designation = []
 			let directory = false
 
 			const [sortBy, order] = ['name'].includes(queryParams.sort_by)
@@ -754,6 +766,16 @@ module.exports = class MentorsHelper {
 				}
 			}
 
+			const emailIds = []
+			const searchTextArray = searchText ? searchText.split(',') : []
+
+			searchTextArray.forEach((element) => {
+				if (utils.isValidEmail(element)) {
+					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
+				}
+			})
+			const hasValidEmails = emailIds.length > 0
+
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const mentorExtensionsModelName = await mentorQueries.getModelName()
 
@@ -764,55 +786,56 @@ module.exports = class MentorsHelper {
 			})
 
 			const filteredQuery = utils.validateFilters(query, validationData, mentorExtensionsModelName)
-			const userType = common.MENTOR_ROLE
 
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor, organization_ids)
 
+			let searchFilter
+			if (!hasValidEmails) {
+				searchFilter = await buildSearchFilter({
+					searchOn: searchOn ? searchOn.split(',') : false,
+					searchConfig: searchConfig.search.mentor,
+					search: searchText,
+					modelName: mentorExtensionsModelName,
+				})
+
+				if (!searchFilter) {
+					return responses.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'MENTOR_LIST',
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
+			}
+
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
-				null,
-				null,
+				pageNo,
+				pageSize,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
-				true
+				false,
+				searchFilter,
+				hasValidEmails ? emailIds : searchText //array for email search
 			)
-			if (extensionDetails.count == 0) {
+
+			if (extensionDetails.count == 0 || extensionDetails.data.length == 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTOR_LIST',
 					result: {
 						data: [],
-						count: 0,
+						count: extensionDetails.count,
 					},
 				})
 			}
+
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
-			if (mentorIds) {
-				userServiceQueries['user_ids'] = mentorIds
-			}
-
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
-			if (userDetails.data.result.count == 0) {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'MENTOR_LIST',
-					result: {
-						data: [],
-						count: 0,
-					},
-				})
-			}
-			extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				userDetails.data.result.data.map((item) => item.id),
-				null,
-				null,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false
-			)
+			const userDetails = await userRequests.getListOfUserDetails(mentorIds, true)
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
@@ -826,28 +849,29 @@ module.exports = class MentorsHelper {
 
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
-			userDetails.data.result.data = userDetails.data.result.data
-				.map((value) => {
+			userDetails.result = userDetails.result
+				.map((userDetail) => {
 					// Map over each value in the values array of the current group
-					const user_id = value.id
+					const user_id = userDetail.id
 					// Check if extensionDataMap has an entry with the key equal to the user_id
 					if (extensionDataMap.has(user_id)) {
 						const newItem = extensionDataMap.get(user_id)
-						value = { ...value, ...newItem }
-						delete value.user_id
-						delete value.visibility
-						delete value.organization_id
-						delete value.meta
-						return value
+						userDetail = { ...userDetail, ...newItem }
+						delete userDetail.user_id
+						delete userDetail.mentor_visibility
+						delete userDetail.mentee_visibility
+						delete userDetail.organization_id
+						delete userDetail.meta
+						return userDetail
 					}
 					return null
 				})
-				.filter((value) => value !== null)
+				.filter((userDetail) => userDetail !== null)
 
 			if (directory) {
 				let foundKeys = {}
 				let result = []
-				for (let user of userDetails.data.result.data) {
+				for (let user of userDetails.result) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
@@ -864,11 +888,11 @@ module.exports = class MentorsHelper {
 				}
 
 				const sortedData = _.sortBy(result, 'key') || []
-				userDetails.data.result.data = sortedData
+				userDetails.result = sortedData
 			} else {
 				// Check if sortBy and order have values before applying sorting
 				if (sortBy) {
-					userDetails.data.result.data = userDetails.data.result.data.sort((a, b) => {
+					userDetails.result = userDetails.result.sort((a, b) => {
 						// Determine the sorting order based on the 'order' value
 						const sortOrder = order.toLowerCase() === 'asc' ? 1 : order.toLowerCase() === 'desc' ? -1 : 1
 
@@ -880,8 +904,11 @@ module.exports = class MentorsHelper {
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: userDetails.data.message,
-				result: userDetails.data.result,
+				message: userDetails.message,
+				result: {
+					data: userDetails.result,
+					count: extensionDetails.count,
+				},
 			})
 		} catch (error) {
 			console.log(error)
@@ -935,7 +962,7 @@ module.exports = class MentorsHelper {
 
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT')`
+						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
 						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
@@ -947,7 +974,7 @@ module.exports = class MentorsHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT' ) OR "mentor_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
 				}
 			}
 

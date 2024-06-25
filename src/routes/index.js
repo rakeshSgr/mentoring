@@ -70,7 +70,6 @@ module.exports = (app) => {
 		let controllerResponse
 		let validationError
 
-
 		const version = (req.params.version.match(/^v\d+$/) || [])[0] // Match version like v1, v2, etc.
 		const controllerName = (req.params.controller.match(/^[a-zA-Z0-9_-]+$/) || [])[0] // Allow only alphanumeric characters, underscore, and hyphen
 		const file = req.params.file ? (req.params.file.match(/^[a-zA-Z0-9_-]+$/) || [])[0] : null // Same validation as controller, or null if file is not provided
@@ -104,7 +103,6 @@ module.exports = (app) => {
 		}
 
 		console.log('ROUTER REQUEST BODY: ', req.body)
-
 
 		/* Check for input validation error */
 		try {

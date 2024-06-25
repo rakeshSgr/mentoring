@@ -20,11 +20,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 					'stats',
 					'tags',
 					'configs',
-					'visibility',
 					'visible_to_organizations',
 					'external_session_visibility',
-					'external_mentor_visibility',
+					'external_mentee_visibility',
 					'experience',
+					'mentee_visibility',
 				],
 			},
 		}
