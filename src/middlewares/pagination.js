@@ -20,6 +20,9 @@ module.exports = (req, res, next) => {
 		let buff = new Buffer.from(req.searchText, 'base64')
 		req.searchText = buff.toString('ascii')
 	}
+
+	req.searchOn = req.query.search_on && req.query.search_on != '' ? req.query.search_on : ''
+
 	if (containsSpecialChars(req.searchText)) {
 		throw responses.failureResponse({
 			message: 'Invalid search text',
@@ -29,6 +32,8 @@ module.exports = (req, res, next) => {
 	} else {
 		delete req.query.page
 		delete req.query.limit
+		delete req.query.search
+		delete req.query.search_on
 		next()
 	}
 }

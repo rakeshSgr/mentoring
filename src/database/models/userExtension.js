@@ -64,6 +64,15 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'CURRENT',
 			},
+			name: {
+				type: DataTypes.STRING,
+			},
+			email: {
+				type: DataTypes.STRING,
+			},
+			phone: {
+				type: DataTypes.STRING,
+			},
 		},
 		{
 			sequelize,
@@ -71,6 +80,9 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'user_extensions',
 			freezeTableName: true,
 			paranoid: true,
+			defaultScope: {
+				attributes: { exclude: ['name', 'email'] },
+			},
 		}
 	)
 	return UserExtension

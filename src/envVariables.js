@@ -260,6 +260,19 @@ let enviromentVariables = {
 		message: 'Require account name',
 		optional: false,
 	},
+	EMAIL_ID_ENCRYPTION_KEY: {
+		message: 'Required Email ID Encryption Key',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_IV: {
+		message: 'Required Email ID Encryption IV',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_ALGORITHM: {
+		message: 'Required Email ID Encryption Algorithm',
+		optional: false,
+		default: 'aes-256-cbc',
+	},
 }
 
 let success = true

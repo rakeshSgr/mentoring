@@ -1,7 +1,7 @@
-const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
-
+const searchConfig = require('@configs/search.json')
+const { convertKeysToSnakeCase } = require('@generics/utils')
 module.exports = class platformHelper {
 	/**
 	 * Get application configuration.
@@ -18,6 +18,7 @@ module.exports = class platformHelper {
 			let config = {
 				meeting_platform: process.env.DEFAULT_MEETING_SERVICE,
 				session_mentee_limit: process.env.SESSION_MENTEE_LIMIT,
+				search_config: convertKeysToSnakeCase(searchConfig),
 			}
 
 			return responses.successResponse({

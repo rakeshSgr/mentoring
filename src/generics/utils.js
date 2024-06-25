@@ -16,6 +16,7 @@ const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
 const common = require('@constants/common')
 const crypto = require('crypto')
+const _ = require('lodash')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -634,6 +635,21 @@ const clearFile = (filePath) => {
 		if (err) logger.error(err)
 	})
 }
+function convertKeysToSnakeCase(obj) {
+	if (Array.isArray(obj)) {
+		return obj.map(convertKeysToSnakeCase)
+	} else if (typeof obj === 'object' && obj !== null) {
+		return Object.fromEntries(
+			Object.entries(obj).map(([key, value]) => [_.snakeCase(key), convertKeysToSnakeCase(value)])
+		)
+	}
+	return obj
+}
+
+function isValidEmail(email) {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+	return emailRegex.test(email)
+}
 
 module.exports = {
 	hash: hash,
@@ -676,4 +692,6 @@ module.exports = {
 	generateFileName,
 	generateCSVContent,
 	clearFile,
+	convertKeysToSnakeCase,
+	isValidEmail,
 }
