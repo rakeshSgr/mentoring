@@ -462,13 +462,13 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				const containsUserId = session.mentees.includes(userId)
-				if (!containsUserId && session.mentees.length >= 6) {
+				if (!containsUserId && session.mentees.length > process.env.SESSION_MENTEE_LIMIT) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
 						` Only ${process.env.SESSION_MENTEE_LIMIT} mentees are allowed`
 					)
-				} else if (containsUserId && session.mentees.length >= 7) {
+				} else if (containsUserId && session.mentees.length > process.env.SEESION_MANAGER_AND_MENTEE_LIMIT) {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(
 						session.statusMessage,
