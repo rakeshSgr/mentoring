@@ -3,12 +3,12 @@ info:
   title: Elevate Mentoring
   version: 1.0.0
   description: >-
-    - The Mentoring Service is a centralized service that supports other
+    * The Mentoring Service is a centralized service that supports other
     services. Application Programming Interfaces (APIs) exposed by the Mentoring
     Service can be used to perform operations related to other entities such as
-    users, mentors, mentees, and sessions.  
+    users, mentors, mentees, and sessions.
 
-    - The URL to access the Mentoring API(s) is `{context}/mentoring/v1` -
+    * The URL to access the Mentoring API(s) is `{context}/mentoring/v1` -
     <b>Note:</b> These resources can be used in other services.
   contact:
     email: tech-infra@shikshalokam.org
@@ -5123,14 +5123,13 @@ paths:
   /mentoring/v1/entity-type/create:
     post:
       summary: Create entity type
-      tags:
-        - Entity Type
+      tags: []
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters:
+      parameters: &ref_2
         - name: X-auth-token
           in: header
           description: >-
@@ -5237,13 +5236,13 @@ paths:
                     meta:
                       correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
                       meeting_platform: BBB
-        '400':
+        '400': &ref_3
           description: Bad Request. User Entity already exists.
           content:
             application.json:
               schema:
                 $ref: '#/components/schemas/entity/createUserEntity400Response'
-    parameters:
+    parameters: &ref_4
       - in: path
         name: ''
         description: ''
@@ -5252,14 +5251,13 @@ paths:
   /mentoring/v1/entity-type/read:
     get:
       summary: Read entity type
-      tags:
-        - Entity Type
+      tags: []
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/read` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters:
+      parameters: &ref_5
         - name: X-auth-token
           in: header
           description: >-
@@ -5388,7 +5386,7 @@ paths:
                     meta:
                       correlation: 64cd08ba-cc87-4172-9633-2146dabe0b78
                       meeting_platform: BBB
-        '400':
+        '400': &ref_6
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -5404,7 +5402,8 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - &ref_7
+          name: X-auth-token
           in: header
           description: >-
             To use this API, you require an X-auth-token. This is available in
@@ -5511,7 +5510,7 @@ paths:
                     meta:
                       correlation: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
                       meeting_platform: BBB
-        '400':
+        '400': &ref_8
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -5527,7 +5526,8 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - &ref_9
+          name: X-auth-token
           in: header
           description: >-
             To use this API, you require an X-auth-token. This is available in
@@ -5570,7 +5570,7 @@ paths:
                     meta:
                       correlation: b6841b40-4977-47b5-ac83-3c1e9aa40771
                       meeting_platform: BBB
-        '400':
+        '400': &ref_11
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -8066,6 +8066,628 @@ paths:
                       correlation: 110c2e7f-eaf1-43fb-a622-157296dd5090
                       meetingPlatform: BBB
         '400': *ref_1
+  /mentoring/v1/default-rule/create:
+    post:
+      summary: Create default rule
+      tags:
+        - Default-Rules
+      description: >-
+        You can use this API to create a default rules
+
+
+        * The API Endpoint for creating a default rule is
+        /mentoring/v1/default-rule/create
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_2
+      requestBody:
+        content:
+          application.json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                target_field:
+                  type: string
+                is_target_from_sessions_mentor:
+                  type: boolean
+                requester_field:
+                  type: string
+                field_configs:
+                  type: 'null'
+                matching_operator:
+                  type: string
+                requester_roles:
+                  type: array
+                  items:
+                    type: string
+                role_config:
+                  type: object
+                  properties:
+                    exclude:
+                      type: boolean
+              required:
+                - type
+                - target_field
+                - requester_field
+            examples:
+              example1:
+                value:
+                  type: test
+                  target_field: gender
+                  is_target_from_sessions_mentor: false
+                  requester_field: gender
+                  field_configs: null
+                  matching_operator: '='
+                  requester_roles:
+                    - session_manager
+                  role_config:
+                    exclude: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      id:
+                        type: number
+                      type:
+                        type: string
+                      target_field:
+                        type: string
+                      is_target_from_sessions_mentor:
+                        type: boolean
+                      requester_field:
+                        type: string
+                      field_configs:
+                        type: 'null'
+                      matching_operator:
+                        type: string
+                      requester_roles:
+                        type: array
+                        items:
+                          type: string
+                      role_config:
+                        type: object
+                        properties:
+                          exclude:
+                            type: boolean
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      organization_id:
+                        type: number
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            version:
+                              type: number
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: The default rule has been created successfully.
+                    result:
+                      created_at: '2024-06-25T08:50:00.841Z'
+                      updated_at: '2024-06-25T08:50:00.843Z'
+                      id: 1
+                      type: test
+                      target_field: gender
+                      is_target_from_sessions_mentor: false
+                      requester_field: gender
+                      field_configs: null
+                      matching_operator: '='
+                      requester_roles:
+                        - session_manager
+                      role_config:
+                        exclude: true
+                      created_by: 33
+                      updated_by: 33
+                      organization_id: 15
+                      deleted_at: null
+                    meta:
+                      formsVersion:
+                        - id: 1
+                          type: managersSession
+                          version: 0
+                      correlation: bac9d093-25b0-498e-9223-a314e8c7ccec
+                      meetingPlatform: BBB
+        '400': *ref_3
+    parameters: *ref_4
+  /mentoring/v1/default-rule/read:
+    get:
+      summary: Read default rules
+      tags:
+        - Default-Rules
+      description: >-
+        You can use this API to read default rules
+
+
+        * The API Endpoint for reading the default rules is
+        /mentoring/v1/default-rule/read
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                target_field:
+                  type: string
+                is_target_from_sessions_mentor:
+                  type: boolean
+                requester_field:
+                  type: string
+                field_configs:
+                  type: 'null'
+                matching_operator:
+                  type: string
+                requester_roles:
+                  type: array
+                  items:
+                    type: string
+                role_config:
+                  type: object
+                  properties:
+                    exclude:
+                      type: boolean
+              required:
+                - type
+                - target_field
+                - requester_field
+            examples:
+              example1:
+                value:
+                  type: test
+                  target_field: gender
+                  is_target_from_sessions_mentor: true
+                  requester_field: gender
+                  field_configs: null
+                  matching_operator: '='
+                  requester_roles:
+                    - session_manager
+                  role_config:
+                    exclude: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            target_field:
+                              type: string
+                            is_target_from_sessions_mentor:
+                              type: boolean
+                            requester_field:
+                              type: string
+                            field_configs:
+                              type: 'null'
+                            matching_operator:
+                              type: string
+                            requester_roles:
+                              type: array
+                              items:
+                                type: string
+                            role_config:
+                              type: object
+                              properties:
+                                exclude:
+                                  type: boolean
+                            organization_id:
+                              type: number
+                            created_by:
+                              type: number
+                            updated_by:
+                              type: number
+                            created_at:
+                              type: string
+                            updated_at:
+                              type: string
+                            deleted_at:
+                              type: 'null'
+                      count:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            version:
+                              type: number
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: The default rules have been fetched successfully.
+                    result:
+                      data:
+                        - id: 1
+                          type: test
+                          target_field: gender
+                          is_target_from_sessions_mentor: false
+                          requester_field: gender
+                          field_configs: null
+                          matching_operator: '='
+                          requester_roles:
+                            - session_manager
+                          role_config:
+                            exclude: true
+                          organization_id: 15
+                          created_by: 33
+                          updated_by: 33
+                          created_at: '2024-06-25T08:50:00.841Z'
+                          updated_at: '2024-06-25T08:50:00.843Z'
+                          deleted_at: null
+                      count: 1
+                    meta:
+                      formsVersion:
+                        - id: 1
+                          type: managersSession
+                          version: 0
+                      correlation: bf5272ac-e1d5-405a-b990-aa60d6d32c9f
+                      meetingPlatform: BBB
+        '400': *ref_6
+  /mentoring/v1/default-rule/update/{id}:
+    patch:
+      summary: Update default rules
+      tags:
+        - Default-Rules
+      description: >-
+        You can use this API to update a default rule
+
+
+        * The API Endpoint for updating the default rules is
+        /mentoring/v1/default-rule/update
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - *ref_7
+        - in: query
+          name: id
+          description: default rules id
+          schema: &ref_10
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                target_field:
+                  type: string
+                is_target_from_sessions_mentor:
+                  type: boolean
+                requester_field:
+                  type: string
+                field_configs:
+                  type: 'null'
+                matching_operator:
+                  type: string
+                requester_roles:
+                  type: array
+                  items:
+                    type: string
+                role_config:
+                  type: object
+                  properties:
+                    exclude:
+                      type: boolean
+              required:
+                - type
+                - target_field
+                - requester_field
+            examples:
+              example1:
+                value:
+                  type: mentor
+                  target_field: gender
+                  is_target_from_sessions_mentor: false
+                  requester_field: gender
+                  field_configs: null
+                  matching_operator: '='
+                  requester_roles:
+                    - session_manager
+                  role_config:
+                    exclude: true
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        type:
+                          type: string
+                        target_field:
+                          type: string
+                        is_target_from_sessions_mentor:
+                          type: boolean
+                        requester_field:
+                          type: string
+                        field_configs:
+                          type: 'null'
+                        matching_operator:
+                          type: string
+                        requester_roles:
+                          type: array
+                          items:
+                            type: string
+                        role_config:
+                          type: object
+                          properties:
+                            exclude:
+                              type: boolean
+                        organization_id:
+                          type: number
+                        created_by:
+                          type: number
+                        updated_by:
+                          type: number
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
+                        deleted_at:
+                          type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            version:
+                              type: number
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: The default rule has been updated successfully.
+                    result:
+                      - id: 1
+                        type: mentor
+                        target_field: gender
+                        is_target_from_sessions_mentor: false
+                        requester_field: gender
+                        field_configs: null
+                        matching_operator: '='
+                        requester_roles:
+                          - session_manager
+                        role_config:
+                          exclude: true
+                        organization_id: 15
+                        created_by: 33
+                        updated_by: 33
+                        created_at: '2024-06-25T08:50:00.841Z'
+                        updated_at: '2024-06-25T09:02:03.177Z'
+                        deleted_at: null
+                    meta:
+                      formsVersion:
+                        - id: 1
+                          type: managersSession
+                          version: 0
+                      correlation: 812307e4-53a7-48e2-8978-bf6725745f31
+                      meetingPlatform: BBB
+        '400': *ref_8
+  /mentoring/v1/default-rule/delete/{id}:
+    delete:
+      summary: Delete default type
+      tags:
+        - Default-Rules
+      description: >-
+        You can use this API to delete default rules
+
+
+        * The API Endpoint for creating a user entity is
+        /mentoring/v1/default-rule/delete
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - *ref_9
+        - in: query
+          name: id
+          description: ''
+          schema: *ref_10
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                target_field:
+                  type: string
+                is_target_from_sessions_mentor:
+                  type: boolean
+                requester_field:
+                  type: string
+                field_configs:
+                  type: 'null'
+                matching_operator:
+                  type: string
+                requester_roles:
+                  type: array
+                  items:
+                    type: string
+                role_config:
+                  type: object
+                  properties:
+                    exclude:
+                      type: boolean
+              required:
+                - type
+                - target_field
+                - requester_field
+            examples:
+              example1:
+                value:
+                  type: mentor
+                  target_field: gender
+                  is_target_from_sessions_mentor: true
+                  requester_field: gender
+                  field_configs: null
+                  matching_operator: '='
+                  requester_roles:
+                    - session_manager
+                  role_config:
+                    exclude: true
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            version:
+                              type: number
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: The default rule has been deleted successfully.
+                    result: []
+                    meta:
+                      formsVersion:
+                        - id: 1
+                          type: managersSession
+                          version: 0
+                      correlation: 21720d01-16ff-40bd-b502-1930a6b249a4
+                      meetingPlatform: BBB
+        '400': *ref_11
 components:
   schemas:
     form:
@@ -10695,6 +11317,11 @@ tags:
       url: ''
   - name: Sessions
     description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Default-Rules
+    description: Api's for setting default rules for search
     externalDocs:
       description: ''
       url: ''
