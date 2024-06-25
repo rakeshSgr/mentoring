@@ -25,6 +25,9 @@ const entityType = require('@database/models/entityType')
 const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
+const { buildSearchFilter } = require('@helpers/search')
+const searchConfig = require('@configs/search.json')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class MenteesHelper {
 	/**
@@ -326,7 +329,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn) {
 		let additionalProjectionString = ''
 
 		// check for fields query
@@ -348,14 +351,29 @@ module.exports = class MenteesHelper {
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
 
+		const searchFilter = await buildSearchFilter({
+			searchOn: searchOn ? searchOn.split(',') : false,
+			searchConfig: searchConfig.search.session,
+			search,
+			modelName: sessionModelName,
+		})
+		// return false response when buildSearchFilter() returns negative response
+		// buildSearchFilter() false when search on only contains entity type and no valid matches.
+		if (!searchFilter) {
+			return {
+				rows: [],
+				count: 0,
+			}
+		}
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,
-			search,
+			searchFilter,
 			userId,
 			filteredQuery,
 			saasFilter,
-			additionalProjectionString
+			additionalProjectionString,
+			search
 		)
 		if (sessions.rows.length > 0) {
 			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_organization_id))]
@@ -577,6 +595,9 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			// Return error if user org does not exists
@@ -668,13 +689,18 @@ module.exports = class MenteesHelper {
 	 */
 	static async updateMenteeExtension(data, userId, orgId) {
 		try {
+			if (data.email) {
+				data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			}
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
-				'visibility',
+				'mentor_visibility',
 				'visible_to_organizations',
 				'external_session_visibility',
 				'external_mentor_visibility',
+				'external_mentee_visibility',
+				'mentee_visibility',
 			]
 
 			dataToRemove.forEach((key) => {
@@ -861,11 +887,24 @@ module.exports = class MenteesHelper {
 
 					const defaultOrgId = await getDefaultOrgId()
 
+					const modelName = []
+
+					const queryMap = {
+						[common.MENTEE_ROLE]: menteeQueries.getModelName,
+						[common.MENTOR_ROLE]: mentorQueries.getModelName,
+						[common.SESSION]: sessionQueries.getModelName,
+					}
+
+					if (queryMap[filter_type.toLowerCase()]) {
+						const modelNameResult = await queryMap[filter_type.toLowerCase()]()
+						modelName.push(modelNameResult)
+					}
 					// get entity type with entities list
 					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
 						organization_ids,
 						entity_type,
-						defaultOrgId ? defaultOrgId : ''
+						defaultOrgId ? defaultOrgId : '',
+						modelName
 					)
 
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
@@ -900,10 +939,17 @@ module.exports = class MenteesHelper {
 		try {
 			let organizationIds = []
 			filterType = filterType.toLowerCase()
-			const attributes =
-				filterType == common.MENTEE_ROLE
-					? ['organization_id', 'session_visibility_policy']
-					: ['organization_id', 'external_mentor_visibility_policy']
+
+			let visibilityPolicies = []
+			let orgVisibilityPolicies = []
+
+			const policyMap = {
+				[common.MENTEE_ROLE]: ['organization_id', 'external_mentee_visibility_policy'],
+				[common.SESSION]: ['organization_id', 'external_session_visibility_policy'],
+				[common.MENTOR_ROLE]: ['organization_id', 'external_mentor_visibility_policy'],
+			}
+			visibilityPolicies = policyMap[filterType] || []
+			const attributes = visibilityPolicies
 
 			const orgExtension = await organisationExtensionQueries.findOne(
 				{ organization_id },
@@ -912,10 +958,13 @@ module.exports = class MenteesHelper {
 				}
 			)
 
-			const visibilityPolicy =
-				filterType == common.MENTEE_ROLE
-					? orgExtension.session_visibility_policy
-					: orgExtension.external_mentor_visibility_policy
+			const orgPolicyMap = {
+				[common.MENTEE_ROLE]: orgExtension.external_mentee_visibility_policy,
+				[common.SESSION]: orgExtension.external_session_visibility_policy,
+				[common.MENTOR_ROLE]: orgExtension.external_mentor_visibility_policy,
+			}
+			orgVisibilityPolicies = orgPolicyMap[filterType] || []
+			const visibilityPolicy = orgVisibilityPolicies
 
 			if (orgExtension?.organization_id) {
 				if (visibilityPolicy === common.CURRENT) {
@@ -933,7 +982,13 @@ module.exports = class MenteesHelper {
 						const associatedAdditionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_session_visibility_policy: {
+										mentee_visibility_policy: {
+											[Op.ne]: 'CURRENT',
+										},
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: {
 											[Op.ne]: 'CURRENT',
 										},
 								  }
@@ -967,30 +1022,45 @@ module.exports = class MenteesHelper {
 						}
 					} else {
 						// filter out the organizations
-						// CASE 1 : in case of mentee listing filterout organizations with external_session_visibility_policy = ALL
-						// CASE 2 : in case of mentor listing filterout organizations with mentor_visibility_policy = ALL
+						// CASE 1 : in case of mentee listing filterout organizations with external_mentee_visibility_policy = ALL
+						// CASE 2 : in case of session listing filterout organizations with session_visibility_policy = ALL
+						// CASE 3 : in case of mentor listing filterout organizations with mentor_visibility_policy = ALL
 						const filterQuery =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_session_visibility_policy: common.ALL,
+										mentee_visibility_policy: common.ALL, //1
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: common.ALL, //2
 								  }
 								: {
-										mentor_visibility_policy: common.ALL,
+										mentor_visibility_policy: common.ALL, //3
 								  }
 
 						// this filter is applied for the below condition
-						// SM session_visibility_policy (in case of mentee list) or external_mentor_visibility policy (in case of mentor list) = ALL
-						//  and CASE 1 (mentee list) : Mentees is related to the SM org but external_session_visibility is CURRENT (exclude these mentees)
-						//  CASE 2 : (mentor list) : Mentors is related to SM Org but mentor_visibility set to CURRENT  (exclude these mentors)
+						// SM mentee_visibility_policy (in case of mentee list) or external_mentor_visibility policy (in case of mentor list) = ALL
+						//  and CASE 1 (mentee list) : Mentees is related to the SM org but external_mentee_visibility is CURRENT (exclude these mentees)
+						//  CASE 2 : (session list) : Sessions is related to the SM org but session_visibility is CURRENT (exclude these sessions)
+						//  CASE 3 : (mentor list) : Mentors is related to SM Org but mentor_visibility set to CURRENT  (exclude these mentors)
 						const additionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_session_visibility_policy: {
+										mentee_visibility_policy: {
+											//1
+											[Op.ne]: 'CURRENT',
+										},
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: {
+											//2
 											[Op.ne]: 'CURRENT',
 										},
 								  }
 								: {
 										mentor_visibility_policy: {
+											//3
 											[Op.ne]: 'CURRENT',
 										},
 								  }
@@ -1037,7 +1107,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '', modelName) {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
@@ -1056,6 +1126,9 @@ module.exports = class MenteesHelper {
 				}
 			}
 
+			if (modelName) {
+				filter.model_names = { [Op.contains]: [modelName] }
+			}
 			//fetch entity types and entities
 			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
@@ -1092,27 +1165,19 @@ module.exports = class MenteesHelper {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields
 			}
-			let userServiceQueries = {}
 			let organization_ids = []
-			let designation = []
-			let searchQuery = ''
 
 			const [sortBy, order] = ['name'].includes(queryParams.sort_by)
 				? [queryParams.sort_by, queryParams.order || 'ASC']
 				: [false, 'ASC']
 
-			for (let key in queryParams) {
-				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
-					searchQuery = queryParams[key]
-				}
-				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
-					organization_ids = queryParams[key].split(',')
-				}
+			if (queryParams.hasOwnProperty('organization_ids')) {
+				organization_ids = queryParams['organization_ids'].split(',')
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const userExtensionModelName = await menteeQueries.getModelName()
-			const mentorExtensionModelName = await menteeQueries.getModelName()
+			const mentorExtensionModelName = await mentorQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
@@ -1125,27 +1190,38 @@ module.exports = class MenteesHelper {
 				userExtensionModelName
 			)
 
-			const userType = [common.MENTEE_ROLE, common.MENTOR_ROLE]
+			const emailIds = []
+			const searchTextArray = searchText ? searchText.split(',') : []
+
+			searchTextArray.forEach((element) => {
+				if (utils.isValidEmail(element)) {
+					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
+				}
+			})
+			const hasValidEmails = emailIds.length > 0
 
 			const saasFilter = await this.filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids)
 			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
 				[],
-				null,
-				null,
+				pageNo,
+				pageSize,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
-				true
+				false,
+				hasValidEmails ? emailIds : searchText
 			)
 
 			let mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
-				null,
-				null,
+				pageNo,
+				pageSize,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
-				true
+				false,
+				'',
+				hasValidEmails ? emailIds : searchText
 			)
 
 			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
@@ -1163,45 +1239,7 @@ module.exports = class MenteesHelper {
 			}
 
 			const menteeIds = extensionDetails.data.map((item) => item.user_id)
-			if (menteeIds) {
-				userServiceQueries['user_ids'] = menteeIds
-			}
-
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
-			if (userDetails.data.result.count == 0) {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'MENTEE_LIST',
-					result: {
-						data: [],
-						count: 0,
-					},
-				})
-			}
-
-			const userIds = userDetails.data.result.data.map((item) => item.id)
-			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
-				userIds,
-				null,
-				null,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false
-			)
-
-			mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				userIds,
-				null,
-				null,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false
-			)
-
-			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
-			extensionDetails.count += mentorExtensionDetails.count
+			const userDetails = await userRequests.getListOfUserDetails(menteeIds, true)
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
@@ -1213,7 +1251,7 @@ module.exports = class MenteesHelper {
 				)
 			}
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
-			userDetails.data.result.data = userDetails.data.result.data
+			userDetails.result = userDetails.result
 				.map((value) => {
 					// Map over each value in the values array of the current group
 					const user_id = value.id
@@ -1222,7 +1260,8 @@ module.exports = class MenteesHelper {
 						const newItem = extensionDataMap.get(user_id)
 						value = { ...value, ...newItem }
 						delete value.user_id
-						delete value.visibility
+						delete value.mentor_visibility
+						delete value.mentee_visibility
 						delete value.organization_id
 						delete value.meta
 						delete value.rating
@@ -1235,7 +1274,7 @@ module.exports = class MenteesHelper {
 			if (queryParams.session_id) {
 				const enrolledMentees = await getEnrolledMentees(queryParams.session_id, '', userId)
 
-				userDetails.data.result.data.forEach((user) => {
+				userDetails.result.forEach((user) => {
 					user.is_enrolled = false
 					const enrolledUser = _.find(enrolledMentees, { id: user.id })
 					if (enrolledUser) {
@@ -1247,7 +1286,7 @@ module.exports = class MenteesHelper {
 
 			// Check if sortBy have values before applying sorting
 			if (sortBy) {
-				userDetails.data.result.data = userDetails.data.result.data.sort((a, b) => {
+				userDetails.result = userDetails.result.sort((a, b) => {
 					// Determine the sorting order based on the 'order' value
 					const sortOrder = order.toLowerCase() === 'asc' ? 1 : order.toLowerCase() === 'desc' ? -1 : 1
 
@@ -1258,8 +1297,11 @@ module.exports = class MenteesHelper {
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: userDetails.data.message,
-				result: userDetails.data.result,
+				message: userDetails.message,
+				result: {
+					data: userDetails.result,
+					count: extensionDetails.count,
+				},
 			})
 		} catch (error) {
 			throw error
@@ -1267,11 +1309,11 @@ module.exports = class MenteesHelper {
 	}
 	static async filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids = []) {
 		try {
-			let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
-			// check for external_mentee_visibility else fetch external_mentor_visibility
-			extensionColumns = extensionColumns.includes('external_mentee_visibility')
-				? ['external_mentee_visibility', 'organization_id']
-				: ['external_mentor_visibility', 'organization_id']
+			// let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
+			// // check for external_mentee_visibility else fetch external_mentor_visibility
+			// extensionColumns = extensionColumns.includes('external_mentee_visibility')
+			// 	? ['external_mentee_visibility', 'organization_id']
+			// 	: ['external_mentor_visibility', 'organization_id']
 
 			const userPolicyDetails = isAMentor
 				? await mentorQueries.getMentorExtension(userId, ['organization_id'])
@@ -1282,7 +1324,7 @@ module.exports = class MenteesHelper {
 					organization_id: userPolicyDetails.organization_id,
 				},
 				{
-					attributes: ['session_visibility_policy', 'organization_id'],
+					attributes: ['mentee_visibility_policy', 'organization_id'],
 				}
 			)
 			// Throw error if mentor/mentee extension not found
@@ -1300,8 +1342,8 @@ module.exports = class MenteesHelper {
 			if (organization_ids.length !== 0) {
 				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')})`
 			}
-			if (getOrgPolicy.session_visibility_policy && userPolicyDetails.organization_id) {
-				const visibilityPolicy = getOrgPolicy.session_visibility_policy
+			if (getOrgPolicy.mentee_visibility_policy && userPolicyDetails.organization_id) {
+				const visibilityPolicy = getOrgPolicy.mentee_visibility_policy
 
 				// Filter user data based on policy
 				// generate filter based on condition
@@ -1318,7 +1360,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_session_visibility" != 'CURRENT')`
+						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
 						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
@@ -1330,13 +1372,88 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_session_visibility" != 'CURRENT' ) OR "external_session_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT' ) OR "external_mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
 				}
 			}
 
 			return filter
 		} catch (err) {
 			return err
+		}
+	}
+
+	/**
+	 * @description 							- check if mentee is accessible based on user's saas policy.
+	 * @method
+	 * @name checkIfMenteeIsAccessible
+	 * @param {Number} userId 					- User id.
+	 * @param {Array} userData					- User data
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {Boolean} 						- user Accessible
+	 */
+
+	static async checkIfMenteeIsAccessible(userData, userId, isAMentor) {
+		try {
+			// user can be mentor or mentee, based on isAMentor key get policy details
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, ['external_mentee_visibility', 'organization_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_mentee_visibility', 'organization_id'])
+
+			// Throw error if mentor/mentee extension not found
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// check the accessibility conditions
+			const accessibleUsers = userData.map((mentor) => {
+				let isAccessible = false
+
+				if (userPolicyDetails.external_mentee_visibility && userPolicyDetails.organization_id) {
+					const { external_mentee_visibility, organization_id } = userPolicyDetails
+
+					switch (external_mentee_visibility) {
+						/**
+						 * if user external_mentee_visibility is current. He can only see his/her organizations mentee
+						 * so we will check mentee's organization_id and user organization_id are matching
+						 */
+						case common.CURRENT:
+							isAccessible = mentor.organization_id === organization_id
+							break
+						/**
+						 * If user external_mentee_visibility is associated
+						 * <<point**>> first we need to check if mentee's visible_to_organizations contain the user organization_id and verify mentee's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+						 */
+						case common.ASSOCIATED:
+							isAccessible =
+								(mentor.visible_to_organizations.includes(organization_id) &&
+									mentor.mentor_visibility != common.CURRENT) ||
+								mentor.organization_id === organization_id
+							break
+						/**
+						 * We need to check if mentee's visible_to_organizations contain the user organization_id and verify mentee's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+						 * OR if mentee visibility is ALL that mentor is also accessible
+						 */
+						case common.ALL:
+							isAccessible =
+								(mentor.visible_to_organizations.includes(organization_id) &&
+									mentor.mentor_visibility != common.CURRENT) ||
+								mentor.mentor_visibility === common.ALL ||
+								mentor.organization_id === organization_id
+							break
+						default:
+							break
+					}
+				}
+				return { mentor, isAccessible }
+			})
+			const isAccessible = accessibleUsers.some((user) => user.isAccessible)
+			return isAccessible
+		} catch (error) {
+			return error
 		}
 	}
 }

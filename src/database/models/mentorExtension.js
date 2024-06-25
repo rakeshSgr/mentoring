@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
 			configs: {
 				type: DataTypes.JSON,
 			},
-			visibility: {
+			mentor_visibility: {
 				type: DataTypes.STRING,
 			},
 			visible_to_organizations: {
@@ -54,6 +54,23 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
+			external_mentee_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			mentee_visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'CURRENT',
+			},
+			name: {
+				type: DataTypes.STRING,
+			},
+			email: {
+				type: DataTypes.STRING,
+			},
+			phone: {
+				type: DataTypes.STRING,
+			},
 		},
 		{
 			sequelize,
@@ -61,6 +78,9 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'mentor_extensions',
 			freezeTableName: true,
 			paranoid: true,
+			defaultScope: {
+				attributes: { exclude: ['name', 'email'] },
+			},
 		}
 	)
 	return MentorExtension

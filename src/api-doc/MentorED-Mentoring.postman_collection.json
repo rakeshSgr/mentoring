@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "d1906edd-6723-4e38-84ae-5daf2e8b5b11",
+		"_postman_id": "6e8d2b47-d5b4-4e60-937a-4eecb311c272",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6350183",
-		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-d1906edd-6723-4e38-84ae-5daf2e8b5b11?action=share&source=collection_link&creator=6350183"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -935,6 +934,45 @@
 							"body": "\"Name\",\"Designation\",\"Organization\",\"E-mail ID\",\"Enrollment Type\"\n\"priyanka\",\"Block education officer, District education officer\",\"Default Organization\",\"f9359474815816b30fcb515a2e935322c7e6a376367bb9792d1f1a11c78181be\",\n\"Nevil M\",\"test\",\"Default Organization\",\"nevil@tunerlabs.com\","
 						}
 					]
+				},
+				{
+					"name": "SessionSampleCSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": "{{MentoringBaseUrl}}mentoring/v1/sessions/getSampleCSV"
+					},
+					"response": []
+				},
+				{
+					"name": "BulkSessionCreate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"file_path\" : \"15/BulkSessionMentorCheck.csv\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{MentoringBaseUrl}}mentoring/v1/sessions/bulkSessionCreate"
+					},
+					"response": []
 				}
 			]
 		},
@@ -1722,7 +1760,11 @@
 								"type": "text"
 							}
 						],
-						"url": "{{MentoringBaseUrl}}mentoring/v1/platform/config"
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "platform", "config"]
+						}
 					},
 					"response": []
 				}
@@ -2108,6 +2150,31 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/updateRelatedOrgs",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "org-admin", "updateRelatedOrgs"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UploadSampleCSV",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/uploadCustomCSV?fileName=BulkSessionMentorCheck.csv",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "uploadCustomCSV"],
+							"query": [
+								{
+									"key": "fileName",
+									"value": "BulkSessionMentorCheck.csv"
+								}
+							]
 						}
 					},
 					"response": []
@@ -2905,6 +2972,1376 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "File-upload",
+			"item": [
+				{
+					"name": "Get Signed Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/cloud-services/getSignedUrl?fileName=laptop1.jpg",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "cloud-services", "getSignedUrl"],
+							"query": [
+								{
+									"key": "fileName",
+									"value": "laptop1.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Downloable Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/cloud-services/getDownloadableUrl?filePath=users/2-1695710833829-user_creation.csv",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "cloud-services", "getDownloadableUrl"],
+							"query": [
+								{
+									"key": "filePath",
+									"value": "users/2-1695710833829-user_creation.csv"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Availability",
+			"item": [
+				{
+					"name": "Create",
+					"item": [
+						{
+							"name": "Daily",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"event_name\": \"Daily from 9 to 10 PM, till Friday, 14 June 2024 12:00:00 AM IST\",\n    \"start_time\": 1713195000,\n    \"end_time\": 1713198600,\n    \"expiration_date\": 1718303400,\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Daily",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"event_name\": \"Daily from 9 to 10 PM\",\n    \"start_time\": 1713195000,\n    \"end_time\": 1713198600,\n    \"expiration_date\": 1718303400,\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "ddeedf77-fdd4-4435-8283-0fa1e71c3a48"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1023"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"3ff-2pmR8CmuUSa7heZZ+zGYbVBZmTY\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:32:44 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"repeat_on\": null,\n        \"exceptions\": null,\n        \"organization_id\": 0,\n        \"id\": 30,\n        \"event_name\": \"Daily from 9 to 10 PM\",\n        \"start_time\": \"1713195000\",\n        \"end_time\": \"1713198600\",\n        \"expiration_date\": \"1718303400\",\n        \"repeat_unit\": \"DAY\",\n        \"repeat_increment\": 1,\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"user_id\": 133,\n        \"updated_at\": \"2024-04-17T19:32:43.996Z\",\n        \"created_at\": \"2024-04-17T19:32:43.996Z\",\n        \"occurrence_in_month\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"ddeedf77-fdd4-4435-8283-0fa1e71c3a48\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Daily w exceptions",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n    \"start_time\": 1712921400,\n    \"end_time\": 1712925000,\n    \"expiration_date\": 1713249000,\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456,\n    \"exceptions\": {\n        \"1713052800\": {\n            \"end_time\": \"1713072600\",\n            \"start_time\": \"1713069000\"\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Daily w exceptions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n    \"start_time\": 1712921400,\n    \"end_time\": 1712925000,\n    \"expiration_date\": 1713249000,\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456,\n    \"exceptions\": {\n        \"1713052800\": {\n            \"end_time\": \"1713072600\",\n            \"start_time\": \"1713069000\"\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "e5b1a061-cdc1-4c63-adeb-c1e1a9f45f20"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1112"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"458-A4TxVPAFVBKDjTGJ6C7Z7SkkBGo\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:33:13 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"repeat_on\": null,\n        \"id\": 31,\n        \"user_id\": 133,\n        \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n        \"start_time\": \"1712921400\",\n        \"end_time\": \"1712925000\",\n        \"expiration_date\": \"1713249000\",\n        \"repeat_unit\": \"DAY\",\n        \"repeat_increment\": 1,\n        \"organization_id\": 456,\n        \"exceptions\": {\n            \"1713052800\": {\n                \"end_time\": \"1713072600\",\n                \"start_time\": \"1713069000\"\n            }\n        },\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"updated_at\": \"2024-04-17T19:33:13.442Z\",\n        \"created_at\": \"2024-04-17T19:33:13.442Z\",\n        \"occurrence_in_month\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"e5b1a061-cdc1-4c63-adeb-c1e1a9f45f20\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Weekly",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Weekly on specific weekdays\",\n    \"start_time\": 1713162600,\n    \"end_time\": 1713166200,\n    \"repeat_on\": [\n        \"Saturday\"\n    ],\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Weekly",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Weekly on specific weekdays\",\n    \"start_time\": 1713162600,\n    \"end_time\": 1713166200,\n    \"expiration_date\": 1714242600,\n    \"repeat_on\": [\n        \"Saturday\"\n    ],\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "b9d9f3b1-5e6c-4d27-959d-9ffc82644c0c"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1039"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"40f-hVVKfXi1KxJk+KASTrHTq2QdmOw\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:33:25 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"exceptions\": null,\n        \"id\": 32,\n        \"user_id\": 133,\n        \"event_name\": \"Weekly on specific weekdays\",\n        \"start_time\": \"1713162600\",\n        \"end_time\": \"1713166200\",\n        \"expiration_date\": \"1714242600\",\n        \"repeat_on\": [\n            \"Saturday\"\n        ],\n        \"repeat_unit\": \"DAY\",\n        \"repeat_increment\": 1,\n        \"organization_id\": 456,\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"updated_at\": \"2024-04-17T19:33:25.801Z\",\n        \"created_at\": \"2024-04-17T19:33:25.801Z\",\n        \"occurrence_in_month\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"b9d9f3b1-5e6c-4d27-959d-9ffc82644c0c\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Monthly",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Monthly on second monday\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_on\": [\n        \"Monday\"\n    ],\n    \"repeat_unit\": \"MONTH\",\n    \"occurrence_in_month\": 2,\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Monthly",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Monthly on second monday\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_on\": [\n        \"Monday\"\n    ],\n    \"repeat_unit\": \"MONTH\",\n    \"occurrence_in_month\": 3,\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "e8c809ce-232b-4f39-ad84-0f85318a65a8"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1025"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"401-6ycJJDMG4fI2End4ijTVVih72yA\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:33:51 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"exceptions\": null,\n        \"id\": 33,\n        \"user_id\": 133,\n        \"event_name\": \"Monthly on second monday\",\n        \"start_time\": \"1713155400\",\n        \"end_time\": \"1713159000\",\n        \"repeat_on\": [\n            \"Monday\"\n        ],\n        \"repeat_unit\": \"MONTH\",\n        \"occurrence_in_month\": 3,\n        \"repeat_increment\": 1,\n        \"organization_id\": 456,\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"updated_at\": \"2024-04-17T19:33:51.607Z\",\n        \"created_at\": \"2024-04-17T19:33:51.607Z\",\n        \"expiration_date\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"e8c809ce-232b-4f39-ad84-0f85318a65a8\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Monthly On Same Date",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Monthly on same date\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_unit\": \"MONTH\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Monthly On Same Date",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Monthly on same date\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_unit\": \"MONTH\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "6241ef1f-0954-47d6-ae96-41c1f68b7b41"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1018"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"3fa-HGWhyBWPX9I3mjPOItzV/bZO/34\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:34:03 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"repeat_on\": null,\n        \"exceptions\": null,\n        \"id\": 34,\n        \"user_id\": 133,\n        \"event_name\": \"Monthly on same date\",\n        \"start_time\": \"1713155400\",\n        \"end_time\": \"1713159000\",\n        \"repeat_unit\": \"MONTH\",\n        \"repeat_increment\": 1,\n        \"organization_id\": 456,\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"updated_at\": \"2024-04-17T19:34:03.938Z\",\n        \"created_at\": \"2024-04-17T19:34:03.938Z\",\n        \"expiration_date\": null,\n        \"occurrence_in_month\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"6241ef1f-0954-47d6-ae96-41c1f68b7b41\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Yearly",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Yealy Once Event\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_unit\": \"YEAR\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "create"]
+								}
+							},
+							"response": [
+								{
+									"name": "Create Yearly",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": 133,\n    \"event_name\": \"Yealy Once Event\",\n    \"start_time\": 1713155400,\n    \"end_time\": 1713159000,\n    \"repeat_unit\": \"YEAR\",\n    \"repeat_increment\": 1,\n    \"organization_id\": 456\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/create",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "availability", "create"]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "9e018e62-73ef-4857-87bc-220c4437b4ec"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1013"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"3f5-3bETlsyt9ehYxp+Us5pU7T9T4xk\""
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 17 Apr 2024 19:34:18 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"availability_CREATED_SUCCESSFULLY\",\n    \"result\": {\n        \"repeat_on\": null,\n        \"exceptions\": null,\n        \"id\": 35,\n        \"user_id\": 133,\n        \"event_name\": \"Yealy Once Event\",\n        \"start_time\": \"1713155400\",\n        \"end_time\": \"1713159000\",\n        \"repeat_unit\": \"YEAR\",\n        \"repeat_increment\": 1,\n        \"organization_id\": 456,\n        \"created_by\": 133,\n        \"updated_by\": 133,\n        \"updated_at\": \"2024-04-17T19:34:18.489Z\",\n        \"created_at\": \"2024-04-17T19:34:18.489Z\",\n        \"expiration_date\": null,\n        \"occurrence_in_month\": null,\n        \"session_id\": null,\n        \"deleted_at\": null\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"9e018e62-73ef-4857-87bc-220c4437b4ec\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"item": [
+						{
+							"name": "availability",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"event_name\": \"Daily from 9 to 10 PM\",\n    \"start_time\": 1713195000,\n    \"end_time\": 1713198600,\n    \"repeat_unit\": \"DAY\",\n    \"repeat_increment\": 1,\n    \"expiration_date\": null\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/update/:id",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "update", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "20"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "time for a single day",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"exceptions\": {\n        \"1718236800\": {\n            \"start_time\": \"1718285400\",\n            \"end_time\": \"1718289000\"\n        },\n        \"1718323200\": {}\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/update/:id",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "update", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"item": [
+						{
+							"name": "All Recurring Availabilities",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/delete/:id",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "delete", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "id of the availability that needs to be deleted."
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "GET",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/avail/read/:id?startEpoch=1713139200&endEpoch=1713657600",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "avail", "read", ":id"],
+											"query": [
+												{
+													"key": "startEpoch",
+													"value": "1713139200"
+												},
+												{
+													"key": "endEpoch",
+													"value": "1713657600"
+												}
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "7bf027bd-74d0-48f9-ab23-ce5e04ec45e8"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "2020"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"7e4-2/UCVCTddFjKGppaDv69W5+i5XY\""
+										},
+										{
+											"key": "Date",
+											"value": "Fri, 12 Apr 2024 09:35:11 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"Events fetched\",\n    \"result\": {\n        \"1713139200\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713155400,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713225600\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713241800,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713312000\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713328200,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713398400\": [],\n        \"1713484800\": [],\n        \"1713571200\": [],\n        \"1713657600\": []\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"7bf027bd-74d0-48f9-ab23-ce5e04ec45e8\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Single Day Availability",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"exceptions\": {\n        \"1713052800\": {}\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/update/:id",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "update", ":id"],
+									"query": [
+										{
+											"key": "startEpoch",
+											"value": "1713205860",
+											"disabled": true
+										},
+										{
+											"key": "endEpoch",
+											"value": "1713292140",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "20",
+											"description": "id of the availability that needs to be deleted."
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "GET",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "bearer {{token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{MentoringBaseUrl}}mentoring/v1/avail/read/:id?startEpoch=1713139200&endEpoch=1713657600",
+											"host": ["{{MentoringBaseUrl}}mentoring"],
+											"path": ["v1", "avail", "read", ":id"],
+											"query": [
+												{
+													"key": "startEpoch",
+													"value": "1713139200"
+												},
+												{
+													"key": "endEpoch",
+													"value": "1713657600"
+												}
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "fromservice"
+										},
+										{
+											"key": "Content-Language",
+											"value": "en"
+										},
+										{
+											"key": "X-Request-Ids",
+											"value": "7bf027bd-74d0-48f9-ab23-ce5e04ec45e8"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "2020"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"7e4-2/UCVCTddFjKGppaDv69W5+i5XY\""
+										},
+										{
+											"key": "Date",
+											"value": "Fri, 12 Apr 2024 09:35:11 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"Events fetched\",\n    \"result\": {\n        \"1713139200\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713155400,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713225600\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713241800,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713312000\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713328200,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713398400\": [],\n        \"1713484800\": [],\n        \"1713571200\": [],\n        \"1713657600\": []\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"7bf027bd-74d0-48f9-ab23-ce5e04ec45e8\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/read/:id?startEpoch=1713515398&endEpoch=1718496000",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "availability", "read", ":id"],
+							"query": [
+								{
+									"key": "startEpoch",
+									"value": "1713515398"
+								},
+								{
+									"key": "endEpoch",
+									"value": "1718496000"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "availability",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/read/:id?startEpoch=1713205860&endEpoch=1713292140",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "availability", "read", ":id"],
+									"query": [
+										{
+											"key": "startEpoch",
+											"value": "1713205860"
+										},
+										{
+											"key": "endEpoch",
+											"value": "1713292140"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "133"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "fromservice"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "e3b21bcf-30b0-4965-baf9-f3fd80850e6a"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "8821"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"2275-IeituxOXkL2gOReKwAzdAdZnvNU\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 17 Apr 2024 19:35:18 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"Events fetched\",\n    \"result\": {\n        \"1713139200\": [\n            {\n                \"id\": 21,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713139200,\n                \"end_time\": 1713184200,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {}\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T05:28:49.135Z\",\n                \"updated_at\": \"2024-04-17T05:28:49.135Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 22,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713139200,\n                \"end_time\": 1713184200,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {\n                        \"end_time\": \"1713072600\",\n                        \"start_time\": \"1713069000\"\n                    }\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T09:44:21.131Z\",\n                \"updated_at\": \"2024-04-17T09:44:21.131Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 31,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713139200,\n                \"end_time\": 1713184200,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {\n                        \"end_time\": \"1713072600\",\n                        \"start_time\": \"1713069000\"\n                    }\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T19:33:13.442Z\",\n                \"updated_at\": \"2024-04-17T19:33:13.442Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 26,\n                \"user_id\": 133,\n                \"event_name\": \"Monthly on second monday\",\n                \"start_time\": 1713155400,\n                \"end_time\": 1713159000,\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\"\n                ],\n                \"repeat_unit\": \"MONTH\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": 2,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:57:45.224Z\",\n                \"updated_at\": \"2024-04-17T14:57:45.224Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 27,\n                \"user_id\": 133,\n                \"event_name\": \"Monthly on second monday\",\n                \"start_time\": 1713155400,\n                \"end_time\": 1713159000,\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\"\n                ],\n                \"repeat_unit\": \"MONTH\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": 3,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:58:03.342Z\",\n                \"updated_at\": \"2024-04-17T14:58:03.342Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 33,\n                \"user_id\": 133,\n                \"event_name\": \"Monthly on second monday\",\n                \"start_time\": 1713155400,\n                \"end_time\": 1713159000,\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\"\n                ],\n                \"repeat_unit\": \"MONTH\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": 3,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T19:33:51.607Z\",\n                \"updated_at\": \"2024-04-17T19:33:51.607Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 34,\n                \"user_id\": 133,\n                \"event_name\": \"Monthly on same date\",\n                \"start_time\": 1713155400,\n                \"end_time\": 1713159000,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"MONTH\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T19:34:03.938Z\",\n                \"updated_at\": \"2024-04-17T19:34:03.938Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 35,\n                \"user_id\": 133,\n                \"event_name\": \"Yealy Once Event\",\n                \"start_time\": 1713155400,\n                \"end_time\": 1713159000,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"YEAR\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T19:34:18.489Z\",\n                \"updated_at\": \"2024-04-17T19:34:18.489Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 23,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713195000,\n                \"end_time\": 1713198600,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:44:44.228Z\",\n                \"updated_at\": \"2024-04-17T14:44:44.228Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 25,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713195000,\n                \"end_time\": 1713198600,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:56:14.421Z\",\n                \"updated_at\": \"2024-04-17T14:56:14.421Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 30,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713195000,\n                \"end_time\": 1713198600,\n                \"expiration_date\": \"1718303400\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 0,\n                \"created_at\": \"2024-04-17T19:32:43.996Z\",\n                \"updated_at\": \"2024-04-17T19:34:48.510Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 24,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713195000,\n                \"end_time\": 1713198600,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:56:06.903Z\",\n                \"updated_at\": \"2024-04-17T14:56:06.903Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713225600\": [\n            {\n                \"id\": 21,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713225600,\n                \"end_time\": 1713270600,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {}\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T05:28:49.135Z\",\n                \"updated_at\": \"2024-04-17T05:28:49.135Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 22,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713225600,\n                \"end_time\": 1713270600,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {\n                        \"end_time\": \"1713072600\",\n                        \"start_time\": \"1713069000\"\n                    }\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T09:44:21.131Z\",\n                \"updated_at\": \"2024-04-17T09:44:21.131Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 31,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 4 to 5 PM till 16th, except on 14th\",\n                \"start_time\": 1713225600,\n                \"end_time\": 1713270600,\n                \"expiration_date\": \"1713249000\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": {\n                    \"1713052800\": {\n                        \"end_time\": \"1713072600\",\n                        \"start_time\": \"1713069000\"\n                    }\n                },\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T19:33:13.442Z\",\n                \"updated_at\": \"2024-04-17T19:33:13.442Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 23,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713281400,\n                \"end_time\": 1713285000,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:44:44.228Z\",\n                \"updated_at\": \"2024-04-17T14:44:44.228Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 25,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713281400,\n                \"end_time\": 1713285000,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:56:14.421Z\",\n                \"updated_at\": \"2024-04-17T14:56:14.421Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 30,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713281400,\n                \"end_time\": 1713285000,\n                \"expiration_date\": \"1718303400\",\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 0,\n                \"created_at\": \"2024-04-17T19:32:43.996Z\",\n                \"updated_at\": \"2024-04-17T19:34:48.510Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 24,\n                \"user_id\": 133,\n                \"event_name\": \"Daily from 9 to 10 PM\",\n                \"start_time\": 1713281400,\n                \"end_time\": 1713285000,\n                \"expiration_date\": null,\n                \"repeat_on\": null,\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-17T14:56:06.903Z\",\n                \"updated_at\": \"2024-04-17T14:56:06.903Z\",\n                \"deleted_at\": null\n            }\n        ]\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"e3b21bcf-30b0-4965-baf9-f3fd80850e6a\",\n        \"meetingPlatform\": \"OFF\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Is Available",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/isAvailable/:id?startEpoch=1713328200&endEpoch=1713331800",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "availability", "isAvailable", ":id"],
+							"query": [
+								{
+									"key": "startEpoch",
+									"value": "1713328200"
+								},
+								{
+									"key": "endEpoch",
+									"value": "1713331800"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "133"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/avail/read/:id?startEpoch=1713139200&endEpoch=1713657600",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "avail", "read", ":id"],
+									"query": [
+										{
+											"key": "startEpoch",
+											"value": "1713139200"
+										},
+										{
+											"key": "endEpoch",
+											"value": "1713657600"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "fromservice"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "7bf027bd-74d0-48f9-ab23-ce5e04ec45e8"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "2020"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"7e4-2/UCVCTddFjKGppaDv69W5+i5XY\""
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 12 Apr 2024 09:35:11 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"Events fetched\",\n    \"result\": {\n        \"1713139200\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713155400,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713225600\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713241800,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713312000\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713328200,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713398400\": [],\n        \"1713484800\": [],\n        \"1713571200\": [],\n        \"1713657600\": []\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"7bf027bd-74d0-48f9-ab23-ce5e04ec45e8\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Available users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/availability/users/:id?startEpoch=1713196800&endEpoch=1713198600",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "availability", "users", ":id"],
+							"query": [
+								{
+									"key": "startEpoch",
+									"value": "1713196800"
+								},
+								{
+									"key": "endEpoch",
+									"value": "1713198600"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "133"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/avail/read/:id?startEpoch=1713139200&endEpoch=1713657600",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "avail", "read", ":id"],
+									"query": [
+										{
+											"key": "startEpoch",
+											"value": "1713139200"
+										},
+										{
+											"key": "endEpoch",
+											"value": "1713657600"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "fromservice"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "7bf027bd-74d0-48f9-ab23-ce5e04ec45e8"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "2020"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"7e4-2/UCVCTddFjKGppaDv69W5+i5XY\""
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 12 Apr 2024 09:35:11 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"Events fetched\",\n    \"result\": {\n        \"1713139200\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713155400,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713225600\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713241800,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713312000\": [\n            {\n                \"id\": 8,\n                \"user_id\": 133,\n                \"event_name\": \"Weekly on specific weekdays\",\n                \"start_time\": 1713328200,\n                \"end_time\": \"1713159000\",\n                \"expiration_date\": null,\n                \"repeat_on\": [\n                    \"Monday\",\n                    \"Tuesday\",\n                    \"Wednesday\"\n                ],\n                \"repeat_unit\": \"DAY\",\n                \"exceptions\": null,\n                \"occurrence_in_month\": null,\n                \"repeat_increment\": 1,\n                \"session_id\": null,\n                \"updated_by\": 133,\n                \"created_by\": 133,\n                \"organization_id\": 456,\n                \"created_at\": \"2024-04-12T09:35:04.542Z\",\n                \"updated_at\": \"2024-04-12T09:35:04.542Z\",\n                \"deleted_at\": null\n            }\n        ],\n        \"1713398400\": [],\n        \"1713484800\": [],\n        \"1713571200\": [],\n        \"1713657600\": []\n    },\n    \"meta\": {\n        \"formsVersion\": [\n            {\n                \"id\": 4,\n                \"type\": \"termsAndConditions\",\n                \"version\": 0\n            },\n            {\n                \"id\": 5,\n                \"type\": \"faq\",\n                \"version\": 0\n            },\n            {\n                \"id\": 6,\n                \"type\": \"helpVideos\",\n                \"version\": 0\n            },\n            {\n                \"id\": 7,\n                \"type\": \"platformApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 9,\n                \"type\": \"sampleCsvDownload\",\n                \"version\": 0\n            },\n            {\n                \"id\": 2,\n                \"type\": \"editProfile\",\n                \"version\": 0\n            },\n            {\n                \"id\": 3,\n                \"type\": \"session\",\n                \"version\": 0\n            },\n            {\n                \"id\": 8,\n                \"type\": \"helpApp\",\n                \"version\": 0\n            },\n            {\n                \"id\": 10,\n                \"type\": \"mentorQuestionnaire\",\n                \"version\": 0\n            },\n            {\n                \"id\": 1,\n                \"type\": \"managersSession\",\n                \"version\": 0\n            }\n        ],\n        \"correlation\": \"7bf027bd-74d0-48f9-ab23-ce5e04ec45e8\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+						}
+					]
 				}
 			]
 		}
