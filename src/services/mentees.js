@@ -943,7 +943,7 @@ module.exports = class MenteesHelper {
 			let orgVisibilityPolicies = []
 
 			const policyMap = {
-				[common.MENTEE_ROLE]: ['organization_id', 'mentee_visibility_policy'],
+				[common.MENTEE_ROLE]: ['organization_id', 'external_mentee_visibility_policy'],
 				[common.SESSION]: ['organization_id', 'external_session_visibility_policy'],
 				[common.MENTOR_ROLE]: ['organization_id', 'external_mentor_visibility_policy'],
 			}
@@ -958,7 +958,7 @@ module.exports = class MenteesHelper {
 			)
 
 			const orgPolicyMap = {
-				[common.MENTEE_ROLE]: orgExtension.mentee_visibility_policy,
+				[common.MENTEE_ROLE]: orgExtension.external_mentee_visibility_policy,
 				[common.SESSION]: orgExtension.external_session_visibility_policy,
 				[common.MENTOR_ROLE]: orgExtension.external_mentor_visibility_policy,
 			}
@@ -979,7 +979,7 @@ module.exports = class MenteesHelper {
 						const associatedAdditionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: {
+										mentee_visibility_policy: {
 											[Op.ne]: 'CURRENT',
 										},
 								  }
@@ -1025,7 +1025,7 @@ module.exports = class MenteesHelper {
 						const filterQuery =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: common.ALL, //1
+										mentee_visibility_policy: common.ALL, //1
 								  }
 								: filterType == common.SESSION
 								? {
@@ -1043,7 +1043,7 @@ module.exports = class MenteesHelper {
 						const additionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: {
+										mentee_visibility_policy: {
 											//1
 											[Op.ne]: 'CURRENT',
 										},
