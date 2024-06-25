@@ -44,6 +44,7 @@ const csv = require('csvtojson')
 const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
+const { validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class SessionsHelper {
 	/**
@@ -885,7 +886,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '', queryParams) {
+	static async details(id, userId = '', isAMentor = '', queryParams, roles, orgId) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -899,7 +900,21 @@ module.exports = class SessionsHelper {
 					exclude: ['share_link', 'mentee_password', 'mentor_password'],
 				},
 			})
+			const validateDefaultRules = await validateDefaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+				data: sessionDetails,
+			})
 
+			if (!validateDefaultRules) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			if (!sessionDetails) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',

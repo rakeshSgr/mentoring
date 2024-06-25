@@ -78,7 +78,9 @@ module.exports = class Sessions {
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : '',
 				req.decodedToken ? isAMentor(req.decodedToken.roles) : '',
-				req.query
+				req.query,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {
