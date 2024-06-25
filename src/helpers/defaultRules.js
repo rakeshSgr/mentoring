@@ -54,12 +54,32 @@ function getValidConfigs(config, userRoles) {
  * @returns {Promise<Object>} - A promise that resolves to the user details.
  * @throws {Error} - Throws an error if the user details cannot be retrieved.
  */
-async function getUserDetails(userId, userRoles) {
+async function getUserDetailsFromView(userId, isAMentor) {
 	try {
-		if (isAMentor(userRoles)) {
+		if (isAMentor) {
 			return await mentorQueries.findOneFromView(userId)
 		} else {
 			return await menteeQueries.findOneFromView(userId)
+		}
+	} catch (error) {
+		console.log(error)
+		throw new Error(`Failed to get user details: ${error.message}`)
+	}
+}
+/**
+ * Gets the user details based on user roles.
+ *
+ * @param {string} userId - The ID of the user.
+ * @param {Array<string>} userRoles - The roles of the user.
+ * @returns {Promise<Object>} - A promise that resolves to the user details.
+ * @throws {Error} - Throws an error if the user details cannot be retrieved.
+ */
+async function getUserDetails(userId, isAMentor) {
+	try {
+		if (isAMentor) {
+			return await mentorQueries.getMentorExtension(userId)
+		} else {
+			return await menteeQueries.getMenteeExtension(userId)
 		}
 	} catch (error) {
 		console.log(error)
@@ -75,14 +95,11 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 }) {
 	try {
 		const [userDetails, defaultRules] = await Promise.all([
-			getUserDetails(requesterId, roles),
+			getUserDetailsFromView(requesterId, isAMentor(roles)),
 			defaultRuleQueries.findAll({ type: ruleType, organization_id: requesterOrganizationId }),
 		])
 
-		console.log(userDetails)
-
 		const validConfigs = getValidConfigs(defaultRules, roles)
-		console.log(validConfigs)
 
 		if (validConfigs.length === 0) {
 			return ''
@@ -134,5 +151,105 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 	} catch (error) {
 		console.error('Error:', error.message)
 		throw error // Re-throw the error after logging it
+	}
+}
+
+exports.validateDefaultRulesFilter = async function validateDefaultRulesFilter({
+	ruleType,
+	requesterId,
+	roles,
+	requesterOrganizationId,
+	data,
+}) {
+	try {
+		const [userDetails, defaultRules] = await Promise.all([
+			getUserDetails(requesterId, isAMentor(roles)),
+			defaultRuleQueries.findAll({ type: ruleType, organization_id: requesterOrganizationId }),
+		])
+
+		const validConfigs = getValidConfigs(defaultRules, roles)
+
+		if (validConfigs.length === 0) {
+			return true // No rules to check, data is valid by default
+		}
+
+		const mentorChecks = []
+
+		for (const config of validConfigs) {
+			const { is_target_from_sessions_mentor, target_field, matching_operator, requester_field } = config
+			const requesterValue =
+				userDetails[requester_field] || (userDetails.meta && userDetails.meta[requester_field])
+
+			if (requesterValue === undefined || requesterValue === null) {
+				throw new MissingFieldError(requester_field)
+			}
+
+			if (is_target_from_sessions_mentor) {
+				mentorChecks.push({ target_field, matching_operator, requesterValue })
+			} else {
+				const targetFieldValue = data[target_field] || (data.meta && data.meta[requester_field])
+
+				if (targetFieldValue === undefined || targetFieldValue === null) {
+					return false
+				}
+				if (!evaluateCondition(targetFieldValue, matching_operator, requesterValue)) {
+					return false // Data does not meet the condition
+				}
+			}
+		}
+
+		if (mentorChecks.length > 0 && data.mentor_id) {
+			const mentorDetails = await getUserDetails(data.mentor_id, true)
+
+			for (const { target_field, matching_operator, requesterValue } of mentorChecks) {
+				const targetFieldValue = mentorDetails[target_field] || mentorDetails.meta[target_field]
+				if (targetFieldValue === undefined || targetFieldValue === null) {
+					return false
+				}
+				if (!evaluateCondition(targetFieldValue, matching_operator, requesterValue)) {
+					return false // Mentor details do not meet the condition
+				}
+			}
+		}
+
+		return true // Data meets all conditions
+	} catch (error) {
+		console.error('Error:', error.message)
+		throw error // Re-throw the error after logging it
+	}
+}
+
+function evaluateCondition(targetValue, operator, requesterValue) {
+	if (Array.isArray(requesterValue)) {
+		switch (operator) {
+			case '@>':
+				// Check if targetValue contains all elements of requesterValue
+				return requesterValue.every((value) => targetValue.includes(value))
+			case '&&':
+				// Check if targetValue and requesterValue have any elements in common
+				return requesterValue.some((value) => targetValue.includes(value))
+			case '<@':
+				// Check if requesterValue is contained by targetValue
+				return targetValue.every((value) => requesterValue.includes(value))
+			default:
+				throw new Error(`Unsupported array operator: ${operator}`)
+		}
+	} else {
+		switch (operator) {
+			case '=':
+				return targetValue === requesterValue
+			case '!=':
+				return targetValue !== requesterValue
+			case '<':
+				return targetValue < requesterValue
+			case '>':
+				return targetValue > requesterValue
+			case '<=':
+				return targetValue <= requesterValue
+			case '>=':
+				return targetValue >= requesterValue
+			default:
+				throw new Error(`Unsupported operator: ${operator}`)
+		}
 	}
 }
