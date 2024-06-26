@@ -72,11 +72,7 @@ module.exports = class MenteesHelper {
 		}
 		menteeDetails.data.result.permissions.push(...menteePermissions)
 
-		const profileMandatoryFields = await utils.validateProfileData(
-			processDbResponse,
-			validationData,
-			userExtensionsModelName
-		)
+		const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
 		menteeDetails.data.result.profile_mandatory_fields = profileMandatoryFields
 
 		return responses.successResponse({
