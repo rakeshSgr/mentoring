@@ -651,6 +651,29 @@ function isValidEmail(email) {
 	return emailRegex.test(email)
 }
 
+function validateProfileData(mentorProfile, validationData, modelName) {
+	const errors = []
+	const profileMandatoryFields = []
+	for (const field of validationData) {
+		if (mentorProfile.hasOwnProperty(field.value)) {
+			if (field.required === true && mentorProfile[field.value] === null) {
+				profileMandatoryFields.push(field.value)
+			}
+		} else {
+			if (field.required === true) {
+				profileMandatoryFields.push(field.value)
+			}
+		}
+		if (modelName && !field.model_names.includes(modelName) && mentorProfile[field.value]) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+	}
+	return profileMandatoryFields
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -694,4 +717,5 @@ module.exports = {
 	clearFile,
 	convertKeysToSnakeCase,
 	isValidEmail,
+	validateProfileData,
 }

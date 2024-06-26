@@ -635,6 +635,13 @@ module.exports = class MentorsHelper {
 			}
 			mentorProfile.permissions.push(...mentorPermissions)
 
+			const profileMandatoryFields = await utils.validateProfileData(
+				processDbResponse,
+				validationData,
+				mentorExtensionsModelName
+			)
+			mentorProfile.profile_mandatory_fields = profileMandatoryFields
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PROFILE_FTECHED_SUCCESSFULLY',
