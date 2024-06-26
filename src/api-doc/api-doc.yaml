@@ -5647,7 +5647,7 @@ paths:
                       meeting_platform: BBB
         '400':
           description: Bad Request. User Entity already exists.
-          content: &ref_6
+          content:
             application.json:
               schema:
                 $ref: '#/components/schemas/entity/createUserEntity400Response'
@@ -5668,7 +5668,7 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - &ref_7
+        - &ref_6
           name: X-auth-token
           in: header
           description: >-
@@ -5712,7 +5712,7 @@ paths:
                     meta:
                       correlation: b6841b40-4977-47b5-ac83-3c1e9aa40771
                       meeting_platform: BBB
-        '400': &ref_9
+        '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -8263,7 +8263,7 @@ paths:
       tags:
         - Default-Rules
       description: >-
-        You can use this API to create a default rules
+        You can use this API to create a default rule
 
 
         * The API Endpoint for creating a default rule is
@@ -8771,7 +8771,7 @@ paths:
                     message: The default rule was not found.
   /mentoring/v1/default-rule/update/{id}:
     patch:
-      summary: Update default rules
+      summary: Update default rule
       tags:
         - Default-Rules
       description: >-
@@ -8790,7 +8790,7 @@ paths:
         - in: query
           name: id
           description: default rules id
-          schema: &ref_8
+          schema: &ref_7
             type: integer
           required: true
       requestBody:
@@ -8937,10 +8937,36 @@ paths:
                       meetingPlatform: BBB
         '400':
           description: Bad Request.
-          content: *ref_6
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 0e57651e-4f49-4b9c-b264-6c1b3107c904
+                    message: The default rule was not found.
   /mentoring/v1/default-rule/delete/{id}:
     delete:
-      summary: Delete default type
+      summary: Delete default rule
       tags:
         - Default-Rules
       description: >-
@@ -8955,11 +8981,11 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - *ref_7
+        - *ref_6
         - in: query
           name: id
           description: ''
-          schema: *ref_8
+          schema: *ref_7
           required: true
       requestBody: {}
       responses:
@@ -9010,7 +9036,35 @@ paths:
                           version: 0
                       correlation: 21720d01-16ff-40bd-b502-1930a6b249a4
                       meetingPlatform: BBB
-        '400': *ref_9
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 0e57651e-4f49-4b9c-b264-6c1b3107c904
+                    message: The default rule was not found.
 components:
   schemas:
     form:
