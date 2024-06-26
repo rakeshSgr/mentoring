@@ -216,9 +216,9 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees join session link.
 	 */
 
-	static async joinSession(sessionId, token) {
+	static async joinSession(sessionId, userId) {
 		try {
-			const mentee = await userRequests.fetchUserDetails({ token })
+			const mentee = await userRequests.fetchUserDetails({ userId })
 
 			if (mentee.data.responseCode !== 'OK') {
 				return responses.failureResponse({
