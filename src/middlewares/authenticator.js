@@ -138,12 +138,21 @@ async function dbBasedRoleValidation(decodedToken) {
 	const userId = decodedToken.data.id
 	const roles = decodedToken.data.roles
 	const isMentor = isMentorRole(roles)
-	const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId, ['user_id'])
-	const mentorExtension = await MentorExtensionQueries.getMentorExtension(userId, ['user_id'])
-
-	if (!menteeExtension && !mentorExtension) throw createUnauthorizedResponse('USER_NOT_FOUND')
-	if ((isMentor && menteeExtension) || (!isMentor && mentorExtension))
-		throw createUnauthorizedResponse('USER_ROLE_UPDATED')
+	if (isMentor) {
+		const mentorExtension = await MentorExtensionQueries.getMentorExtension(userId, ['user_id'])
+		if (!mentorExtension) {
+			const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId, ['user_id'])
+			if (menteeExtension) throw createUnauthorizedResponse('USER_ROLE_UPDATED')
+			else throw createUnauthorizedResponse('USER_NOT_FOUND')
+		}
+	} else {
+		const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId, ['user_id'])
+		if (!menteeExtension) {
+			const mentorExtension = await MentorExtensionQueries.getMentorExtension(userId, ['user_id'])
+			if (mentorExtension) throw createUnauthorizedResponse('USER_ROLE_UPDATED')
+			else throw createUnauthorizedResponse('USER_NOT_FOUND')
+		}
+	}
 }
 
 function isAdminRole(roles) {

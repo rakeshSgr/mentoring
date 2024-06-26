@@ -53,4 +53,13 @@ module.exports = class Users {
 			return error
 		}
 	}
+
+	async create(req) {
+		try {
+			return await userService.create(req.decodedToken)
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
 }
