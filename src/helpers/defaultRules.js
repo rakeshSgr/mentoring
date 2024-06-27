@@ -25,27 +25,25 @@ function getValidConfigs(config, userRoles) {
 	const userRoleTitles = userRoles.map((role) => role.title)
 	const validConfigs = []
 
+	function hasMatchingRole(requesterRoles) {
+		return requesterRoles.some((role) => userRoleTitles.includes(role))
+	}
+
 	for (let conf of config) {
 		const { requester_roles, role_config } = conf
 		const { exclude } = role_config
 
-		if (exclude) {
-			// Exclude logic: valid if none of the user roles are in the requester_roles
-			const hasExclusion = requester_roles.some((role) => userRoleTitles.includes(role))
-			if (!hasExclusion) {
-				validConfigs.push(conf)
-			}
-		} else {
-			// Include logic: valid if any of the user roles are in the requester_roles
-			const hasInclusion = requester_roles.some((role) => userRoleTitles.includes(role))
-			if (hasInclusion) {
-				validConfigs.push(conf)
-			}
+		//check exclusion or inclusion based on the flag
+		const isValid = exclude ? !hasMatchingRole(requester_roles) : hasMatchingRole(requester_roles)
+
+		if (isValid) {
+			validConfigs.push(conf)
 		}
 	}
 
 	return validConfigs
 }
+
 /**
  * Gets the user details based on user roles.
  *
