@@ -196,7 +196,7 @@ let enviromentVariables = {
 	AUTH_METHOD: {
 		message: 'Required authentication method',
 		optional: true,
-		default: common.AUTH_METHOD.JWT_ONLY,
+		default: common.AUTH_METHOD.NATIVE,
 	},
 	CSV_MAX_ROW: {
 		message: 'Required Csv length',
@@ -272,6 +272,21 @@ let enviromentVariables = {
 		message: 'Required Email ID Encryption Algorithm',
 		optional: false,
 		default: 'aes-256-cbc',
+	},
+	KEYCLOAK_PUBLIC_KEY_PATH: {
+		message: 'Required Keycloak Public Key Path',
+		optional: true,
+		default: './constants/keycloakPublicKeys',
+	},
+	IS_EXTERNAL_USER_SERVICE: {
+		message: 'Required Flag For External User Service',
+		optional: false,
+		default: 'false',
+	},
+	SESSION_VERIFICATION_METHOD: {
+		message: 'Required Session Verification Method',
+		optional: false,
+		default: 'user_service_authenticated',
 	},
 }
 

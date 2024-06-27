@@ -114,7 +114,7 @@ module.exports = class MentorsHelper {
 	 */
 	/* 	static async profile(id) {
 		try {
-			const mentorsDetails = await userRequests.details('', id)
+			const mentorsDetails = await userRequests.fetchUserDetails('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -313,8 +313,8 @@ module.exports = class MentorsHelper {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
-
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
+			console.log('USER ORG DETAILS: ', userOrgDetails)
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -582,7 +582,7 @@ module.exports = class MentorsHelper {
 				}
 			}
 
-			let mentorProfile = await userRequests.details('', id)
+			let mentorProfile = await userRequests.fetchUserDetails({ userId: id })
 			if (!mentorProfile.data.result) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
