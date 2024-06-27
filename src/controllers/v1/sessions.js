@@ -154,7 +154,11 @@ module.exports = class Sessions {
 				req.params.id,
 				req.decodedToken,
 				req.headers['timezone'],
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				true,
+				{},
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return enrolledSession
 		} catch (error) {

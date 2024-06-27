@@ -1183,7 +1183,16 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isAMentor, isSelfEnrolled = true, session = {}) {
+	static async enroll(
+		sessionId,
+		userTokenData,
+		timeZone,
+		isAMentor,
+		isSelfEnrolled = true,
+		session = {},
+		roles,
+		orgId
+	) {
 		try {
 			let email
 			let name
@@ -1216,6 +1225,23 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const validateDefaultRules = await validateDefaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+				data: session,
+			})
+
+			if (!validateDefaultRules) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			// Restrict self enrollment to a private session
 			if (isSelfEnrolled && session.type == common.SESSION_TYPE.PRIVATE && userId !== session.created_by) {
 				return responses.failureResponse({
