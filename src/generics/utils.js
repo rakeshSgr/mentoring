@@ -234,7 +234,6 @@ function validateInput(input, validationData, modelName) {
 					break
 				case 'INTEGER':
 				case 'NUMBER':
-					console.log('Type of', typeof fieldValue)
 					if (typeof fieldValue !== 'number') {
 						addError(field.value, fieldValue, dataType, '')
 					}
