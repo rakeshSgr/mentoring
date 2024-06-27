@@ -27,6 +27,7 @@ module.exports = class MentorExtensionQueries {
 		try {
 			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -42,6 +43,7 @@ module.exports = class MentorExtensionQueries {
 				...options,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

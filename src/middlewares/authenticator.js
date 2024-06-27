@@ -52,7 +52,7 @@ module.exports = async function (req, res, next) {
 			organization_id: decodedToken.data.organization_id,
 			externalId: decodedToken.data.externalId,
 		}
-
+		console.log('DECODED TOKEN: ', req.decodedToken)
 		next()
 	} catch (err) {
 		console.error(err)
@@ -202,23 +202,33 @@ async function keycloakPublicKeyAuthentication(token) {
 		const externalUserId = verifiedClaims.sub.split(':').pop()
 		const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
 		let userExtensionData
+		let roles = [{ title: 'mentee' }]
 		if (mentoringUserId) {
-			userExtensionData = verifiedClaims.resource_access.account.roles.includes(common.MENTOR_ROLE)
-				? await MentorExtensionQueries.getMentorExtension(mentoringUserId, ['organization_id'])
-				: await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, ['organization_id'])
+			userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, ['organization_id'])
+			if (userExtensionData) roles = [{ title: 'mentor' }]
+			else {
+				userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, [
+					'organization_id',
+				])
+				if (userExtensionData) roles = [{ title: 'mentee' }]
+				else throw new Error('USER_NOT_FOUND')
+			}
 		}
 		return {
 			data: {
 				id: mentoringUserId,
-				roles: [{ title: 'mentee' }],
+				roles: roles,
 				name: verifiedClaims.name,
-				organization_id: userExtensionData?.organization_id || process.env.DEFAULT_ORG_ID,
+				organization_id: userExtensionData?.organization_id || null,
 				externalId: externalUserId,
 			},
 		}
 	} catch (err) {
-		console.error(err)
-		throw createUnauthorizedResponse()
+		if (err.message === 'USER_NOT_FOUND') throw createUnauthorizedResponse('USER_NOT_FOUND')
+		else {
+			console.error(err)
+			throw createUnauthorizedResponse()
+		}
 	}
 }
 
