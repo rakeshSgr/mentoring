@@ -36,6 +36,7 @@ module.exports = class DefaultRuleHelper {
 				organization_id: defaultOrgId,
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
+				require: true,
 			}),
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id'], {
 				status: 'ACTIVE',
@@ -47,6 +48,7 @@ module.exports = class DefaultRuleHelper {
 						await menteeExtensionQueries.getModelName(),
 					],
 				},
+				require: true,
 			}),
 		])
 
@@ -95,7 +97,7 @@ module.exports = class DefaultRuleHelper {
 		try {
 			const defaultOrgId = await getDefaultOrgId()
 
-			const validation = await validateFields(defaultOrgId, bodyData)
+			const validation = await this.validateFields(defaultOrgId, bodyData)
 
 			if (!validation.isValid) {
 				return responses.failureResponse({
@@ -141,7 +143,7 @@ module.exports = class DefaultRuleHelper {
 		try {
 			const defaultOrgId = await getDefaultOrgId()
 
-			const validation = await validateFields(defaultOrgId, bodyData)
+			const validation = await this.validateFields(defaultOrgId, bodyData)
 
 			if (!validation.isValid) {
 				return responses.failureResponse({

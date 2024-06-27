@@ -20,6 +20,7 @@ module.exports = {
 			},
 			is_target_from_sessions_mentor: {
 				type: Sequelize.BOOLEAN,
+				defaultValue: false,
 			},
 			requester_field: {
 				type: Sequelize.STRING,
@@ -28,14 +29,17 @@ module.exports = {
 			field_configs: {
 				type: Sequelize.JSON,
 			},
-			matching_operator: {
+			operator: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			requester_roles: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
+				defaultValue: ['ALL'],
 			},
-			role_config: {
+			requester_roles_config: {
 				type: Sequelize.JSON,
+				defaultValue: { exclude: false },
 			},
 			organization_id: {
 				type: Sequelize.INTEGER,
