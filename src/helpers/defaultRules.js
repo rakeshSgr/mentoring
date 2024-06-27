@@ -2,7 +2,7 @@
 const defaultRuleQueries = require('@database/queries/defaultRule')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
-const { Op } = require('sequelize')
+const common = require('@constants/common')
 
 const { isAMentor } = require('@generics/utils')
 
@@ -30,8 +30,8 @@ function getValidConfigs(config, userRoles) {
 	}
 
 	for (let conf of config) {
-		const { requester_roles, role_config } = conf
-		const { exclude } = role_config
+		const { requester_roles, requester_roles_config } = conf
+		const { exclude } = requester_roles_config
 
 		//check exclusion or inclusion based on the flag
 		const isValid = exclude ? !hasMatchingRole(requester_roles) : hasMatchingRole(requester_roles)
@@ -107,42 +107,54 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 		const mentorWhereClause = []
 
 		validConfigs.forEach((config) => {
-			const { is_target_from_sessions_mentor, target_field, matching_operator, requester_field } = config
-			const requesterValue = userDetails[requester_field]
+			const { is_target_from_sessions_mentor, target_field, operator, requester_field } = config
+			//const requesterValue = userDetails[requester_field]
+			const requesterValue = getNestedValue(userDetails, requester_field)
 
 			if (requesterValue === undefined || requesterValue === null) {
 				throw new MissingFieldError(requester_field)
 			}
+			// Split the target_field by '.' to get individual keys
+			const keys = target_field.split('.')
+
+			// Construct the PostgreSQL jsonb operator format
+			const jsonPath = keys
+				.map((key, index) => {
+					if (index === 0) {
+						return key // First key does not have quotes
+					} else if (index === keys.length - 1) {
+						return `->>'${key}'` // Last key gets '>>' to retrieve text
+					} else {
+						return `->'${key}'` // Other keys get '->' to access nested JSON object
+					}
+				})
+				.join('')
 
 			if (is_target_from_sessions_mentor) {
-				mentorWhereClause.push(`${target_field} ${matching_operator} '${requesterValue}'`)
+				console.log(`${jsonPath} ${operator} '${requesterValue}'`)
+				mentorWhereClause.push(`${jsonPath} ${operator} '${requesterValue}'`)
 			} else {
 				if (Array.isArray(requesterValue)) {
 					const formattedValues = requesterValue.map((value) =>
 						typeof value === 'string' ? `'${value}'` : value
 					)
 					whereClauses.push(
-						`(${target_field} ${matching_operator} ARRAY[${formattedValues.join(
-							', '
-						)}]::character varying[])`
+						`(${jsonPath} ${operator} ARRAY[${formattedValues.join(', ')}]::character varying[])`
 					)
 				} else {
-					whereClauses.push(`${target_field} ${matching_operator} '${requesterValue}'`)
+					whereClauses.push(`${jsonPath} ${operator} '${requesterValue}'`)
 				}
 			}
 		})
 
 		if (mentorWhereClause.length > 0) {
 			const filterClause = mentorWhereClause.join(' AND ')
-			const mentors = await mentorQueries.getMentorsFromView(filterClause, 'user_id')
-			const mentorIds = mentors.data.map(({ user_id }) => user_id)
 
-			if (mentorIds.length > 0) {
-				whereClauses.push(`mentor_id IN (${mentorIds.join(',')})`)
-			} else {
-				// No mentors found, return null
-				return null
-			}
+			whereClauses.push(
+				`mentor_id IN (SELECT user_id FROM ${
+					common.materializedViewsPrefix + (await mentorQueries.getTableName())
+				} WHERE ${filterClause})`
+			)
 		}
 
 		return whereClauses.join(' AND ')
@@ -168,30 +180,33 @@ exports.validateDefaultRulesFilter = async function validateDefaultRulesFilter({
 		const validConfigs = getValidConfigs(defaultRules, roles)
 
 		if (validConfigs.length === 0) {
-			return true // No rules to check, data is valid by default
+			return true //no rules to check, data is valid by default
 		}
 
 		const mentorChecks = []
 
 		for (const config of validConfigs) {
-			const { is_target_from_sessions_mentor, target_field, matching_operator, requester_field } = config
+			const { is_target_from_sessions_mentor, target_field, operator, requester_field } = config
+
 			const requesterValue =
-				userDetails[requester_field] || (userDetails.meta && userDetails.meta[requester_field])
+				getNestedValue(userDetails, requester_field) ||
+				(userDetails.meta && getNestedValue(userDetails.meta, requester_field))
 
 			if (requesterValue === undefined || requesterValue === null) {
 				throw new MissingFieldError(requester_field)
 			}
 
 			if (is_target_from_sessions_mentor) {
-				mentorChecks.push({ target_field, matching_operator, requesterValue })
+				mentorChecks.push({ target_field, operator, requesterValue })
 			} else {
-				const targetFieldValue = data[target_field] || (data.meta && data.meta[requester_field])
+				const targetFieldValue =
+					getNestedValue(data, target_field) || (data.meta && getNestedValue(data.meta, target_field))
 
 				if (targetFieldValue === undefined || targetFieldValue === null) {
 					return false
 				}
-				if (!evaluateCondition(targetFieldValue, matching_operator, requesterValue)) {
-					return false // Data does not meet the condition
+				if (!evaluateCondition(targetFieldValue, operator, requesterValue)) {
+					return false //data does not meet the condition
 				}
 			}
 		}
@@ -199,13 +214,14 @@ exports.validateDefaultRulesFilter = async function validateDefaultRulesFilter({
 		if (mentorChecks.length > 0 && data.mentor_id) {
 			const mentorDetails = await getUserDetails(data.mentor_id, true)
 
-			for (const { target_field, matching_operator, requesterValue } of mentorChecks) {
-				const targetFieldValue = mentorDetails[target_field] || mentorDetails.meta[target_field]
+			for (const { target_field, operator, requesterValue } of mentorChecks) {
+				const targetFieldValue =
+					getNestedValue(mentorDetails, target_field) || getNestedValue(mentorDetails.meta, target_field)
 				if (targetFieldValue === undefined || targetFieldValue === null) {
 					return false
 				}
-				if (!evaluateCondition(targetFieldValue, matching_operator, requesterValue)) {
-					return false // Mentor details do not meet the condition
+				if (!evaluateCondition(targetFieldValue, operator, requesterValue)) {
+					return false //mentor details do not meet the condition
 				}
 			}
 		}
@@ -250,4 +266,17 @@ function evaluateCondition(targetValue, operator, requesterValue) {
 				throw new Error(`Unsupported operator: ${operator}`)
 		}
 	}
+}
+
+function getNestedValue(obj, fieldPath) {
+	const fields = fieldPath.split('.')
+	let value = obj
+	for (const field of fields) {
+		if (value && value[field] !== undefined) {
+			value = value[field]
+		} else {
+			return undefined
+		}
+	}
+	return value
 }
