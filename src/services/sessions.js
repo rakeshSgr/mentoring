@@ -2581,7 +2581,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const userDetail = await userRequests.details('', id)
+			const userDetail = await userRequests.fetchUserDetails({ userId: id })
 			//push to queue
 			const redisConfiguration = utils.generateRedisConfigForQueue()
 			const sessionQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)
