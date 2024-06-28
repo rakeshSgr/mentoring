@@ -204,13 +204,13 @@ async function keycloakPublicKeyAuthentication(token) {
 		let userExtensionData
 		let roles = [{ title: 'mentee' }]
 		if (mentoringUserId) {
-			userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, ['organization_id'])
-			if (userExtensionData) roles = [{ title: 'mentor' }]
+			userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, ['organization_id'])
+			if (userExtensionData) roles = [{ title: 'mentee' }]
 			else {
-				userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, [
+				userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, [
 					'organization_id',
 				])
-				if (userExtensionData) roles = [{ title: 'mentee' }]
+				if (userExtensionData) roles = [{ title: 'mentor' }]
 				else throw new Error('USER_NOT_FOUND')
 			}
 		}
