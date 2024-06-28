@@ -309,6 +309,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			if (data.email) {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
@@ -346,15 +347,16 @@ module.exports = class MentorsHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
-			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!skipValidation) {
+				let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'SESSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
@@ -634,6 +636,9 @@ module.exports = class MentorsHelper {
 				mentorProfile.permissions = []
 			}
 			mentorProfile.permissions.push(...mentorPermissions)
+
+			const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
+			mentorProfile.profile_mandatory_fields = profileMandatoryFields
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
