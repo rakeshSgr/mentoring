@@ -23,8 +23,10 @@ module.exports = class EntityHelper {
 		bodyData.updated_by = id
 		bodyData.organization_id = orgId
 		try {
-			const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
-			bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
+			if (bodyData.allow_filtering) {
+				const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
+				bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
+			}
 
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return responses.successResponse({
@@ -59,8 +61,10 @@ module.exports = class EntityHelper {
 		bodyData.organization_id = orgId
 
 		try {
-			const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
-			bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
+			if (bodyData.allow_filtering) {
+				const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
+				bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
+			}
 			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, orgId, bodyData, {
 				returning: true,
 				raw: true,
