@@ -23,8 +23,13 @@ module.exports = async function (req, res, next) {
 			return false
 		})
 		if (isInternalAccess && !authHeader) return next()
-		if (!authHeader) return await checkPublicAccess(req, next)
-		const decodedToken = await authenticateUser(authHeader, req, next)
+		if (!authHeader) {
+			const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
+			if (isPermissionValid) return next()
+			else throw createUnauthorizedResponse('PERMISSION_DENIED')
+		}
+		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
+		if (skipFurtherChecks) return next()
 
 		if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
 			await validateSession(authHeader)
@@ -52,7 +57,7 @@ module.exports = async function (req, res, next) {
 			organization_id: decodedToken.data.organization_id,
 			externalId: decodedToken.data.externalId,
 		}
-
+		console.log('DECODED TOKEN: ', req.decodedToken)
 		next()
 	} catch (err) {
 		console.error(err)
@@ -66,12 +71,6 @@ function createUnauthorizedResponse(message = 'UNAUTHORIZED_REQUEST') {
 		statusCode: httpStatusCode.unauthorized,
 		responseCode: 'UNAUTHORIZED',
 	})
-}
-
-async function checkPublicAccess(req, next) {
-	const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
-	if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
-	return next()
 }
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
@@ -159,7 +158,7 @@ function isAdminRole(roles) {
 	return roles.some((role) => role.title === common.ADMIN_ROLE)
 }
 
-async function authenticateUser(authHeader, req, next) {
+async function authenticateUser(authHeader, req) {
 	if (!authHeader) throw createUnauthorizedResponse()
 	const [authType, token] = authHeader.split(' ')
 	if (authType !== 'bearer') throw createUnauthorizedResponse()
@@ -172,10 +171,10 @@ async function authenticateUser(authHeader, req, next) {
 
 	if (decodedToken.data.roles && isAdminRole(decodedToken.data.roles)) {
 		req.decodedToken = decodedToken.data
-		return next()
+		return [decodedToken, true]
 	}
 
-	return decodedToken
+	return [decodedToken, false]
 }
 
 async function nativeRoleValidation(decodedToken) {
@@ -198,27 +197,39 @@ async function keycloakPublicKeyAuthentication(token) {
 		const cert = accessKeyFile.includes(PEM_FILE_BEGIN_STRING)
 			? accessKeyFile
 			: `${PEM_FILE_BEGIN_STRING}\n${accessKeyFile}\n${PEM_FILE_END_STRING}`
+
 		const verifiedClaims = await verifyKeycloakToken(token, cert)
 		const externalUserId = verifiedClaims.sub.split(':').pop()
 		const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
 		let userExtensionData
+		let roles = [{ title: 'mentee' }]
 		if (mentoringUserId) {
-			userExtensionData = verifiedClaims.resource_access.account.roles.includes(common.MENTOR_ROLE)
-				? await MentorExtensionQueries.getMentorExtension(mentoringUserId, ['organization_id'])
-				: await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, ['organization_id'])
+			userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, ['organization_id'])
+			if (userExtensionData) roles = [{ title: 'mentor' }]
+			else {
+				userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, [
+					'organization_id',
+				])
+				if (userExtensionData) roles = [{ title: 'mentee' }]
+				else throw new Error('USER_NOT_FOUND')
+			}
 		}
+
 		return {
 			data: {
 				id: mentoringUserId,
-				roles: [{ title: 'mentee' }],
+				roles: roles,
 				name: verifiedClaims.name,
-				organization_id: userExtensionData?.organization_id || process.env.DEFAULT_ORG_ID,
+				organization_id: userExtensionData?.organization_id || null,
 				externalId: externalUserId,
 			},
 		}
 	} catch (err) {
-		console.error(err)
-		throw createUnauthorizedResponse()
+		if (err.message === 'USER_NOT_FOUND') throw createUnauthorizedResponse('USER_NOT_FOUND')
+		else {
+			console.error(err)
+			throw createUnauthorizedResponse()
+		}
 	}
 }
 
