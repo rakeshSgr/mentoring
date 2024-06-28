@@ -69,12 +69,12 @@ module.exports = {
 		await queryInterface.addIndex('default_rules', ['organization_id'])
 		await queryInterface.addIndex('default_rules', ['type', 'organization_id'])
 
-		// Add a unique constraint to prevent duplicate rules
-		await queryInterface.addConstraint('default_rules', {
-			fields: ['type', 'target_field', 'requester_field', 'organization_id'],
-			type: 'unique',
-			name: 'unique_default_rules_constraint',
-		})
+		// Add a unique constraint to prevent duplicate rules (with partial index)
+		await queryInterface.sequelize.query(`
+			CREATE UNIQUE INDEX unique_default_rules_constraint 
+			ON default_rules (type, target_field, requester_field, organization_id) 
+			WHERE deleted_at IS NULL;
+		`)
 	},
 
 	async down(queryInterface, Sequelize) {
