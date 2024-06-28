@@ -150,13 +150,15 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
+			const isSelfEnrolled = true,
+				session = {}
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
 				req.headers['timezone'],
 				isAMentor(req.decodedToken.roles),
-				true,
-				{},
+				isSelfEnrolled,
+				session,
 				req.decodedToken.roles,
 				req.decodedToken.organization_id
 			)

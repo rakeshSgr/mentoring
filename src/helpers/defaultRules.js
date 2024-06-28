@@ -144,7 +144,6 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 			}
 
 			if (is_target_from_sessions_mentor) {
-				console.log(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
 				mentorWhereClause.push(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
 			} else {
 				if (Array.isArray(requesterValue)) {
