@@ -31,14 +31,14 @@ module.exports = class DefaultRuleHelper {
 				: await mentorExtensionQueries.getModelName()
 
 		const [validTargeField, validRequesterField] = await Promise.all([
-			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id'], {
+			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
 				organization_id: defaultOrgId,
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
-				require: true,
+				required: true,
 			}),
-			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id'], {
+			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
 				organization_id: defaultOrgId,
 				value: bodyData.requester_field,
@@ -48,7 +48,7 @@ module.exports = class DefaultRuleHelper {
 						await menteeExtensionQueries.getModelName(),
 					],
 				},
-				require: true,
+				required: true,
 			}),
 		])
 
@@ -65,6 +65,13 @@ module.exports = class DefaultRuleHelper {
 			errors.push({
 				param: 'requester_field',
 				msg: `Invalid requester_field`,
+			})
+		}
+
+		if (!validTargeField.data_type != validRequesterField.data_type) {
+			errors.push({
+				param: 'target_field,requester_field',
+				msg: `Data types of target_field and requester_field should match`,
 			})
 		}
 
