@@ -29,6 +29,9 @@ function getValidConfigs(config, userRoles) {
 	const validConfigs = []
 
 	function hasMatchingRole(requesterRoles) {
+		if (requesterRoles.includes('ALL')) {
+			return true
+		}
 		return requesterRoles.some((role) => userRoleTitles.includes(role))
 	}
 
