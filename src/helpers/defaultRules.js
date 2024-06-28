@@ -6,6 +6,17 @@ const common = require('@constants/common')
 
 const { isAMentor } = require('@generics/utils')
 
+const operatorMapping = new Map([
+	['equals', '='],
+	['notEquals', '!='],
+	['contains', '@>'],
+	['containedBy', '<@'],
+	['overlap', '&&'],
+	['lessThan', '<'],
+	['greaterThan', '>'],
+	['lessThanOrEqual', '<='],
+	['greaterThanOrEqual', '>='],
+])
 /**
  * Gets the valid configurations based on user roles.
  *
@@ -100,7 +111,6 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 
 		validConfigs.forEach((config) => {
 			const { is_target_from_sessions_mentor, target_field, operator, requester_field } = config
-			//const requesterValue = userDetails[requester_field]
 			const requesterValue = getNestedValue(userDetails, requester_field)
 
 			if (requesterValue === undefined || requesterValue === null) {
@@ -111,10 +121,8 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 					},
 				}
 			}
-			// Split the target_field by '.' to get individual keys
-			const keys = target_field.split('.')
 
-			// Construct the PostgreSQL jsonb operator format
+			const keys = target_field.split('.')
 			const jsonPath = keys
 				.map((key, index) => {
 					if (index === 0) {
@@ -127,19 +135,24 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 				})
 				.join('')
 
+			const sqlOperator = operatorMapping.get(operator)
+			if (!sqlOperator) {
+				throw new Error(`Unsupported operator: ${operator}`)
+			}
+
 			if (is_target_from_sessions_mentor) {
-				console.log(`${jsonPath} ${operator} '${requesterValue}'`)
-				mentorWhereClause.push(`${jsonPath} ${operator} '${requesterValue}'`)
+				console.log(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
+				mentorWhereClause.push(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
 			} else {
 				if (Array.isArray(requesterValue)) {
 					const formattedValues = requesterValue.map((value) =>
 						typeof value === 'string' ? `'${value}'` : value
 					)
 					whereClauses.push(
-						`(${jsonPath} ${operator} ARRAY[${formattedValues.join(', ')}]::character varying[])`
+						`(${jsonPath} ${sqlOperator} ARRAY[${formattedValues.join(', ')}]::character varying[])`
 					)
 				} else {
-					whereClauses.push(`${jsonPath} ${operator} '${requesterValue}'`)
+					whereClauses.push(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
 				}
 			}
 		})
@@ -236,8 +249,12 @@ exports.validateDefaultRulesFilter = async function validateDefaultRulesFilter({
 }
 
 function evaluateCondition(targetValue, operator, requesterValue) {
+	const symbol = operatorMapping.get(operator)
+	if (!symbol) {
+		throw new Error(`Unsupported operator: ${operator}`)
+	}
 	if (Array.isArray(requesterValue)) {
-		switch (operator) {
+		switch (symbol) {
 			case '@>':
 				// Check if targetValue contains all elements of requesterValue
 				return requesterValue.every((value) => targetValue.includes(value))
@@ -251,7 +268,7 @@ function evaluateCondition(targetValue, operator, requesterValue) {
 				throw new Error(`Unsupported array operator: ${operator}`)
 		}
 	} else {
-		switch (operator) {
+		switch (symbol) {
 			case '=':
 				return targetValue === requesterValue
 			case '!=':
