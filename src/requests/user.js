@@ -62,7 +62,9 @@ const fetchUserDetails = async ({ token, userId }) => {
 		if (userId) profileUrl += `/${userId}`
 
 		const isInternalTokenRequired = true
-		return await requests.get(profileUrl, token, isInternalTokenRequired)
+		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
+		if (!userDetails.data.result.user_roles) userDetails.data.result.user_roles = [{ title: 'mentee' }]
+		return userDetails
 	} catch (error) {
 		console.error(error)
 		throw error
