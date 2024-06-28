@@ -566,7 +566,13 @@ module.exports = class MentorsHelper {
 					requesterOrganizationId: orgId,
 					data: requestedMentorExtension,
 				})
-
+				if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+					return responses.failureResponse({
+						message: 'PROFILE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				if (!validateDefaultRules) {
 					return responses.failureResponse({
 						message: 'MENTORS_NOT_FOUND',
@@ -828,6 +834,15 @@ module.exports = class MentorsHelper {
 				roles: roles,
 				requesterOrganizationId: orgId,
 			})
+
+			if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
 				pageNo,

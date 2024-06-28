@@ -384,12 +384,15 @@ module.exports = class MenteesHelper {
 			roles: roles,
 			requesterOrganizationId: orgId,
 		})
-		if (defaultRuleFilter === null) {
-			return {
-				rows: [],
-				count: 0,
-			} // Handle the case where no mentors match the criteria
+
+		if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+			return responses.failureResponse({
+				message: 'PROFILE_NOT_UPDATED',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
 		}
+
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,

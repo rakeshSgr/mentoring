@@ -6,14 +6,6 @@ const common = require('@constants/common')
 
 const { isAMentor } = require('@generics/utils')
 
-class MissingFieldError extends Error {
-	constructor(field) {
-		super(`Value for field ${field} is undefined or null`)
-		this.name = 'MissingFieldError'
-		this.field = field
-	}
-}
-
 /**
  * Gets the valid configurations based on user roles.
  *
@@ -112,7 +104,12 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 			const requesterValue = getNestedValue(userDetails, requester_field)
 
 			if (requesterValue === undefined || requesterValue === null) {
-				throw new MissingFieldError(requester_field)
+				return {
+					error: {
+						missingField: true,
+						message: `Missing field: ${requester_field}`,
+					},
+				}
 			}
 			// Split the target_field by '.' to get individual keys
 			const keys = target_field.split('.')
@@ -193,7 +190,12 @@ exports.validateDefaultRulesFilter = async function validateDefaultRulesFilter({
 				(userDetails.meta && getNestedValue(userDetails.meta, requester_field))
 
 			if (requesterValue === undefined || requesterValue === null) {
-				throw new MissingFieldError(requester_field)
+				return {
+					error: {
+						missingField: true,
+						message: `Missing field: ${requester_field}`,
+					},
+				}
 			}
 
 			if (is_target_from_sessions_mentor) {

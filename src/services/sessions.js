@@ -908,6 +908,14 @@ module.exports = class SessionsHelper {
 				data: sessionDetails,
 			})
 
+			if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			if (!validateDefaultRules) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -915,6 +923,7 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			if (!sessionDetails) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -1233,6 +1242,14 @@ module.exports = class SessionsHelper {
 				requesterOrganizationId: orgId,
 				data: session,
 			})
+
+			if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
 			if (!validateDefaultRules) {
 				return responses.failureResponse({
