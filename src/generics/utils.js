@@ -650,6 +650,22 @@ function isValidEmail(email) {
 	return emailRegex.test(email)
 }
 
+function validateProfileData(profileData, validationData) {
+	const profileMandatoryFields = []
+	for (const field of validationData) {
+		if (profileData.hasOwnProperty(field.value)) {
+			if (field.required === true && profileData[field.value] === null) {
+				profileMandatoryFields.push(field.value)
+			}
+		} else {
+			if (field.required === true) {
+				profileMandatoryFields.push(field.value)
+			}
+		}
+	}
+	return profileMandatoryFields
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -693,4 +709,5 @@ module.exports = {
 	clearFile,
 	convertKeysToSnakeCase,
 	isValidEmail,
+	validateProfileData,
 }

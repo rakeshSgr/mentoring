@@ -63,6 +63,7 @@ module.exports = {
 				console.log('Mentor names updated successfully.')
 			} catch (error) {
 				console.error('Error updating mentor names:', error.message)
+				throw error
 			}
 		}
 

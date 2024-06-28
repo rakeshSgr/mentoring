@@ -188,7 +188,7 @@ module.exports = class SessionsHelper {
 			}
 
 			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
-			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: mentorIdToCheck })).data.result
 			if (userDetails && userDetails.name) {
 				bodyData.mentor_name = userDetails.name
 			}
@@ -242,7 +242,7 @@ module.exports = class SessionsHelper {
 			bodyData['mentor_organization_id'] = orgId
 			// SAAS changes; Include visibility and visible organisation
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
@@ -393,16 +393,20 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (
-				sessionDetail.dataValues.mentor_id != bodyData.mentor_id[0] ||
-				sessionDetail.dataValues.type != bodyData.type
-			) {
-				return responses.failureResponse({
-					message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+
+			if (bodyData.mentor_id && bodyData.type) {
+				if (
+					sessionDetail.dataValues.mentor_id != bodyData.mentor_id ||
+					sessionDetail.dataValues.type != bodyData.type
+				) {
+					return responses.failureResponse({
+						message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
+
 			//	if(sessionDetail)
 			// check if session mentor is added in the mentee list
 			if (bodyData?.mentees?.includes(bodyData?.mentor_id)) {
@@ -441,15 +445,13 @@ module.exports = class SessionsHelper {
 				userId = sessionDetail.mentor_id
 			}
 
-			if (method != common.DELETE_METHOD) {
-				let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
-				if (!mentorExtension) {
-					return responses.failureResponse({
-						message: 'INVALID_PERMISSION',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
+			if (!mentorExtension) {
+				return responses.failureResponse({
+					message: 'INVALID_PERMISSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
@@ -468,23 +470,16 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD) {
-				const timeSlot = await this.isTimeSlotAvailable(
-					userId,
-					bodyData.start_date,
-					bodyData.end_date,
-					sessionId
-				)
-				if (timeSlot.isTimeSlotAvailable === false) {
-					return responses.failureResponse({
-						message: {
-							key: 'INVALID_TIME_SELECTION',
-							interpolation: { sessionName: timeSlot.sessionName },
-						},
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
+			if (timeSlot.isTimeSlotAvailable === false) {
+				return responses.failureResponse({
+					message: {
+						key: 'INVALID_TIME_SELECTION',
+						interpolation: { sessionName: timeSlot.sessionName },
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
@@ -506,25 +501,23 @@ module.exports = class SessionsHelper {
 				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
-			if (method != common.DELETE_METHOD) {
-				//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-				if (bodyData.status == common.VALID_STATUS) {
-					bodyData.status = sessionDetail.status
-				}
-				const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-				let res = utils.validateInput(bodyData, validationData, sessionModelName)
-				if (!res.success) {
-					return responses.failureResponse({
-						message: 'SESSION_CREATION_FAILED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-						result: res.errors,
-					})
-				}
-
-				let sessionModel = await sessionQueries.getColumns()
-				bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			if (bodyData.status == common.VALID_STATUS) {
+				bodyData.status = sessionDetail.status
 			}
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
+			let res = utils.validateInput(bodyData, validationData, sessionModelName)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+
+			let sessionModel = await sessionQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 
 			let isSessionDataChanged = false
 			let updatedSessionData = {}
@@ -966,7 +959,7 @@ module.exports = class SessionsHelper {
 			}
 
 			if (isInvited || sessionDetails.is_assigned) {
-				const managerDetails = await userRequests.details('', sessionDetails.created_by)
+				const managerDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.created_by })
 				sessionDetails.manager_name = managerDetails.data.result.name
 			}
 
@@ -986,7 +979,7 @@ module.exports = class SessionsHelper {
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
 
-			const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
+			const mentorDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.mentor_id })
 			sessionDetails.mentor_name = mentorDetails.data.result.name
 			sessionDetails.organization = mentorDetails.data.result.organization
 			sessionDetails.mentor_designation = []
@@ -1211,7 +1204,7 @@ module.exports = class SessionsHelper {
 			// If enrolled by the mentee get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfEnrolled) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1371,7 +1364,7 @@ module.exports = class SessionsHelper {
 			// If mentee request unenroll get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfUnenrollment) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1393,7 +1386,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userRequests.details('', session.mentor_id)
+			const mentorName = await userRequests.fetchUserDetails({ userId: session.mentor_id })
 			session.mentor_name = mentorName.data.result.name
 
 			const deletedRows = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
@@ -2359,7 +2352,7 @@ module.exports = class SessionsHelper {
 	 */
 	static async pushSessionRelatedMentorEmailToKafka(templateCode, orgId, sessionDetail, updatedSessionDetails) {
 		try {
-			const userDetails = (await userRequests.details('', sessionDetail.mentor_id)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: sessionDetail.mentor_id })).data.result
 
 			// Fetch email template
 			let durationStartDate = updatedSessionDetails.start_date
@@ -2559,6 +2552,26 @@ module.exports = class SessionsHelper {
 			const downloadCsv = await this.downloadCSV(filePath)
 			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
 
+			const getLocalizedMessage = (key) => {
+				return messages[key] || key
+			}
+
+			// Filter out empty rows
+			const nonEmptyCsvData = csvData.filter((row) => Object.values(row).some((value) => value !== ''))
+
+			if (nonEmptyCsvData.length === 0 || nonEmptyCsvData.length > process.env.CSV_MAX_ROW) {
+				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
+				const message =
+					nonEmptyCsvData.length === 0
+						? getLocalizedMessage('EMPTY_CSV')
+						: `${baseMessage}${process.env.CSV_MAX_ROW}`
+				return responses.failureResponse({
+					message: message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const expectedHeadings = [
 				'Action',
 				'id',
@@ -2607,21 +2620,6 @@ module.exports = class SessionsHelper {
 			if (!areHeadingsValid) {
 				return responses.failureResponse({
 					message: `Invalid CSV Headings.`,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const getLocalizedMessage = (key) => {
-				return messages[key] || key
-			}
-
-			if (csvData.length === 0 || csvData.length > process.env.CSV_MAX_ROW) {
-				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
-				const message =
-					csvData.length === 0 ? getLocalizedMessage('EMPTY_CSV') : `${baseMessage}${process.env.CSV_MAX_ROW}`
-				return responses.failureResponse({
-					message: message,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

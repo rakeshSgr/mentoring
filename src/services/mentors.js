@@ -115,7 +115,7 @@ module.exports = class MentorsHelper {
 	 */
 	/* 	static async profile(id) {
 		try {
-			const mentorsDetails = await userRequests.details('', id)
+			const mentorsDetails = await userRequests.fetchUserDetails('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -310,12 +310,13 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			if (data.email) {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
-
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
+			console.log('USER ORG DETAILS: ', userOrgDetails)
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -347,15 +348,16 @@ module.exports = class MentorsHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
-			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!skipValidation) {
+				let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'SESSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
@@ -600,7 +602,7 @@ module.exports = class MentorsHelper {
 				}
 			}
 
-			let mentorProfile = await userRequests.details('', id)
+			let mentorProfile = await userRequests.fetchUserDetails({ userId: id })
 			if (!mentorProfile.data.result) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
@@ -653,6 +655,9 @@ module.exports = class MentorsHelper {
 				mentorProfile.permissions = []
 			}
 			mentorProfile.permissions.push(...mentorPermissions)
+
+			const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
+			mentorProfile.profile_mandatory_fields = profileMandatoryFields
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
