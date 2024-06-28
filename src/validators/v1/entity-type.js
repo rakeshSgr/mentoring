@@ -39,6 +39,11 @@ module.exports = {
 		req.checkBody('model_names.*')
 			.isIn(['Session', 'MentorExtension', 'UserExtension'])
 			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
+
+		req.checkBody('allow_filtering')
+			.optional()
+			.isBoolean()
+			.withMessage('allow_filtering is invalid, must be boolean')
 	},
 
 	update: (req) => {
@@ -78,6 +83,11 @@ module.exports = {
 		req.checkBody('model_names.*')
 			.isIn(['Session', 'MentorExtension', 'UserExtension'])
 			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
+
+		req.checkBody('allow_filtering')
+			.optional()
+			.isBoolean()
+			.withMessage('allow_filtering is invalid, must be boolean')
 	},
 
 	read: (req) => {

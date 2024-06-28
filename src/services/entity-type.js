@@ -7,7 +7,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const utils = require('@generics/utils')
 const responses = require('@helpers/responses')
-
+const common = require('@constants/common')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity type.
@@ -18,11 +18,14 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Created entity type response.
 	 */
 
-	static async create(bodyData, id, orgId) {
+	static async create(bodyData, id, orgId, roles) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
 		bodyData.organization_id = orgId
 		try {
+			const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
+			bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
+
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -51,10 +54,13 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Updated Entity Type.
 	 */
 
-	static async update(bodyData, id, loggedInUserId, orgId) {
+	static async update(bodyData, id, loggedInUserId, orgId, roles) {
 		bodyData.updated_by = loggedInUserId
 		bodyData.organization_id = orgId
+
 		try {
+			const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
+			bodyData.allow_filtering = isAdmin ? bodyData.allow_filtering : false
 			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, orgId, bodyData, {
 				returning: true,
 				raw: true,
