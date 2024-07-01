@@ -506,16 +506,17 @@ module.exports = class SessionsHelper {
 				bodyData.status = sessionDetail.status
 			}
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(bodyData, validationData, sessionModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!method === common.DELETE_METHOD) {
+				let res = utils.validateInput(bodyData, validationData, sessionModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'SESSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
-
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 
@@ -2582,8 +2583,8 @@ module.exports = class SessionsHelper {
 				'title',
 				'description',
 				'type',
-				'Mentor(Email/Mobile Num)',
-				'Mentees(Email/Mobile Num)',
+				'Mentor(Email)',
+				'Mentees(Email)',
 				'Date(DD-MM-YYYY)',
 				'Time Zone(IST/UTC)',
 				'Time (24 hrs)',
@@ -2592,7 +2593,7 @@ module.exports = class SessionsHelper {
 				'categories',
 				'medium',
 				'Meeting Platform',
-				'Meeting Link or Meeting ID',
+				'Meeting Link',
 				'Meeting Passcode (if needed)',
 			]
 

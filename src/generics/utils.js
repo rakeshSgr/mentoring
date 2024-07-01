@@ -650,6 +650,21 @@ function isValidEmail(email) {
 	return emailRegex.test(email)
 }
 
+function transformCustomFields(customFields) {
+	const customEntities = {}
+
+	for (const [key, value] of Object.entries(customFields)) {
+		customEntities[key] = value
+			? value
+					.replace(/"/g, '')
+					.split(',')
+					.map((item) => item.trim())
+			: []
+	}
+
+	return customEntities
+}
+
 function validateProfileData(profileData, validationData) {
 	const profileMandatoryFields = []
 	for (const field of validationData) {
@@ -709,5 +724,6 @@ module.exports = {
 	clearFile,
 	convertKeysToSnakeCase,
 	isValidEmail,
+	transformCustomFields,
 	validateProfileData,
 }
