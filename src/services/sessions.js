@@ -1228,15 +1228,17 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const validateDefaultRules = await validateDefaultRulesFilter({
-				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
-				requesterId: userId,
-				roles: roles,
-				requesterOrganizationId: orgId,
-				data: session,
-			})
-
-			if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+			let validateDefaultRules
+			if (isSelfEnrolled) {
+				validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: session,
+				})
+			}
+			if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
 				return responses.failureResponse({
 					message: 'PROFILE_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
@@ -1244,7 +1246,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (!validateDefaultRules) {
+			if (!validateDefaultRules && isSelfEnrolled) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
