@@ -562,7 +562,7 @@ module.exports = class UserInviteHelper {
 			}))
 			await this.mapSessionToEntityValues(session, idAndValues)
 
-			if (session.custom_entities != {}) {
+			if (session.custom_entities) {
 				const result = await this.validateCustomEntities(session, idAndValues, userId)
 				if (!result.isValid) {
 					session.status = 'Invalid'
