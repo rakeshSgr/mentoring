@@ -1359,7 +1359,7 @@ module.exports = class MenteesHelper {
 					organization_id: userPolicyDetails.organization_id,
 				},
 				{
-					attributes: ['mentee_visibility_policy', 'organization_id'],
+					attributes: ['external_mentee_visibility_policy', 'organization_id'],
 				}
 			)
 			// Throw error if mentor/mentee extension not found
@@ -1377,8 +1377,8 @@ module.exports = class MenteesHelper {
 			if (organization_ids.length !== 0) {
 				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')})`
 			}
-			if (getOrgPolicy.mentee_visibility_policy && userPolicyDetails.organization_id) {
-				const visibilityPolicy = getOrgPolicy.mentee_visibility_policy
+			if (getOrgPolicy.external_mentee_visibility_policy && userPolicyDetails.organization_id) {
+				const visibilityPolicy = getOrgPolicy.external_mentee_visibility_policy
 
 				// Filter user data based on policy
 				// generate filter based on condition
@@ -1395,7 +1395,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT')`
+						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
 						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
@@ -1407,7 +1407,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT' ) OR "external_mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT' ) OR "mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
 				}
 			}
 
