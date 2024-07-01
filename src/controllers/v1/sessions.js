@@ -150,8 +150,8 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
-			const isSelfEnrolled = true,
-				session = {}
+			const isSelfEnrolled = true
+			const session = {}
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
