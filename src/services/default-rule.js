@@ -37,6 +37,7 @@ module.exports = class DefaultRuleHelper {
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
 				required: true,
+				allow_custom_entities: false,
 			}),
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
@@ -49,6 +50,7 @@ module.exports = class DefaultRuleHelper {
 					],
 				},
 				required: true,
+				allow_custom_entities: false,
 			}),
 		])
 
@@ -67,8 +69,10 @@ module.exports = class DefaultRuleHelper {
 				msg: `Invalid requester_field`,
 			})
 		}
-
-		if (!validTargeField.data_type != validRequesterField.data_type) {
+		if (validTargeField.length === 0 || validRequesterField.length === 0) {
+			return errors
+		}
+		if (validTargeField[0]?.data_type != validRequesterField[0]?.data_type) {
 			errors.push({
 				param: 'target_field,requester_field',
 				msg: `Data types of target_field and requester_field should match`,
@@ -111,7 +115,7 @@ module.exports = class DefaultRuleHelper {
 					message: 'VALIDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
-					result: validation.errors,
+					result: validation,
 				})
 			}
 
