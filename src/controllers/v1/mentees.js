@@ -92,7 +92,9 @@ module.exports = class Mentees {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.query
+				req.query,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return homeFeed
 		} catch (error) {
@@ -112,7 +114,7 @@ module.exports = class Mentees {
 
 	async joinSession(req) {
 		try {
-			const session = await menteesService.joinSession(req.params.id, req.decodedToken.token)
+			const session = await menteesService.joinSession(req.params.id, req.decodedToken.id)
 			return session
 		} catch (error) {
 			return error

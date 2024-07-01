@@ -4,7 +4,7 @@ const entity = {
 }
 
 const entityType = {
-	create: ['id', 'allow_filtering', 'created_at', 'updated_at', 'created_by', 'updated_by'],
+	create: ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'],
 }
 
 const feedback = {

@@ -232,9 +232,8 @@ function validateInput(input, validationData, modelName) {
 						}
 					}
 					break
-
+				case 'INTEGER':
 				case 'NUMBER':
-					console.log('Type of', typeof fieldValue)
 					if (typeof fieldValue !== 'number') {
 						addError(field.value, fieldValue, dataType, '')
 					}
@@ -651,6 +650,37 @@ function isValidEmail(email) {
 	return emailRegex.test(email)
 }
 
+function transformCustomFields(customFields) {
+	const customEntities = {}
+
+	for (const [key, value] of Object.entries(customFields)) {
+		customEntities[key] = value
+			? value
+					.replace(/"/g, '')
+					.split(',')
+					.map((item) => item.trim())
+			: []
+	}
+
+	return customEntities
+}
+
+function validateProfileData(profileData, validationData) {
+	const profileMandatoryFields = []
+	for (const field of validationData) {
+		if (profileData.hasOwnProperty(field.value)) {
+			if (field.required === true && profileData[field.value] === null) {
+				profileMandatoryFields.push(field.value)
+			}
+		} else {
+			if (field.required === true) {
+				profileMandatoryFields.push(field.value)
+			}
+		}
+	}
+	return profileMandatoryFields
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -694,4 +724,6 @@ module.exports = {
 	clearFile,
 	convertKeysToSnakeCase,
 	isValidEmail,
+	transformCustomFields,
+	validateProfileData,
 }

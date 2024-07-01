@@ -26,6 +26,8 @@ const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
+const { defaultRulesFilter } = require('@helpers/defaultRules')
+
 const searchConfig = require('@configs/search.json')
 const emailEncryption = require('@utils/emailEncryption')
 
@@ -38,7 +40,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userRequests.details('', id)
+		const menteeDetails = await userRequests.fetchUserDetails({ userId: id })
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
@@ -71,6 +73,9 @@ module.exports = class MenteesHelper {
 			menteeDetails.data.result.permissions = []
 		}
 		menteeDetails.data.result.permissions.push(...menteePermissions)
+
+		const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
+		menteeDetails.data.result.profile_mandatory_fields = profileMandatoryFields
 
 		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
@@ -177,11 +182,21 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor, page, limit, search, queryParams) {
+	static async homeFeed(userId, isAMentor, page, limit, search, queryParams, roles, orgId) {
 		try {
 			/* All Sessions */
 
-			let allSessions = await this.getAllSessions(page, limit, search, userId, queryParams, isAMentor)
+			let allSessions = await this.getAllSessions(
+				page,
+				limit,
+				search,
+				userId,
+				queryParams,
+				isAMentor,
+				'',
+				roles,
+				orgId
+			)
 
 			/* My Sessions */
 
@@ -216,9 +231,9 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees join session link.
 	 */
 
-	static async joinSession(sessionId, token) {
+	static async joinSession(sessionId, userId) {
 		try {
-			const mentee = await userRequests.details(token)
+			const mentee = await userRequests.fetchUserDetails({ userId })
 
 			if (mentee.data.responseCode !== 'OK') {
 				return responses.failureResponse({
@@ -329,7 +344,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn) {
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn, roles, orgId) {
 		let additionalProjectionString = ''
 
 		// check for fields query
@@ -365,6 +380,22 @@ module.exports = class MenteesHelper {
 				count: 0,
 			}
 		}
+
+		const defaultRuleFilter = await defaultRulesFilter({
+			ruleType: 'session',
+			requesterId: userId,
+			roles: roles,
+			requesterOrganizationId: orgId,
+		})
+
+		if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+			return responses.failureResponse({
+				message: 'PROFILE_NOT_UPDATED',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,
@@ -373,7 +404,8 @@ module.exports = class MenteesHelper {
 			filteredQuery,
 			saasFilter,
 			additionalProjectionString,
-			search
+			search,
+			defaultRuleFilter
 		)
 		if (sessions.rows.length > 0) {
 			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_organization_id))]
@@ -420,7 +452,8 @@ module.exports = class MenteesHelper {
 				})
 			}
 			const organizationName = mentorExtension
-				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
+				? (await userRequests.fetchOrgDetails({ organizationId: mentorExtension.organization_id }))?.data
+						?.result?.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
 				throw responses.failureResponse({
@@ -594,11 +627,12 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			if (data.email) {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -632,14 +666,16 @@ module.exports = class MenteesHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, userExtensionsModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'MENTEE_EXTENSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!skipValidation) {
+				let res = utils.validateInput(data, validationData, userExtensionsModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'MENTEE_EXTENSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let menteeExtensionsModel = await menteeQueries.getColumns()
 			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
@@ -971,7 +1007,9 @@ module.exports = class MenteesHelper {
 				} else if (visibilityPolicy === common.ASSOCIATED || visibilityPolicy === common.ALL) {
 					organizationIds.push(orgExtension.organization_id)
 					let relatedOrgs = []
-					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgExtension.organization_id)
+					let userOrgDetails = await userRequests.fetchOrgDetails({
+						organizationId: orgExtension.organization_id,
+					})
 					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
 						relatedOrgs = userOrgDetails.data.result.related_orgs
 					}
@@ -1321,7 +1359,7 @@ module.exports = class MenteesHelper {
 					organization_id: userPolicyDetails.organization_id,
 				},
 				{
-					attributes: ['mentee_visibility_policy', 'organization_id'],
+					attributes: ['external_mentee_visibility_policy', 'organization_id'],
 				}
 			)
 			// Throw error if mentor/mentee extension not found
@@ -1339,8 +1377,8 @@ module.exports = class MenteesHelper {
 			if (organization_ids.length !== 0) {
 				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')})`
 			}
-			if (getOrgPolicy.mentee_visibility_policy && userPolicyDetails.organization_id) {
-				const visibilityPolicy = getOrgPolicy.mentee_visibility_policy
+			if (getOrgPolicy.external_mentee_visibility_policy && userPolicyDetails.organization_id) {
+				const visibilityPolicy = getOrgPolicy.external_mentee_visibility_policy
 
 				// Filter user data based on policy
 				// generate filter based on condition
@@ -1357,7 +1395,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT')`
+						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
 						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
@@ -1369,7 +1407,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT' ) OR "external_mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT' ) OR "mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
 				}
 			}
 

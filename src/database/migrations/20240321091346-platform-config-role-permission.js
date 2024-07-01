@@ -36,6 +36,7 @@ module.exports = {
 			await rowToDelete.destroy()
 		} catch (error) {
 			console.error('Error deleting row:', error)
+			throw error
 		}
 		try {
 			const rolePermissionsData = [
@@ -103,6 +104,7 @@ module.exports = {
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)
 		} catch (error) {
 			console.error(error)
+			throw error
 		}
 	},
 

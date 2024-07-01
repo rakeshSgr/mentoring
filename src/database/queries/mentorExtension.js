@@ -22,11 +22,19 @@ module.exports = class MentorExtensionQueries {
 			return error
 		}
 	}
+	static async getTableName() {
+		try {
+			return await MentorExtension.tableName
+		} catch (error) {
+			return error
+		}
+	}
 
 	static async createMentorExtension(data) {
 		try {
 			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -42,6 +50,7 @@ module.exports = class MentorExtensionQueries {
 				...options,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -146,7 +155,8 @@ module.exports = class MentorExtensionQueries {
 		additionalProjectionclause = '',
 		returnOnlyUserId,
 		searchFilter = '',
-		searchText
+		searchText,
+		defaultFilter = ''
 	) {
 		try {
 			const filterConditions = []
@@ -175,6 +185,8 @@ module.exports = class MentorExtensionQueries {
 			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
 
 			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
+			const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
+
 			if (excludeUserIds && Object.keys(filter).length === 0) {
 				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
 			}
@@ -200,6 +212,7 @@ module.exports = class MentorExtensionQueries {
 					${filterClause}
 					${saasFilterClause}
 					${additionalFilter}
+					${defaultFilterClause}
 			`
 
 			const replacements = {
@@ -241,7 +254,8 @@ module.exports = class MentorExtensionQueries {
 				${userFilterClause}
 				${filterClause}
 				${saasFilterClause}
-				${additionalFilter}	
+				${additionalFilter}
+				${defaultFilterClause}
 			;
 		`
 			const count = await Sequelize.query(countQuery, {
@@ -254,6 +268,7 @@ module.exports = class MentorExtensionQueries {
 				count: Number(count[0].count),
 			}
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}
@@ -358,6 +373,70 @@ module.exports = class MentorExtensionQueries {
 			return mentors
 		} catch (error) {
 			throw error
+		}
+	}
+	static async getMentorsFromView(
+		whereClause = '',
+		projection = 'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text',
+		saasFilterClause = ''
+	) {
+		try {
+			// Remove leading "AND" from saasFilterClause if necessary
+			if (saasFilterClause.startsWith('AND')) {
+				saasFilterClause = saasFilterClause.replace('AND', '')
+			}
+
+			// Construct the query with the provided whereClause, projection, and saasFilterClause
+			let query = `
+				SELECT ${projection}
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE ${whereClause}
+				${saasFilterClause}
+			`
+
+			// Execute the query
+			const mentors = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+			})
+
+			// Count query
+			const countQuery = `
+				SELECT count(*) AS "count"
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE ${whereClause}
+				${saasFilterClause}
+			`
+
+			// Execute the count query
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+			})
+
+			return {
+				data: mentors,
+				count: Number(count[0].count),
+			}
+		} catch (error) {
+			return error
+		}
+	}
+	static async findOneFromView(userId) {
+		try {
+			let query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE user_id = :userId
+				LIMIT 1
+			`
+
+			const user = await Sequelize.query(query, {
+				replacements: { userId },
+				type: QueryTypes.SELECT,
+			})
+
+			return user.length > 0 ? user[0] : null
+		} catch (error) {
+			return error
 		}
 	}
 }

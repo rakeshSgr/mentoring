@@ -241,6 +241,7 @@ module.exports = {
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)
 		} catch (error) {
 			console.error(error)
+			throw error
 		}
 	},
 
