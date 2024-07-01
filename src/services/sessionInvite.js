@@ -233,15 +233,7 @@ module.exports = class UserInviteHelper {
 				}
 
 				// Transform custom fields into an array format
-				const customEntities = {}
-				for (const [key, value] of Object.entries(customFields)) {
-					customEntities[key] = value
-						? value
-								.replace(/"/g, '')
-								.split(',')
-								.map((item) => item.trim())
-						: []
-				}
+				const customEntities = utils.transformCustomFields(customFields)
 				// Conditionally add custom_entities if there are any custom fields
 				if (Object.keys(customEntities).length > 0) {
 					parsedRow.custom_entities = customEntities
@@ -324,10 +316,8 @@ module.exports = class UserInviteHelper {
 					}
 					//Default Validation
 					const validateDefaultBBB = async () => {
-						if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
-							setMeetingInfo('', '')
-						} else {
-							setMeetingInfo('', '')
+						setMeetingInfo('', '')
+						if (process.env.DEFAULT_MEETING_SERVICE !== common.BBB_VALUE) {
 							lastEntry.statusMessage = await processInvalidLink(
 								lastEntry.statusMessage,
 								'Set Meeting Later'
@@ -766,16 +756,14 @@ module.exports = class UserInviteHelper {
 			}
 
 			const SessionBodyData = rowsWithStatus.map((item) => {
-				const { custom_entities, ...restOfItem } = item
-
-				// Add each key-value pair from custom_entities to the main session object
-				if (custom_entities) {
-					for (const [key, value] of Object.entries(custom_entities)) {
-						restOfItem[key] = value
+				const { custom_entities: customEntities, ...restOfSessionData } = item
+				// Add each key-value pair from customEntities to the main session object
+				if (customEntities) {
+					for (const [entityKey, entityValue] of Object.entries(customEntities)) {
+						restOfSessionData[entityKey] = entityValue
 					}
 				}
-
-				return restOfItem
+				return restOfSessionData
 			})
 
 			const sessionCreationOutput = await this.processCreateData(
