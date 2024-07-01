@@ -8283,32 +8283,44 @@ paths:
               properties:
                 type:
                   type: string
+                  enum:
+                    - mentor
+                    - session
                 target_field:
                   type: string
                 is_target_from_sessions_mentor:
                   type: boolean
                 requester_field:
                   type: string
-                field_configs:
-                  type: object
-                  properties: {}
-                matching_operator:
+                operator:
                   type: string
+                  enum:
+                    - '='
+                    - '!='
+                    - '@>'
+                    - <@
+                    - '&&'
+                    - <
+                    - '>'
+                    - <=
+                    - '>='
                 requester_roles:
                   type: array
                   items:
                     type: string
-                role_config:
+                requester_roles_config:
                   type: object
                   properties:
                     exclude:
                       type: boolean
+                  required:
+                    - exclude
               required:
                 - type
                 - target_field
                 - is_target_from_sessions_mentor
                 - requester_field
-                - matching_operator
+                - operator
             examples:
               sample:
                 value:
@@ -8808,31 +8820,36 @@ paths:
                   type: boolean
                 requester_field:
                   type: string
-                field_configs:
-                  type: 'null'
-                matching_operator:
+                operator:
                   type: string
                 requester_roles:
                   type: array
                   items:
                     type: string
-                role_config:
+                requester_roles_config:
                   type: object
                   properties:
                     exclude:
                       type: boolean
+                  required:
+                    - exclude
+              required:
+                - type
+                - target_field
+                - is_target_from_sessions_mentor
+                - requester_field
+                - operator
             examples:
               example1:
                 value:
-                  type: mentor
+                  type: session
                   target_field: gender
-                  is_target_from_sessions_mentor: false
+                  is_target_from_sessions_mentor: true
                   requester_field: gender
-                  field_configs: null
-                  matching_operator: '='
+                  operator: equals
                   requester_roles:
-                    - session_manager
-                  role_config:
+                    - mentee
+                  requester_roles_config:
                     exclude: true
       responses:
         '202':
