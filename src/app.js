@@ -14,6 +14,7 @@ const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
 let environmentData = require('./envVariables')()
+
 const { elevateLog, correlationIdMiddleware } = require('elevate-logger')
 elevateLog.config(process.env.ERROR_LOG_LEVEL, 'mentoring', process.env.DISABLE_LOG)
 const logger = elevateLog.init()
@@ -25,6 +26,7 @@ if (!environmentData.success) {
 }
 
 require('@configs')
+const materializedViewsService = require('./generics/materializedViews')
 require('@configs/cloud-service')
 
 i18next
@@ -77,6 +79,22 @@ app.all('*', (req, res, next) => {
 	})
 	next()
 })
+
+async function buildViews() {
+	console.log('Building Materialized views if not exits...')
+	const startTime = Date.now()
+
+	try {
+		await materializedViewsService.checkAndCreateMaterializedViews()
+		const endTime = Date.now()
+		const elapsedTime = endTime - startTime
+		console.log(`Completed building views. Time taken: ${elapsedTime} ms`)
+	} catch (error) {
+		console.error('Error while creating Materialized views:', error)
+	}
+}
+
+buildViews()
 
 /* Registered routes here */
 require('./routes')(app)

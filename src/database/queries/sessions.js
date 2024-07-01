@@ -633,7 +633,8 @@ exports.getUpcomingSessionsFromView = async (
 	filter,
 	saasFilter = '',
 	additionalProjectionclause = '',
-	searchText
+	searchText,
+	defaultFilter = ''
 ) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
@@ -649,7 +650,7 @@ exports.getUpcomingSessionsFromView = async (
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
-
+		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
 		let publicSessionFilter = " AND type = '" + common.SESSION_TYPE.PUBLIC + "'"
 
 		// Create selection clause
@@ -702,6 +703,7 @@ exports.getUpcomingSessionsFromView = async (
 			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
 			${publicSessionFilter}
 			${searchFilter.whereClause}
+			${defaultFilterClause}
 		ORDER BY
 			${orderClause}
 		OFFSET
@@ -741,6 +743,7 @@ exports.getUpcomingSessionsFromView = async (
 			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
 			${publicSessionFilter}
 			${searchFilter.whereClause}
+			${defaultFilterClause}
 		;
 	`
 		const count = await Sequelize.query(countQuery, {

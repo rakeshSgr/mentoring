@@ -44,6 +44,7 @@ const csv = require('csvtojson')
 const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
+const { validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class SessionsHelper {
 	/**
@@ -187,7 +188,7 @@ module.exports = class SessionsHelper {
 			}
 
 			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
-			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: mentorIdToCheck })).data.result
 			if (userDetails && userDetails.name) {
 				bodyData.mentor_name = userDetails.name
 			}
@@ -241,7 +242,7 @@ module.exports = class SessionsHelper {
 			bodyData['mentor_organization_id'] = orgId
 			// SAAS changes; Include visibility and visible organisation
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
@@ -879,7 +880,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '', queryParams) {
+	static async details(id, userId = '', isAMentor = '', queryParams, roles, orgId) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -893,7 +894,6 @@ module.exports = class SessionsHelper {
 					exclude: ['share_link', 'mentee_password', 'mentor_password'],
 				},
 			})
-
 			if (!sessionDetails) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -901,6 +901,32 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			let validateDefaultRules
+			if (userId != sessionDetails.mentor_id) {
+				validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: sessionDetails,
+				})
+			}
+			if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!validateDefaultRules && userId != sessionDetails.mentor_id) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			sessionDetails.is_enrolled = false
 			let isInvited = false
 			if (userId) {
@@ -936,7 +962,7 @@ module.exports = class SessionsHelper {
 			}
 
 			if (isInvited || sessionDetails.is_assigned) {
-				const managerDetails = await userRequests.details('', sessionDetails.created_by)
+				const managerDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.created_by })
 				sessionDetails.manager_name = managerDetails.data.result.name
 			}
 
@@ -956,7 +982,7 @@ module.exports = class SessionsHelper {
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
 
-			const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
+			const mentorDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.mentor_id })
 			sessionDetails.mentor_name = mentorDetails.data.result.name
 			sessionDetails.organization = mentorDetails.data.result.organization
 			sessionDetails.mentor_designation = []
@@ -1113,7 +1139,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor) {
+	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor, roles, orgId) {
 		try {
 			let allSessions = await menteeService.getAllSessions(
 				page,
@@ -1122,7 +1148,9 @@ module.exports = class SessionsHelper {
 				loggedInUserId,
 				queryParams,
 				isAMentor,
-				searchOn
+				searchOn,
+				roles,
+				orgId
 			)
 
 			// add index number to the response
@@ -1160,7 +1188,16 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isAMentor, isSelfEnrolled = true, session = {}) {
+	static async enroll(
+		sessionId,
+		userTokenData,
+		timeZone,
+		isAMentor,
+		isSelfEnrolled = true,
+		session = {},
+		roles,
+		orgId
+	) {
 		try {
 			let email
 			let name
@@ -1170,7 +1207,7 @@ module.exports = class SessionsHelper {
 			// If enrolled by the mentee get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfEnrolled) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1193,6 +1230,33 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			let validateDefaultRules
+			if (isSelfEnrolled) {
+				validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: session,
+				})
+			}
+			if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!validateDefaultRules && isSelfEnrolled) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			// Restrict self enrollment to a private session
 			if (isSelfEnrolled && session.type == common.SESSION_TYPE.PRIVATE && userId !== session.created_by) {
 				return responses.failureResponse({
@@ -1305,7 +1369,7 @@ module.exports = class SessionsHelper {
 			// If mentee request unenroll get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfUnenrollment) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1327,7 +1391,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userRequests.details('', session.mentor_id)
+			const mentorName = await userRequests.fetchUserDetails({ userId: session.mentor_id })
 			session.mentor_name = mentorName.data.result.name
 
 			const deletedRows = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
@@ -2293,7 +2357,7 @@ module.exports = class SessionsHelper {
 	 */
 	static async pushSessionRelatedMentorEmailToKafka(templateCode, orgId, sessionDetail, updatedSessionDetails) {
 		try {
-			const userDetails = (await userRequests.details('', sessionDetail.mentor_id)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: sessionDetail.mentor_id })).data.result
 
 			// Fetch email template
 			let durationStartDate = updatedSessionDetails.start_date
@@ -2582,7 +2646,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const userDetail = await userRequests.details('', id)
+			const userDetail = await userRequests.fetchUserDetails({ userId: id })
 			//push to queue
 			const redisConfiguration = utils.generateRedisConfigForQueue()
 			const sessionQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)

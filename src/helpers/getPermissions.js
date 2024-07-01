@@ -1,6 +1,7 @@
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const common = require('@constants/common')
 const responses = require('@helpers/responses')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class UserHelper {
 	// Your other methods here

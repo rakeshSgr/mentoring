@@ -344,4 +344,23 @@ module.exports = class MenteeExtensionQueries {
 			throw error
 		}
 	}
+	static async findOneFromView(userId) {
+		try {
+			let query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE user_id = :userId
+				LIMIT 1
+			`
+
+			const user = await Sequelize.query(query, {
+				replacements: { userId },
+				type: QueryTypes.SELECT,
+			})
+
+			return user.length > 0 ? user[0] : null
+		} catch (error) {
+			return error
+		}
+	}
 }

@@ -31,7 +31,7 @@ module.exports = class UserInviteHelper {
 				const userId = data.user.id
 				const orgId = data.user.organization_id
 				const notifyUser = true
-				const roles = await userRequests.details('', userId)
+				const roles = await userRequests.fetchUserDetails({ userId })
 				const isMentor = isAMentor(roles.data.result.user_roles)
 
 				// download file to local directory
@@ -1010,7 +1010,7 @@ module.exports = class UserInviteHelper {
 		for (const item of sessionCreationOutput) {
 			const mentorIdPromise = item.mentor_id
 			if (typeof mentorIdPromise === 'number' && Number.isInteger(mentorIdPromise)) {
-				const mentorId = await userRequests.details('', mentorIdPromise)
+				const mentorId = await userRequests.fetchUserDetails({ userId: mentorIdPromise })
 				item.mentor_id = mentorId.data.result.email
 			} else {
 				item.mentor_id = item.mentor_id
@@ -1021,7 +1021,7 @@ module.exports = class UserInviteHelper {
 				for (let i = 0; i < item.mentees.length; i++) {
 					const menteeId = item.mentees[i]
 					if (typeof menteeId === 'number' && Number.isInteger(menteeId)) {
-						const mentee = await userRequests.details('', menteeId)
+						const mentee = await userRequests.fetchUserDetails({ userId: menteeId })
 						menteeEmails.push(mentee.data.result.email)
 					} else {
 						menteeEmails.push(menteeId)
