@@ -258,7 +258,7 @@ module.exports = class EntityHelper {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ENTITY_FETCHED_SUCCESSFULLY',
-					result: { results },
+					result: results,
 				})
 			}
 		} catch (error) {
