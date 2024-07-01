@@ -390,6 +390,7 @@ module.exports = {
 			await queryInterface.bulkInsert('permissions', permissionsData)
 		} catch (error) {
 			console.log(error)
+			throw error
 		}
 	},
 

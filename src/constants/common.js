@@ -170,10 +170,17 @@ module.exports = {
 	PUSH: 'PUSH',
 	POP: 'POP',
 	AUTH_METHOD: {
-		JWT_ONLY: 'jwt_only',
+		NATIVE: 'native',
+		KEYCLOAK_PUBLIC_KEY: 'keycloak_public_key',
+	},
+	SESSION_VERIFICATION_METHOD: {
 		USER_SERVICE: 'user_service_authenticated',
 	},
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
 	azureBlobType: 'BlockBlob',
+	DEFAULT_RULES: {
+		SESSION_TYPE: 'session',
+		MENTOR_TYPE: 'mentor',
+	},
 }

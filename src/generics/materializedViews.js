@@ -142,7 +142,7 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 							if (data.data_type == 'character varying[]') {
 								return `transform_jsonb_to_text_array(meta->'${data.value}')::${data.data_type} as ${data.value}`
 							} else {
-								return `(meta->>'${data.value}') as ${data.value}`
+								return `(meta->>'${data.value}')::${data.data_type} as ${data.value}`
 							}
 						})
 						.join(',\n')
@@ -428,11 +428,34 @@ const triggerPeriodicViewRefresh = async () => {
 		console.log(err)
 	}
 }
+const checkAndCreateMaterializedViews = async () => {
+	const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
+	const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
 
+	const query = 'select matviewname from pg_matviews;'
+	const [result, metadata] = await sequelize.query(query)
+
+	await Promise.all(
+		entityTypesGroupedByModel.map(async (modelEntityTypes) => {
+			const model = require('@database/models/index')[modelEntityTypes.modelName]
+
+			const mViewExits = result.some(
+				({ matviewname }) => matviewname === common.materializedViewsPrefix + model.tableName
+			)
+			if (!mViewExits) {
+				return generateMaterializedView(modelEntityTypes)
+			}
+			return true
+		})
+	)
+
+	return entityTypesGroupedByModel
+}
 const adminService = {
 	triggerViewBuild,
 	triggerPeriodicViewRefresh,
 	refreshMaterializedView,
+	checkAndCreateMaterializedViews,
 }
 
 module.exports = adminService
