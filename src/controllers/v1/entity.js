@@ -56,17 +56,10 @@ module.exports = class Entity {
 
 	async read(req) {
 		try {
-			console.log('req ---------------', req.searchText)
-			// req.query ;
-			req['decodedToken'] = {}
-			req['decodedToken']['id'] = 0
-			// req.decodedToken.id = "0"
 			if (req.query.id || req.query.value) {
 				return await entityService.read(req.query, req.decodedToken.id)
 			}
-			let entityType = req.query ? (req.query.entity_type_id ? req.query.entity_type_id : '') : ''
-
-			return await entityService.readAll(req.query, req.decodedToken.id, req.searchText, entityType)
+			return await entityService.readAll(req.query, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -99,6 +92,8 @@ module.exports = class Entity {
 
 	async details(req) {
 		try {
+			req.decodedToken = {}
+			req.decodedToken.id = 0
 			return await entityService.details(req.query, req.decodedToken.id, req.searchText, req.pageNo, req.pageSize)
 		} catch (error) {
 			return error
