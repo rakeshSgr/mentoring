@@ -111,13 +111,13 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 
 		const whereClauses = []
 		const mentorWhereClause = []
-
+		let error = false
 		validConfigs.forEach((config) => {
 			const { is_target_from_sessions_mentor, target_field, operator, requester_field } = config
 			const requesterValue = getNestedValue(userDetails, requester_field)
 
 			if (requesterValue === undefined || requesterValue === null) {
-				return {
+				error = {
 					error: {
 						missingField: true,
 						message: `Missing field: ${requester_field}`,
@@ -158,6 +158,9 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 				}
 			}
 		})
+		if (error) {
+			return error
+		}
 
 		if (mentorWhereClause.length > 0) {
 			const filterClause = mentorWhereClause.join(' AND ')
