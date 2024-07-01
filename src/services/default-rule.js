@@ -37,7 +37,6 @@ module.exports = class DefaultRuleHelper {
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
 				required: true,
-				allow_custom_entities: false,
 			}),
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
@@ -50,7 +49,6 @@ module.exports = class DefaultRuleHelper {
 					],
 				},
 				required: true,
-				allow_custom_entities: false,
 			}),
 		])
 
