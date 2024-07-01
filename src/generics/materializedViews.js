@@ -142,7 +142,7 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 							if (data.data_type == 'character varying[]') {
 								return `transform_jsonb_to_text_array(meta->'${data.value}')::${data.data_type} as ${data.value}`
 							} else {
-								return `(meta->>'${data.value}') as ${data.value}`
+								return `(meta->>'${data.value}')::${data.data_type} as ${data.value}`
 							}
 						})
 						.join(',\n')

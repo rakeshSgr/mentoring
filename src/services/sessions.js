@@ -44,6 +44,7 @@ const csv = require('csvtojson')
 const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
+const { validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class SessionsHelper {
 	/**
@@ -878,7 +879,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '', queryParams) {
+	static async details(id, userId = '', isAMentor = '', queryParams, roles, orgId) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -892,6 +893,29 @@ module.exports = class SessionsHelper {
 					exclude: ['share_link', 'mentee_password', 'mentor_password'],
 				},
 			})
+			const validateDefaultRules = await validateDefaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+				data: sessionDetails,
+			})
+
+			if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!validateDefaultRules) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
 			if (!sessionDetails) {
 				return responses.failureResponse({
@@ -1112,7 +1136,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor) {
+	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor, roles, orgId) {
 		try {
 			let allSessions = await menteeService.getAllSessions(
 				page,
@@ -1121,7 +1145,9 @@ module.exports = class SessionsHelper {
 				loggedInUserId,
 				queryParams,
 				isAMentor,
-				searchOn
+				searchOn,
+				roles,
+				orgId
 			)
 
 			// add index number to the response
@@ -1159,7 +1185,16 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isAMentor, isSelfEnrolled = true, session = {}) {
+	static async enroll(
+		sessionId,
+		userTokenData,
+		timeZone,
+		isAMentor,
+		isSelfEnrolled = true,
+		session = {},
+		roles,
+		orgId
+	) {
 		try {
 			let email
 			let name
@@ -1192,6 +1227,31 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const validateDefaultRules = await validateDefaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+				data: session,
+			})
+
+			if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!validateDefaultRules) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			// Restrict self enrollment to a private session
 			if (isSelfEnrolled && session.type == common.SESSION_TYPE.PRIVATE && userId !== session.created_by) {
 				return responses.failureResponse({

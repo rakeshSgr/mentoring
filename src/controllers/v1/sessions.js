@@ -78,7 +78,9 @@ module.exports = class Sessions {
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : '',
 				req.decodedToken ? isAMentor(req.decodedToken.roles) : '',
-				req.query
+				req.query,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {
@@ -107,7 +109,9 @@ module.exports = class Sessions {
 				req.searchText,
 				req.searchOn,
 				req.query,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {
@@ -146,11 +150,17 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
+			const isSelfEnrolled = true,
+				session = {}
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
 				req.headers['timezone'],
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				isSelfEnrolled,
+				session,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return enrolledSession
 		} catch (error) {

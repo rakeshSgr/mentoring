@@ -24,6 +24,7 @@ const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
 const searchConfig = require('@configs/search.json')
 const emailEncryption = require('@utils/emailEncryption')
+const { defaultRulesFilter, validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class MentorsHelper {
 	/**
@@ -553,19 +554,36 @@ module.exports = class MentorsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
 	 */
-	static async read(id, orgId, userId = '', isAMentor = '') {
+	static async read(id, orgId, userId = '', isAMentor = '', roles = '') {
 		try {
-			if (userId !== '' && isAMentor !== '') {
+			let requestedMentorExtension = false
+			if (userId !== '' && isAMentor !== '' && roles !== '') {
 				// Get mentor visibility and org id
-				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, [
-					'mentor_visibility',
-					'mentee_visibility',
-					'organization_id',
-					'visible_to_organizations',
-				])
+				requestedMentorExtension = await mentorQueries.getMentorExtension(id)
 
+				const validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.MENTOR_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: requestedMentorExtension,
+				})
+				if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+					return responses.failureResponse({
+						message: 'PROFILE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				if (!validateDefaultRules) {
+					return responses.failureResponse({
+						message: 'MENTORS_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				// Throw error if extension not found
-				if (!requstedMentorExtension || Object.keys(requstedMentorExtension).length === 0) {
+				if (!requestedMentorExtension || Object.keys(requestedMentorExtension).length === 0) {
 					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTORS_NOT_FOUND',
@@ -573,7 +591,7 @@ module.exports = class MentorsHelper {
 				}
 
 				// Check for accessibility for reading shared mentor profile
-				const isAccessible = await this.checkIfMentorIsAccessible([requstedMentorExtension], userId, isAMentor)
+				const isAccessible = await this.checkIfMentorIsAccessible([requestedMentorExtension], userId, isAMentor)
 
 				// Throw access error
 				if (!isAccessible) {
@@ -594,8 +612,9 @@ module.exports = class MentorsHelper {
 			if (!orgId) {
 				orgId = mentorProfile.data.result.organization_id
 			}
-
-			let mentorExtension = await mentorQueries.getMentorExtension(id)
+			let mentorExtension
+			if (requestedMentorExtension) mentorExtension = requestedMentorExtension
+			else mentorExtension = await mentorQueries.getMentorExtension(id)
 
 			if (!mentorProfile.data.result || !mentorExtension) {
 				return responses.failureResponse({
@@ -736,7 +755,7 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - User list.
 	 */
 
-	static async list(pageNo, pageSize, searchText, searchOn, queryParams, userId, isAMentor) {
+	static async list(pageNo, pageSize, searchText, searchOn, queryParams, userId, isAMentor, roles, orgId) {
 		try {
 			let additionalProjectionString = ''
 			let userServiceQueries = {}
@@ -814,6 +833,20 @@ module.exports = class MentorsHelper {
 					})
 				}
 			}
+			const defaultRuleFilter = await defaultRulesFilter({
+				ruleType: 'mentor',
+				requesterId: userId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+			})
+
+			if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
@@ -824,7 +857,8 @@ module.exports = class MentorsHelper {
 				additionalProjectionString,
 				false,
 				searchFilter,
-				hasValidEmails ? emailIds : searchText //array for email search
+				hasValidEmails ? emailIds : searchText, //array for email search
+				defaultRuleFilter
 			)
 
 			if (extensionDetails.count == 0 || extensionDetails.data.length == 0) {

@@ -179,4 +179,8 @@ module.exports = {
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
 	azureBlobType: 'BlockBlob',
+	DEFAULT_RULES: {
+		SESSION_TYPE: 'session',
+		MENTOR_TYPE: 'mentor',
+	},
 }

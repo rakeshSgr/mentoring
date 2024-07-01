@@ -26,6 +26,8 @@ const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 const responses = require('@helpers/responses')
 const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
+const { defaultRulesFilter } = require('@helpers/defaultRules')
+
 const searchConfig = require('@configs/search.json')
 const emailEncryption = require('@utils/emailEncryption')
 
@@ -180,11 +182,21 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor, page, limit, search, queryParams) {
+	static async homeFeed(userId, isAMentor, page, limit, search, queryParams, roles, orgId) {
 		try {
 			/* All Sessions */
 
-			let allSessions = await this.getAllSessions(page, limit, search, userId, queryParams, isAMentor)
+			let allSessions = await this.getAllSessions(
+				page,
+				limit,
+				search,
+				userId,
+				queryParams,
+				isAMentor,
+				'',
+				roles,
+				orgId
+			)
 
 			/* My Sessions */
 
@@ -332,7 +344,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn) {
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor, searchOn, roles, orgId) {
 		let additionalProjectionString = ''
 
 		// check for fields query
@@ -368,6 +380,22 @@ module.exports = class MenteesHelper {
 				count: 0,
 			}
 		}
+
+		const defaultRuleFilter = await defaultRulesFilter({
+			ruleType: 'session',
+			requesterId: userId,
+			roles: roles,
+			requesterOrganizationId: orgId,
+		})
+
+		if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+			return responses.failureResponse({
+				message: 'PROFILE_NOT_UPDATED',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,
@@ -376,7 +404,8 @@ module.exports = class MenteesHelper {
 			filteredQuery,
 			saasFilter,
 			additionalProjectionString,
-			search
+			search,
+			defaultRuleFilter
 		)
 		if (sessions.rows.length > 0) {
 			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_organization_id))]
