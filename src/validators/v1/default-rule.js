@@ -1,58 +1,76 @@
-const moment = require('moment')
-
 module.exports = {
 	create: (req) => {
-		try {
-			req.checkBody('type')
-				.isString()
-				.notEmpty()
-				.isIn(['session,mentor'])
-				.withMessage('Type is required and must be a string')
+		req.checkBody('type')
+			.isString()
+			.notEmpty()
+			.isIn(['session', 'mentor'])
+			.withMessage(
+				'The type field is required, must be a non-empty string, and must be either session or mentor.'
+			)
 
-			req.checkBody('target_field')
-				.isString()
-				.notEmpty()
-				.withMessage('Target field is required and must be a string')
+		req.checkBody('target_field')
+			.isString()
+			.notEmpty()
+			.withMessage('The target_field field is required and must be a non-empty string.')
 
-			req.checkBody('is_target_from_sessions_mentor')
-				.optional()
+		req.checkBody('is_target_from_sessions_mentor')
+			.optional()
+			.isBoolean()
+			.withMessage('The is_target_from_sessions_mentor field must be a boolean if provided.')
+
+		req.checkBody('requester_field')
+			.isString()
+			.notEmpty()
+			.withMessage('The requester_field field is required and must be a non-empty string.')
+
+		req.checkBody('field_configs')
+			.custom((value) => {
+				if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+					throw new Error('The field_configs field must be an object.')
+				}
+				return true
+			})
+			.optional()
+
+		req.checkBody('operator')
+			.isString()
+			.notEmpty()
+			.isIn([
+				'equals',
+				'notEquals',
+				'contains',
+				'containedBy',
+				'overlap',
+				'greaterThan',
+				'lessThan',
+				'greaterThanOrEqual',
+				'lessThanOrEqual',
+			])
+			.withMessage(
+				'The operator field is required, must be a non-empty string, and must be one of the following: equals, notEquals, contains, containedBy, overlap, greaterThan, lessThan, greaterThanOrEqual, or lessThanOrEqual.'
+			)
+
+		req.checkBody('requester_roles')
+			.optional()
+			.isArray({ min: 1 })
+			.withMessage('The requester_roles field is required and must be an array with at least one role.')
+			.custom((roles) => roles.every((role) => typeof role === 'string'))
+			.withMessage('All elements in the requester_roles array must be strings.')
+
+		req.checkBody('requester_roles_config')
+			.custom((value) => {
+				if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+					throw new Error('The requester_roles_config field must be an object.')
+				}
+				return true
+			})
+			.optional()
+
+		if (req.body.requester_roles_config) {
+			req.checkBody('requester_roles_config.exclude')
+				.notEmpty()
 				.isBoolean()
-				.withMessage('is_target_from_sessions_mentor must be a boolean')
-
-			req.checkBody('requester_field')
-				.isString()
-				.notEmpty()
-				.withMessage('Requester field is required and must be a string')
-
-			req.checkBody('field_configs').optional().isJSON().withMessage('Field configs must be a valid JSON')
-
-			req.checkBody('matching_operator')
-				.isString()
-				.notEmpty()
-				.isIn([
-					'equals',
-					'notEquals',
-					'contains',
-					'containedBy',
-					'overlap',
-					'greaterThan',
-					'lessThan',
-					'greaterThanOrEqual',
-					'lessThanOrEqual',
-				])
-				.withMessage(
-					'Matching operator must be one of "equals", "not equals", "greater than", "less than", "greater than or equals", "less than or equals"'
-				)
-
-			req.checkBody('requester_roles')
-				.isArray({ min: 1 })
-				.withMessage('Requester roles must be an array with at least one role')
-				.custom((roles) => roles.every((role) => typeof role === 'string'))
-				.withMessage('All roles must be strings')
-
-			req.checkBody('role_config').isObject().withMessage('Role config must be an object')
-		} catch (error) {
-			console.log(error)
+				.withMessage('The requester_roles_config.exclude field must be a boolean if provided.')
 		}
 	},
 
@@ -67,31 +85,42 @@ module.exports = {
 	update: (req) => {
 		try {
 			req.checkBody('type')
+				.optional()
 				.isString()
 				.notEmpty()
-				.isIn(['session,mentor'])
-				.withMessage('Type is required and must be a string')
+				.isIn(['session', 'mentor'])
+				.withMessage(
+					'The type field is required, must be a non-empty string, and must be either session or mentor.'
+				)
 
 			req.checkBody('target_field')
-				.trim()
+				.optional()
 				.isString()
 				.notEmpty()
-				.withMessage('Target field is required and must be a string')
+				.withMessage('The target_field field is required and must be a non-empty string.')
 
 			req.checkBody('is_target_from_sessions_mentor')
 				.optional()
 				.isBoolean()
-				.withMessage('is_target_from_sessions_mentor must be a boolean')
+				.withMessage('The is_target_from_sessions_mentor field must be a boolean if provided.')
 
 			req.checkBody('requester_field')
-				.trim()
+				.optional()
 				.isString()
 				.notEmpty()
-				.withMessage('Requester field is required and must be a string')
+				.withMessage('The requester_field field is required and must be a non-empty string.')
 
-			req.checkBody('field_configs').optional().isJSON().withMessage('Field configs must be a valid JSON')
+			req.checkBody('field_configs')
+				.custom((value) => {
+					if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+						throw new Error('The field_configs field must be an object.')
+					}
+					return true
+				})
+				.optional()
 
-			req.checkBody('matching_operator')
+			req.checkBody('operator')
+				.optional()
 				.isString()
 				.notEmpty()
 				.isIn([
@@ -106,16 +135,31 @@ module.exports = {
 					'lessThanOrEqual',
 				])
 				.withMessage(
-					'Matching operator must be one of "equals", "not equals", "greater than", "less than", "greater than or equals", "less than or equals"'
+					'The operator field is required, must be a non-empty string, and must be one of the following: equals, notEquals, contains, containedBy, overlap, greaterThan, lessThan, greaterThanOrEqual, or lessThanOrEqual.'
 				)
 
 			req.checkBody('requester_roles')
+				.optional()
 				.isArray({ min: 1 })
-				.withMessage('Requester roles must be an array with at least one role')
+				.withMessage('The requester_roles field is required and must be an array with at least one role.')
 				.custom((roles) => roles.every((role) => typeof role === 'string'))
-				.withMessage('All roles must be strings')
+				.withMessage('All elements in the requester_roles array must be strings.')
 
-			req.checkBody('role_config').isJSON().withMessage('Role config must be a valid JSON')
+			req.checkBody('requester_roles_config')
+				.custom((value) => {
+					if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+						throw new Error('The requester_roles_config field must be an object.')
+					}
+					return true
+				})
+				.optional()
+
+			if (req.body.requester_roles_config) {
+				req.checkBody('requester_roles_config.exclude')
+					.notEmpty()
+					.isBoolean()
+					.withMessage('The requester_roles_config.exclude field must be a boolean if provided.')
+			}
 		} catch (error) {
 			console.log(error)
 		}
