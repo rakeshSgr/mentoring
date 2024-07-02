@@ -31,11 +31,14 @@ module.exports = {
 				.notEmpty()
 				.isIn([
 					'equals',
-					'not equals',
-					'greater than',
-					'less than',
-					'greater than or equals',
-					'less than or equals',
+					'notEquals',
+					'contains',
+					'containedBy',
+					'overlap',
+					'greaterThan',
+					'lessThan',
+					'greaterThanOrEqual',
+					'lessThanOrEqual',
 				])
 				.withMessage(
 					'Matching operator must be one of "equals", "not equals", "greater than", "less than", "greater than or equals", "less than or equals"'
@@ -93,11 +96,14 @@ module.exports = {
 				.notEmpty()
 				.isIn([
 					'equals',
-					'not equals',
-					'greater than',
-					'less than',
-					'greater than or equals',
-					'less than or equals',
+					'notEquals',
+					'contains',
+					'containedBy',
+					'overlap',
+					'greaterThan',
+					'lessThan',
+					'greaterThanOrEqual',
+					'lessThanOrEqual',
 				])
 				.withMessage(
 					'Matching operator must be one of "equals", "not equals", "greater than", "less than", "greater than or equals", "less than or equals"'
