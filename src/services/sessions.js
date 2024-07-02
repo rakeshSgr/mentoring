@@ -1153,6 +1153,13 @@ module.exports = class SessionsHelper {
 				orgId
 			)
 
+			if (allSessions.error && allSessions.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			// add index number to the response
 			allSessions.rows = allSessions.rows.map((data, index) => ({
 				...data,

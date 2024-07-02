@@ -198,8 +198,15 @@ module.exports = class MenteesHelper {
 				orgId
 			)
 
-			/* My Sessions */
+			if (allSessions.error && allSessions.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
+			/* My Sessions */
 			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
@@ -389,11 +396,7 @@ module.exports = class MenteesHelper {
 		})
 
 		if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
-			return responses.failureResponse({
-				message: 'PROFILE_NOT_UPDATED',
-				statusCode: httpStatusCode.bad_request,
-				responseCode: 'CLIENT_ERROR',
-			})
+			return defaultRuleFilter
 		}
 
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(

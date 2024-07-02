@@ -451,6 +451,7 @@ const checkAndCreateMaterializedViews = async () => {
 
 	return entityTypesGroupedByModel
 }
+
 const adminService = {
 	triggerViewBuild,
 	triggerPeriodicViewRefresh,
