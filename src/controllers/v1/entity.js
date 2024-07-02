@@ -83,18 +83,18 @@ module.exports = class Entity {
 	}
 
 	/**
-	 * entity details
+	 * entity list
 	 * @method
-	 * @name details
+	 * @name list
 	 * @param {Object} req - request data.
 	 * @returns {JSON} - entities.
 	 */
 
-	async details(req) {
+	async list(req) {
 		try {
 			req.decodedToken = {}
 			req.decodedToken.id = 0
-			return await entityService.details(req.query, req.decodedToken.id, req.searchText, req.pageNo, req.pageSize)
+			return await entityService.list(req.query, req.decodedToken.id, req.searchText, req.pageNo, req.pageSize)
 		} catch (error) {
 			return error
 		}

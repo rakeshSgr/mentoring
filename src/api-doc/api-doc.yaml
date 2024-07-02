@@ -992,15 +992,15 @@ paths:
                       correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
                       meeting_platform: BBB
     parameters: []
-  /mentoring/v1/entity/details:
+  /mentoring/v1/entity/list:
     post:
-      operationId: entityDetails
-      summary: Get entity details with pagination and search
+      operationId: entitylist
+      summary: Get entity list with pagination and search
       tags:
         - Entity APIs
       description: |-
-        Use this API to get the details of a mentoring entities.   
-         - The API Endpoint for reading the details of the mentoring entities is `/mentoring/v1/entity/details` 
+        Use this API to get the list of a mentoring entities.   
+         - The API Endpoint for reading the list of the mentoring entities is `/mentoring/v1/entity/list` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:

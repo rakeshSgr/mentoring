@@ -206,9 +206,9 @@ module.exports = class EntityHelper {
 	}
 
 	/**
-	 * Get details of entity
+	 * Get list of entity
 	 * @method
-	 * @name details
+	 * @name list
 	 * @param {Object} query - query params
 	 * @param {String} userId - logged in user id.
 	 * @param {String} searchText - search label in entity.
@@ -216,7 +216,7 @@ module.exports = class EntityHelper {
 	 * @param {Integer} pageSize -  page limit per api.
 	 * @returns {JSON} - Entity search matched response.
 	 */
-	static async details(query, userId, searchText, pageNo, pageSize) {
+	static async list(query, userId, searchText, pageNo, pageSize) {
 		try {
 			let entityType = query.entity_type_id ? query.entity_type_id : ''
 			let filter
