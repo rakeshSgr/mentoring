@@ -1,11 +1,12 @@
 ## Create EntityTypes And Entities From CSVs - Developer Guide
 
-This guide explains how to use the 'createEntitiesAndTypes.js' script to upload data from CSV files to the mentoring service via its API. The script prompts for necessary inputs, processes CSV files, and creates corresponding entities on the platform.
+This guide explains how to use the provided scripts (`createEntitiesAndTypes.js` or `createEntitiesAndTypes.py`) to upload data from CSV files to the mentoring service via its API. Both scripts prompt for necessary inputs, process CSV files, and create corresponding entities on the platform. You can choose either the JavaScript or Python version based on your preference.
 
 ### Prerequisites
 
-1. **Node.js**: Ensure Node.js is installed. Download from [Node.js](https://nodejs.org/).
-2. **CSV Files**: Place the CSV files in the same directory as the script.
+1. **Node.js**: Ensure Node.js is installed if using the JavaScript script. Download from [Node.js](https://nodejs.org/).
+2. **Python**: Ensure Python is installed if using the Python script. Download from [Python](https://www.python.org/).
+3. **CSV Files**: Place the CSV files in the same directory as the script.
 
 ### Directory Structure
 
@@ -14,6 +15,7 @@ Place your script and CSV files in the same directory:
 ```
 /project-directory
   - createEntitiesAndTypes.js
+  - createEntitiesAndTypes.py
   - competencies.csv
   - designation.csv
 ```
@@ -58,12 +60,16 @@ identifier,entity
 
 ### Running the Script
 
-1. **Set Up**: Ensure your CSV files are in the correct directory and have the expected format.
-2. **Run**: Execute the script using Node.js.
-    ```bash
-    node createEntitiesAndTypes.js
-    ```
-3. **Follow Prompts**: The script will prompt for:
+1. **Run**: Execute the script.
+    - For JavaScript:
+        ```bash
+        node createEntitiesAndTypes.js
+        ```
+    - For Python:
+        ```bash
+        python3 createEntitiesAndTypes.py
+        ```
+2. **Follow Prompts**: The script will prompt for:
     - The domain of the mentoring platform.
     - An access token for authentication.
     - Selection of a CSV file to process.
@@ -81,7 +87,7 @@ identifier,entity
 
 ### Error Handling
 
-The script includes error handling for:
+The scripts include error handling for:
 
 -   Directory reading issues.
 -   Invalid CSV file selection.
