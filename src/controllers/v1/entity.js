@@ -92,8 +92,6 @@ module.exports = class Entity {
 
 	async list(req) {
 		try {
-			req.decodedToken = {}
-			req.decodedToken.id = 0
 			return await entityService.list(req.query, req.decodedToken.id, req.searchText, req.pageNo, req.pageSize)
 		} catch (error) {
 			return error

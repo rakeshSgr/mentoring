@@ -92,7 +92,7 @@ module.exports = {
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
-	details: (req) => {
+	list: (req) => {
 		req.checkQuery('entity_type_id')
 			.trim()
 			.notEmpty()
