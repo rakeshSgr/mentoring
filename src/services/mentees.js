@@ -40,7 +40,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userRequests.details('', id)
+		const menteeDetails = await userRequests.fetchUserDetails({ userId: id })
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
@@ -73,6 +73,9 @@ module.exports = class MenteesHelper {
 			menteeDetails.data.result.permissions = []
 		}
 		menteeDetails.data.result.permissions.push(...menteePermissions)
+
+		const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
+		menteeDetails.data.result.profile_mandatory_fields = profileMandatoryFields
 
 		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
@@ -228,9 +231,9 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees join session link.
 	 */
 
-	static async joinSession(sessionId, token) {
+	static async joinSession(sessionId, userId) {
 		try {
-			const mentee = await userRequests.details(token)
+			const mentee = await userRequests.fetchUserDetails({ userId })
 
 			if (mentee.data.responseCode !== 'OK') {
 				return responses.failureResponse({
@@ -384,12 +387,15 @@ module.exports = class MenteesHelper {
 			roles: roles,
 			requesterOrganizationId: orgId,
 		})
-		if (defaultRuleFilter === null) {
-			return {
-				rows: [],
-				count: 0,
-			} // Handle the case where no mentors match the criteria
+
+		if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+			return responses.failureResponse({
+				message: 'PROFILE_NOT_UPDATED',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
 		}
+
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
 			page,
 			limit,
@@ -446,7 +452,8 @@ module.exports = class MenteesHelper {
 				})
 			}
 			const organizationName = mentorExtension
-				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
+				? (await userRequests.fetchOrgDetails({ organizationId: mentorExtension.organization_id }))?.data
+						?.result?.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
 				throw responses.failureResponse({
@@ -620,11 +627,12 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			if (data.email) {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -658,14 +666,16 @@ module.exports = class MenteesHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, userExtensionsModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'MENTEE_EXTENSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!skipValidation) {
+				let res = utils.validateInput(data, validationData, userExtensionsModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'MENTEE_EXTENSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let menteeExtensionsModel = await menteeQueries.getColumns()
 			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
@@ -912,11 +922,24 @@ module.exports = class MenteesHelper {
 
 					const defaultOrgId = await getDefaultOrgId()
 
+					const modelName = []
+
+					const queryMap = {
+						[common.MENTEE_ROLE]: menteeQueries.getModelName,
+						[common.MENTOR_ROLE]: mentorQueries.getModelName,
+						[common.SESSION]: sessionQueries.getModelName,
+					}
+
+					if (queryMap[filter_type.toLowerCase()]) {
+						const modelNameResult = await queryMap[filter_type.toLowerCase()]()
+						modelName.push(modelNameResult)
+					}
 					// get entity type with entities list
 					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
 						organization_ids,
 						entity_type,
-						defaultOrgId ? defaultOrgId : ''
+						defaultOrgId ? defaultOrgId : '',
+						modelName
 					)
 
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
@@ -951,10 +974,17 @@ module.exports = class MenteesHelper {
 		try {
 			let organizationIds = []
 			filterType = filterType.toLowerCase()
-			const attributes =
-				filterType == common.MENTEE_ROLE
-					? ['organization_id', 'external_mentee_visibility_policy']
-					: ['organization_id', 'external_mentor_visibility_policy']
+
+			let visibilityPolicies = []
+			let orgVisibilityPolicies = []
+
+			const policyMap = {
+				[common.MENTEE_ROLE]: ['organization_id', 'external_mentee_visibility_policy'],
+				[common.SESSION]: ['organization_id', 'external_session_visibility_policy'],
+				[common.MENTOR_ROLE]: ['organization_id', 'external_mentor_visibility_policy'],
+			}
+			visibilityPolicies = policyMap[filterType] || []
+			const attributes = visibilityPolicies
 
 			const orgExtension = await organisationExtensionQueries.findOne(
 				{ organization_id },
@@ -963,10 +993,13 @@ module.exports = class MenteesHelper {
 				}
 			)
 
-			const visibilityPolicy =
-				filterType == common.MENTEE_ROLE
-					? orgExtension.external_mentee_visibility_policy
-					: orgExtension.external_mentor_visibility_policy
+			const orgPolicyMap = {
+				[common.MENTEE_ROLE]: orgExtension.external_mentee_visibility_policy,
+				[common.SESSION]: orgExtension.external_session_visibility_policy,
+				[common.MENTOR_ROLE]: orgExtension.external_mentor_visibility_policy,
+			}
+			orgVisibilityPolicies = orgPolicyMap[filterType] || []
+			const visibilityPolicy = orgVisibilityPolicies
 
 			if (orgExtension?.organization_id) {
 				if (visibilityPolicy === common.CURRENT) {
@@ -974,7 +1007,9 @@ module.exports = class MenteesHelper {
 				} else if (visibilityPolicy === common.ASSOCIATED || visibilityPolicy === common.ALL) {
 					organizationIds.push(orgExtension.organization_id)
 					let relatedOrgs = []
-					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgExtension.organization_id)
+					let userOrgDetails = await userRequests.fetchOrgDetails({
+						organizationId: orgExtension.organization_id,
+					})
 					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
 						relatedOrgs = userOrgDetails.data.result.related_orgs
 					}
@@ -982,7 +1017,13 @@ module.exports = class MenteesHelper {
 						const associatedAdditionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: {
+										mentee_visibility_policy: {
+											[Op.ne]: 'CURRENT',
+										},
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: {
 											[Op.ne]: 'CURRENT',
 										},
 								  }
@@ -1017,29 +1058,44 @@ module.exports = class MenteesHelper {
 					} else {
 						// filter out the organizations
 						// CASE 1 : in case of mentee listing filterout organizations with external_mentee_visibility_policy = ALL
-						// CASE 2 : in case of mentor listing filterout organizations with mentor_visibility_policy = ALL
+						// CASE 2 : in case of session listing filterout organizations with session_visibility_policy = ALL
+						// CASE 3 : in case of mentor listing filterout organizations with mentor_visibility_policy = ALL
 						const filterQuery =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: common.ALL,
+										mentee_visibility_policy: common.ALL, //1
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: common.ALL, //2
 								  }
 								: {
-										mentor_visibility_policy: common.ALL,
+										mentor_visibility_policy: common.ALL, //3
 								  }
 
 						// this filter is applied for the below condition
 						// SM mentee_visibility_policy (in case of mentee list) or external_mentor_visibility policy (in case of mentor list) = ALL
 						//  and CASE 1 (mentee list) : Mentees is related to the SM org but external_mentee_visibility is CURRENT (exclude these mentees)
-						//  CASE 2 : (mentor list) : Mentors is related to SM Org but mentor_visibility set to CURRENT  (exclude these mentors)
+						//  CASE 2 : (session list) : Sessions is related to the SM org but session_visibility is CURRENT (exclude these sessions)
+						//  CASE 3 : (mentor list) : Mentors is related to SM Org but mentor_visibility set to CURRENT  (exclude these mentors)
 						const additionalFilter =
 							filterType == common.MENTEE_ROLE
 								? {
-										external_mentee_visibility_policy: {
+										mentee_visibility_policy: {
+											//1
+											[Op.ne]: 'CURRENT',
+										},
+								  }
+								: filterType == common.SESSION
+								? {
+										session_visibility_policy: {
+											//2
 											[Op.ne]: 'CURRENT',
 										},
 								  }
 								: {
 										mentor_visibility_policy: {
+											//3
 											[Op.ne]: 'CURRENT',
 										},
 								  }
@@ -1086,7 +1142,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '', modelName) {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
@@ -1105,6 +1161,9 @@ module.exports = class MenteesHelper {
 				}
 			}
 
+			if (modelName) {
+				filter.model_names = { [Op.contains]: [modelName] }
+			}
 			//fetch entity types and entities
 			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
@@ -1153,7 +1212,7 @@ module.exports = class MenteesHelper {
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const userExtensionModelName = await menteeQueries.getModelName()
-			const mentorExtensionModelName = await menteeQueries.getModelName()
+			const mentorExtensionModelName = await mentorQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
@@ -1285,11 +1344,11 @@ module.exports = class MenteesHelper {
 	}
 	static async filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids = []) {
 		try {
-			let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
-			// check for external_mentee_visibility else fetch external_mentor_visibility
-			extensionColumns = extensionColumns.includes('external_mentee_visibility')
-				? ['external_mentee_visibility', 'organization_id']
-				: ['external_mentor_visibility', 'organization_id']
+			// let extensionColumns = isAMentor ? await mentorQueries.getColumns() : await menteeQueries.getColumns()
+			// // check for external_mentee_visibility else fetch external_mentor_visibility
+			// extensionColumns = extensionColumns.includes('external_mentee_visibility')
+			// 	? ['external_mentee_visibility', 'organization_id']
+			// 	: ['external_mentor_visibility', 'organization_id']
 
 			const userPolicyDetails = isAMentor
 				? await mentorQueries.getMentorExtension(userId, ['organization_id'])
@@ -1336,7 +1395,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT')`
+						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
 						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
@@ -1348,7 +1407,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "external_mentee_visibility" != 'CURRENT' ) OR "external_mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT' ) OR "mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
 				}
 			}
 

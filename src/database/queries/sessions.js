@@ -560,7 +560,7 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 					[Op.gt]: currentEpochTime,
 				},
 				status: {
-					[Op.in]: ['PUBLISHED', 'LIVE'],
+					[Op.in]: [common.PUBLISHED_STATUS, common.LIVE_STATUS],
 				},
 			},
 			// order: [['created_at', 'DESC']],
@@ -695,12 +695,12 @@ exports.getUpcomingSessionsFromView = async (
 		SELECT 
 			${projectionClause}
 		FROM
-			m_${Session.tableName}
+			${common.materializedViewsPrefix + Session.tableName}
 		WHERE
 			mentor_id != :userId
 			${saasFilterClause}
 			${filterClause}
-			AND status IN ('PUBLISHED', 'LIVE')
+			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
 			${publicSessionFilter}
 			${searchFilter.whereClause}
 			${defaultFilterClause}
@@ -735,12 +735,12 @@ exports.getUpcomingSessionsFromView = async (
 		const countQuery = `
 		SELECT count(*) AS "count"
 		FROM
-			m_${Session.tableName}
+			${common.materializedViewsPrefix + Session.tableName}
 		WHERE
 			mentor_id != :userId
 			${saasFilterClause}
 			${filterClause}
-			AND status IN ('PUBLISHED', 'LIVE')
+			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
 			${publicSessionFilter}
 			${searchFilter.whereClause}
 			${defaultFilterClause}
@@ -841,7 +841,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 		const countQuery = `
 		SELECT count(*) AS "count"
 		FROM
-			m_${Session.tableName}
+		${common.materializedViewsPrefix + Session.tableName}
 		WHERE
 			mentor_id = :mentorId
 			AND status = 'PUBLISHED'

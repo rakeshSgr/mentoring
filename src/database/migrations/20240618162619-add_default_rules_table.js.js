@@ -20,6 +20,7 @@ module.exports = {
 			},
 			is_target_from_sessions_mentor: {
 				type: Sequelize.BOOLEAN,
+				defaultValue: false,
 			},
 			requester_field: {
 				type: Sequelize.STRING,
@@ -28,14 +29,17 @@ module.exports = {
 			field_configs: {
 				type: Sequelize.JSON,
 			},
-			matching_operator: {
+			operator: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			requester_roles: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
+				defaultValue: ['ALL'],
 			},
-			role_config: {
+			requester_roles_config: {
 				type: Sequelize.JSON,
+				defaultValue: { exclude: false },
 			},
 			organization_id: {
 				type: Sequelize.INTEGER,
@@ -65,12 +69,12 @@ module.exports = {
 		await queryInterface.addIndex('default_rules', ['organization_id'])
 		await queryInterface.addIndex('default_rules', ['type', 'organization_id'])
 
-		// Add a unique constraint to prevent duplicate rules
-		await queryInterface.addConstraint('default_rules', {
-			fields: ['type', 'target_field', 'requester_field', 'organization_id'],
-			type: 'unique',
-			name: 'unique_default_rules_constraint',
-		})
+		// Add a unique constraint to prevent duplicate rules (with partial index)
+		await queryInterface.sequelize.query(`
+			CREATE UNIQUE INDEX unique_default_rules_constraint 
+			ON default_rules (type, target_field, requester_field, organization_id) 
+			WHERE deleted_at IS NULL;
+		`)
 	},
 
 	async down(queryInterface, Sequelize) {

@@ -8,10 +8,13 @@ info:
     Service can be used to perform operations related to other entities such as
     users, mentors, mentees, and sessions.
 
-    * The URL to access the Mentoring API(s) is `{context}/mentoring/v1` -
-    <b>Note:</b> These resources can be used in other services.
+    * The URL to access the Mentoring API(s) is `{context}/mentoring/v1`
+        * <b>Note:</b> These resources can be used in other services.
   contact:
     email: tech-infra@shikshalokam.org
+  license:
+    name: MIT License
+    url: https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/LICENSE
 servers:
   - url: http://localhost:3002
     description: local server
@@ -23,12 +26,17 @@ paths:
       operationId: formCreate
       summary: Create form
       tags:
-        - Form APIs
-      description: |-
-        You can use this API to create a form  
-         - The API Endpoint for creating a form is `/mentoring/v1/form/create` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+        - Form
+      description: >-
+        You can use this API to create a form
+
+
+        * The API Endpoint for creating a form is `/mentoring/v1/form/create`
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -288,12 +296,18 @@ paths:
       operationId: formUpdate
       summary: Update form
       tags:
-        - Form APIs
-      description: |-
-        You can use this API to update a form.  
-         - The API Endpoint for updating a form is `/mentoring/v1/form/update/{formId}` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+        - Form
+      description: >-
+        You can use this API to update a form.
+
+
+        * The API Endpoint for updating a form is
+        `/mentoring/v1/form/update/{formId}`
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -460,12 +474,18 @@ paths:
       operationId: formRead
       summary: Get form data
       tags:
-        - Form APIs
-      description: |-
-        You can use this API to read data from a form.  
-         - The API Endpoint to read form data is `/mentoring/v1/form/read/{formID}` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+        - Form
+      description: >-
+        You can use this API to read data from a form.
+
+
+        * The API Endpoint to read form data is
+        `/mentoring/v1/form/read/{formID}`
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -651,7 +671,7 @@ paths:
     post:
       summary: Create entity
       tags:
-        - Entity APIs
+        - Entity
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity/create` 
@@ -771,7 +791,7 @@ paths:
     put:
       summary: Update entity
       tags:
-        - Entity APIs
+        - Entity
       description: |-
         Use this API to update a user entity.   
          - The API Endpoint to update a user entity is `/mentoring/v1/entity/update` 
@@ -901,7 +921,7 @@ paths:
     post:
       summary: Get entity details
       tags:
-        - Entity APIs
+        - Entity
       description: |-
         Use this API to read the details of a user entity.   
          - The API Endpoint for reading the details of the user entity is `/mentoring/v1/entity/read` 
@@ -992,11 +1012,111 @@ paths:
                       correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
                       meeting_platform: BBB
     parameters: []
+  /mentoring/v1/entity/list:
+    post:
+      operationId: entitylist
+      summary: Get entity list with pagination and search
+      tags:
+        - Entity APIs
+      description: |-
+        Use this API to get the list of a mentoring entities.   
+         - The API Endpoint for reading the list of the mentoring entities is `/mentoring/v1/entity/list` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: >-
+            To use this API, you require an X-auth-token, which is available in
+            the login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: Number of records to limit
+          schema:
+            type: number
+          example: 10
+        - in: path
+          name: search
+          description: search text
+          schema:
+            type: string
+          example: teacher
+        - in: path
+          name: entity_type_id
+          description: entity_type_id
+          required: true
+          schema:
+            type: number
+          example: teacher
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      entity_type_id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      created_by:
+                        type: number
+                      created_at:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity fetched successfully
+                    result:
+                      data:
+                        - id: 1
+                          entity_type_id: 1
+                          value: english
+                          label: English
+                          status: ACTIVE
+                          type: SYSTEM
+                          created_by: 0
+                          created_at: '2023-07-21T21:46:41.392Z'
+                      count: 1
+
+                    meta:
+                      formsVersion: []
+                      correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
+                      meeting_platform: BBB
+                    parameters: []
+
   /mentoring/v1/entity/delete/{id}:
     delete:
       summary: Delete entity
       tags:
-        - Entity APIs
+        - Entity
       description: |-
         You can use this API to delete a user entity.   
          - The API Endpoint for deleting a user entity is `/mentoring/v1/entity/delete` 
@@ -1065,13 +1185,20 @@ paths:
   /mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}:
     get:
       summary: Get list of sessions
-      tags: []
+      tags:
+        - Session
       description: >-
         You can use this API to get a list of session based on certain
-        conditions 
-         - The API Endpoint for getting a list of sessions is `/mentoring/v1/sessions/list` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        conditions
+
+
+        * The API Endpoint for getting a list of sessions is
+        `/mentoring/v1/sessions/list`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           required: true
@@ -1199,12 +1326,18 @@ paths:
     get:
       summary: Get session details
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to get details of the session 
-         - The API Endpoint for getting the details of the session is `/mentoring/v1/sessions/details` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to get details of the session
+
+
+        * The API Endpoint for getting the details of the session is
+        `/mentoring/v1/sessions/details`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1357,12 +1490,18 @@ paths:
     get:
       summary: Share session details
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to share session 
-         - The API Endpoint for sharing a session is: `/mentoring/v1/sessions/share` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to share session
+
+
+        * The API Endpoint for sharing a session is:
+        `/mentoring/v1/sessions/share`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1418,12 +1557,18 @@ paths:
     post:
       summary: Enroll for a session
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to enroll for a session 
-         - The API Endpoint to enroll for a session is: `/mentoring/v1/sessions/enroll` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to enroll for a session
+
+
+        * The API Endpoint to enroll for a session is:
+        `/mentoring/v1/sessions/enroll`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1457,12 +1602,18 @@ paths:
     post:
       summary: Cancel enrollment from a session
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to cancel the enrollment for a session 
-         - The API Endpoint for cancelling enrollment for a session is `/mentoring/v1/sessions/unenroll` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to cancel the enrollment for a session
+
+
+        * The API Endpoint for cancelling enrollment for a session is
+        `/mentoring/v1/sessions/unenroll`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1496,12 +1647,18 @@ paths:
     get:
       summary: Start Session
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to start a session 
-         - The API Endpoint for starting a session is: `/mentoring/v1/sessions/start` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to start a session
+
+
+        * The API Endpoint for starting a session is:
+        `/mentoring/v1/sessions/start`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1540,12 +1697,19 @@ paths:
   /mentoring/v1/sessions/update:
     post:
       summary: Create Session
-      tags: []
-      description: |-
-        You can use this API to create a session 
-         - The API Endpoint for creating a session is: `/mentoring/v1/sessions/update` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+      tags:
+        - Session
+      description: >-
+        You can use this API to create a session
+
+
+        * The API Endpoint for creating a session is:
+        `/mentoring/v1/sessions/update`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters: &ref_0
         - name: X-auth-token
           in: header
@@ -1723,12 +1887,18 @@ paths:
     delete:
       summary: Delete session
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to delete a session 
-         - The API Endpoint for deleting a session is: `/mentoring/v1/sessions/update` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to delete a session
+
+
+        * The API Endpoint for deleting a session is:
+        `/mentoring/v1/sessions/update`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -1783,7 +1953,7 @@ paths:
     post:
       summary: Update session
       tags:
-        - Session APIs
+        - Session
       description: |-
         You can use this API to update a session 
          - The API Endpoint for updating a session `/mentoring/v1/sessions/update` 
@@ -1968,12 +2138,18 @@ paths:
     get:
       summary: Get session recording
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to get the recording of a session 
-         - The API Endpoint to get the recording of a session is: `/mentoring/v1/sessions/getRecording` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to get the recording of a session
+
+
+        * The API Endpoint to get the recording of a session is:
+        `/mentoring/v1/sessions/getRecording`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -2007,12 +2183,17 @@ paths:
     patch:
       summary: Update session status
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to update session status 
-         - Endpoint for update session `/mentoring/v1/sessions/completed` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        - Session
+      description: >-
+        You can use this API to update session status
+
+
+        * Endpoint for update session `/mentoring/v1/sessions/completed`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -2040,12 +2221,18 @@ paths:
     patch:
       summary: Update session recording url
       tags:
-        - Session APIs
-      description: |-
-        You can use this API to update session recording url 
-         - Endpoint for update session recording url `/mentoring/v1/sessions/updateRecordingUrl` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        - Session
+      description: >-
+        You can use this API to update session recording url
+
+
+        * Endpoint for update session recording url
+        `/mentoring/v1/sessions/updateRecordingUrl`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -2079,12 +2266,17 @@ paths:
     get:
       summary: Get list of enrolled session
       tags:
-        - Mentee APIs
-      description: |-
-        This API is associated with listing session based on condition  
-         - Endpoint for list session `/mentoring/v1/mentees/sessions` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        - Mentee
+      description: >-
+        This API is associated with listing session based on condition
+
+
+        * Endpoint for list session `/mentoring/v1/mentees/sessions`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -2249,7 +2441,7 @@ paths:
     get:
       summary: Join session as mentee
       tags:
-        - Mentee APIs
+        - Mentee
       description: |-
         This API is associated with join session as mentee 
          - The API Endpoint forjoin session `/mentoring/v1/mentees/joinSession` 
@@ -2320,7 +2512,7 @@ paths:
     get:
       summary: Mentee reports
       tags:
-        - Mentee APIs
+        - Mentee
       description: |-
         This API is associated with mentee report based on condition 
          - The API Endpoint formentee report `/mentoring/v1/mentees/joinSession` 
@@ -2380,7 +2572,7 @@ paths:
     get:
       summary: Get list of sessions
       tags:
-        - Mentee APIs
+        - Mentee
       description: |-
         This API is associated with list of session 
          - The API Endpoint forlist session `/mentoring/v1/mentees/homeFeed` 
@@ -2581,12 +2773,17 @@ paths:
     get:
       summary: Mentor profile
       tags:
-        - Mentor APIs
-      description: |-
-        This API is associated with mentor profile 
-         - Endpoint for list session `/mentoring/v1/mentors/profile` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        - Mentor
+      description: >-
+        This API is associated with mentor profile
+
+
+        * Endpoint for list session `/mentoring/v1/mentors/profile`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -2812,12 +3009,17 @@ paths:
     get:
       summary: Mentors reports
       tags:
-        - Mentor APIs
-      description: |-
-        This API is associated with mentor reports 
-         - The API Endpoint forlist session `/mentoring/v1/mentors/reports` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        - Mentor
+      description: >-
+        This API is associated with mentor reports
+
+
+        * The API Endpoint forlist session `/mentoring/v1/mentors/reports`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -2875,13 +3077,18 @@ paths:
     get:
       summary: Upcoming sessions of mentor
       tags:
-        - Mentor APIs
+        - Mentor
       description: >-
         This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentors/upcomingSessions/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+        mentor
+
+
+        * Endpoint for listing session `/mentoring/v1/mentors/upcomingSessions/`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           required: true
@@ -3003,7 +3210,7 @@ paths:
     post:
       summary: Create questions
       tags:
-        - Question APIs
+        - Question
       description: |-
         This API is associated with creating questions 
          - The API Endpoint forcreate question `/mentoring/v1/questions/create` 
@@ -3185,7 +3392,7 @@ paths:
     patch:
       summary: Update questions
       tags:
-        - Question APIs
+        - Question
       description: |-
         This API is associated with updating questions 
          - The API Endpoint forupdate question `/mentoring/v1/questions/update` 
@@ -3365,7 +3572,7 @@ paths:
     get:
       summary: Get questions
       tags:
-        - Question APIs
+        - Question
       description: |-
         This API is associated with getting questions 
          - The API Endpoint forget question `/mentoring/v1/questions/read` 
@@ -3497,7 +3704,7 @@ paths:
     post:
       summary: Create question set
       tags:
-        - Question Set APIs
+        - Question Set
       description: |-
         This API is associated with creating questions set 
          - The API Endpoint forcreate question set `/mentoring/v1/questionsSet/create` 
@@ -3605,7 +3812,7 @@ paths:
     patch:
       summary: Update question set
       tags:
-        - Question Set APIs
+        - Question Set
       description: |-
         This API is associated with updating questions set 
          - The API Endpoint forupdating question set `/mentoring/v1/questionsSet/update` 
@@ -3719,7 +3926,7 @@ paths:
     get:
       summary: Get question set
       tags:
-        - Question Set APIs
+        - Question Set
       description: |-
         This API is associated with getting questions set 
          - The API Endpoint forget question set `/mentoring/v1/questionsSet/read` 
@@ -3810,7 +4017,7 @@ paths:
     get:
       summary: Get feedback form
       tags:
-        - Feedback Form APIs
+        - Feedback Form
       description: |-
         This API is associated with getting feedback forms of the session.  
          - The API Endpoint forget feedback form `/mentoring/v1/feedback/forms` 
@@ -3933,7 +4140,7 @@ paths:
     post:
       summary: Submit feedback
       tags:
-        - Feedback Form APIs
+        - Feedback Form
       description: |-
         This API is associated with submitting feedback forms of a session.  
          - The API Endpoint forsubmit feedback form `/mentoring/v1/feedback/submit` 
@@ -4003,7 +4210,7 @@ paths:
     get:
       summary: Users pending feedback
       tags:
-        - Users APIs
+        - Users
       description: |-
         This API is associated with fetching users pending feedback form 
          - The API Endpoint forfetching feedback form `/mentoring/v1/users/pendingFeedbacks` 
@@ -4062,7 +4269,7 @@ paths:
     get:
       summary: Cloud services get signed url
       tags:
-        - Cloud Services APIs
+        - Cloud Services
       description: |-
         This API is associated with the cloud services for getting signed URL  
          - Then The API Endpoint for cloud services `/mentoring/v1/cloud-services/file/getSignedUrl` 
@@ -4120,7 +4327,7 @@ paths:
     get:
       summary: Cloud services get download url
       tags:
-        - Cloud Services APIs
+        - Cloud Services
       description: >-
         This API is associated with the cloud services for getting downloadable
         URL  
@@ -4155,7 +4362,7 @@ paths:
     get:
       summary: List user
       tags:
-        - Users APIs
+        - Users
       description: |-
         This API is associated with the listing of users based on condition  
          - The API Endpoint forlist user `/mentoring/v1/users/list` 
@@ -4260,12 +4467,18 @@ paths:
   /mentoring/v1/mentors/share/{mentorId}:
     get:
       summary: Share mentor profile
-      tags: []
-      description: |-
-        This API is associated with mentor profile 
-         - Endpoint for share mentor profile is `/mentoring/v1/mentors/share` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      tags:
+        - Mentor
+      description: >-
+        This API is associated with mentor profile
+
+
+        * Endpoint for share mentor profile is `/mentoring/v1/mentors/share`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -4324,7 +4537,7 @@ paths:
     post:
       summary: Report an issue
       tags:
-        - Issues APIs
+        - Issues
       description: |-
         This Api is associated with reporting issues 
          - The Endpoint for creating an issue is `/mentoring/v1/issues/create` 
@@ -4461,7 +4674,7 @@ paths:
       description: ''
       operationId: /mentoring/v1/platform/config
       tags:
-        - Config APIs
+        - Config
       parameters: []
       responses:
         '200':
@@ -4540,7 +4753,7 @@ paths:
     post:
       summary: Create details
       tags:
-        - Profile APIs
+        - Profile
       description: |-
         This API is associated with the profile API
          - Endpoint for listing session `/mentoring/v1/profile/create/` 
@@ -4821,7 +5034,7 @@ paths:
     post:
       summary: Update details
       tags:
-        - Profile APIs
+        - Profile
       description: |-
         This API is associated with profile
          - Endpoint for listing session `/mentoring/v1/profile/update` 
@@ -5085,7 +5298,7 @@ paths:
     get:
       summary: Get entity type and organization filter
       tags:
-        - Profile APIs
+        - Profile
       description: >-
         To obtain the list of filters used in the mentee/mentor list, use this
         API.
@@ -5123,12 +5336,19 @@ paths:
   /mentoring/v1/entity-type/create:
     post:
       summary: Create entity type
-      tags: []
-      description: |-
-        You can use this API to create a user entity  
-         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+      tags:
+        - Entity Type
+      description: >-
+        You can use this API to create a user entity
+
+
+        * The API Endpoint for creating a user entity is
+        `/mentoring/v1/entity-type/create`
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters: &ref_2
         - name: X-auth-token
           in: header
@@ -5236,13 +5456,13 @@ paths:
                     meta:
                       correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
                       meeting_platform: BBB
-        '400': &ref_3
+        '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
               schema:
                 $ref: '#/components/schemas/entity/createUserEntity400Response'
-    parameters: &ref_4
+    parameters: &ref_3
       - in: path
         name: ''
         description: ''
@@ -5251,14 +5471,22 @@ paths:
   /mentoring/v1/entity-type/read:
     get:
       summary: Read entity type
-      tags: []
-      description: |-
-        You can use this API to create a user entity  
-         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/read` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
-      parameters: &ref_5
-        - name: X-auth-token
+      tags:
+        - Entity Type
+      description: >-
+        You can use this API to create a user entity
+
+
+        * The API Endpoint for creating a user entity is
+        `/mentoring/v1/entity-type/read`
+
+        * It is mandatory to provide values for parameters which are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - &ref_4
+          name: X-auth-token
           in: header
           description: >-
             To use this API, you require an X-auth-token. This is available in
@@ -5386,7 +5614,7 @@ paths:
                     meta:
                       correlation: 64cd08ba-cc87-4172-9633-2146dabe0b78
                       meeting_platform: BBB
-        '400': &ref_6
+        '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -5395,14 +5623,21 @@ paths:
   /mentoring/v1/entity-type/update/{id}:
     post:
       summary: Update entity type
-      tags: []
-      description: |-
-        You can use this API to create a user entity  
-         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/update` 
-         - It is mandatory to provide values for parameters that are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+      tags:
+        - Entity Type
+      description: >-
+        You can use this API to create a user entity
+
+
+        * The API Endpoint for creating a user entity is
+        `/mentoring/v1/entity-type/update`
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - &ref_7
+        - &ref_5
           name: X-auth-token
           in: header
           description: >-
@@ -5510,7 +5745,7 @@ paths:
                     meta:
                       correlation: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
                       meeting_platform: BBB
-        '400': &ref_8
+        '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -5519,14 +5754,21 @@ paths:
   /mentoring/v1/entity-type/delete/{id}:
     delete:
       summary: Delete entity type
-      tags: []
-      description: |-
-        You can use this API to create a user entity  
-         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/delete` 
-         - It is mandatory to provide values for parameters that are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+      tags:
+        - Entity Type
+      description: >-
+        You can use this API to create a user entity
+
+
+        * The API Endpoint for creating a user entity is
+        `/mentoring/v1/entity-type/delete`
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - &ref_9
+        - &ref_6
           name: X-auth-token
           in: header
           description: >-
@@ -5570,7 +5812,7 @@ paths:
                     meta:
                       correlation: b6841b40-4977-47b5-ac83-3c1e9aa40771
                       meeting_platform: BBB
-        '400': &ref_11
+        '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
@@ -5580,7 +5822,7 @@ paths:
     post:
       summary: To change a users role
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for changing a users role is `/mentoring/v1/org-admin/roleChange` 
@@ -5665,7 +5907,7 @@ paths:
     post:
       summary: To inherit an entity type
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for inheriting  an entity type is `/mentoring/v1/org-admin/inheritEntityType` 
@@ -5783,7 +6025,7 @@ paths:
     get:
       summary: To get current organization policy
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for getting organization policy is `/mentoring/v1/org-admin/getOrgPolicies` 
@@ -5877,7 +6119,7 @@ paths:
     post:
       summary: To set related organizations
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for setting related organization policy is `/mentoring/v1/org-admin/updateRelatedOrgs` 
@@ -6000,7 +6242,7 @@ paths:
     post:
       summary: To set organization policy
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for setting organization policy is `/mentoring/v1/org-admin/setOrgPoliciessetOrgPolicies` 
@@ -6117,7 +6359,7 @@ paths:
     delete:
       summary: To delete a user
       tags:
-        - Admin APIs
+        - Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for deleting a user is `/mentoring/v1/admin/userDelete` 
@@ -6191,7 +6433,7 @@ paths:
     get:
       summary: To build or rebuild materialized views
       tags:
-        - Admin APIs
+        - Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating view is `/mentoring/v1/admin/triggerViewRebuild` 
@@ -6253,7 +6495,7 @@ paths:
         To build or rebuild materialized views, this is supposed to be called
         internally.
       tags:
-        - Admin APIs
+        - Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating view is `/mentoring/v1/admin/triggerViewRebuildInternal` 
@@ -6313,7 +6555,7 @@ paths:
     get:
       summary: To refresh all the views data generated via build API.
       tags:
-        - Admin APIs
+        - Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for refreshing view is `/mentoring/v1/admin/triggerPeriodicViewRefresh` 
@@ -6373,7 +6615,7 @@ paths:
     get:
       summary: To refresh a single view, this is supposed to be called internally
       tags:
-        - Admin APIs
+        - Admin
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for refreshing view is `/mentoring/v1/admin/triggerPeriodicViewRefreshInternal` 
@@ -6433,12 +6675,18 @@ paths:
   /mentoring/v1/mentors/list:
     get:
       summary: Get all the available mentor
-      tags: []
-      description: |-
-        This API is associated with mentor profile 
-         - Endpoint for listing all mentor is `/mentoring/v1/mentors/list` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      tags:
+        - Mentor
+      description: >-
+        This API is associated with mentor profile
+
+
+        * Endpoint for listing all mentor is `/mentoring/v1/mentors/list`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -6652,12 +6900,19 @@ paths:
   /mentoring/v1/mentors/createdSessions:
     get:
       summary: Get all the available mentor
-      tags: []
-      description: |-
-        This API is associated with mentor profile 
-         - Endpoint for listing all sessions created by mentor is `/mentoring/v1/mentors/createdSessions` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      tags:
+        - Mentor
+      description: >-
+        This API is associated with mentor profile
+
+
+        * Endpoint for listing all sessions created by mentor is
+        `/mentoring/v1/mentors/createdSessions`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -7195,12 +7450,18 @@ paths:
   /mentoring/v1/modules/create:
     post:
       summary: Creating new modules
-      tags: []
-      description: |-
+      tags:
+        - Modules
+      description: >-
         This API is associated with modules
-         - Endpoint for creating modules  `/mentoring/v1/modules/create` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+
+
+        * Endpoint for creating modules `/mentoring/v1/modules/create`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
@@ -7302,11 +7563,16 @@ paths:
       summary: Update modules by id
       tags:
         - Modules
-      description: |-
+      description: >-
         You can use this API to update modules by id
-         - The API Endpoint for updating modules `/mentoring/v1/modules/update` 
-         - It is mandatory to provide values for parameters that are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+
+
+        * The API Endpoint for updating modules `/mentoring/v1/modules/update`
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -7384,12 +7650,19 @@ paths:
   /mentoring/v1/modules/delete/{id}:
     delete:
       summary: Delete modules by id
-      tags: []
-      description: |-
-        You can use this API to delete modules  
-         - The API Endpoint for deleting modules is `/mentoring/v1/modules/delete` 
-         - It is mandatory to provide values for parameters that are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
+      tags:
+        - Modules
+      description: >-
+        You can use this API to delete modules
+
+
+        * The API Endpoint for deleting modules is
+        `/mentoring/v1/modules/delete`
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
@@ -7444,11 +7717,17 @@ paths:
       summary: Get list of modules
       tags:
         - Modules
-      description: |-
+      description: >-
         You can use this API to get a list of modules
-         - The API Endpoint for getting a list of modules is `/mentoring/v1/modules/list` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+
+
+        * The API Endpoint for getting a list of modules is
+        `/mentoring/v1/modules/list`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           required: true
@@ -7733,7 +8012,7 @@ paths:
     post:
       summary: Upload Sample CSV
       tags:
-        - Organization Admin APIs
+        - Organization Admin
       description: |-
         You can use this API to create a session 
          - The API Endpoint for updating a Sample CSV is: `/mentoring/v1/org-admin/uploadSampleCSV` 
@@ -7840,12 +8119,18 @@ paths:
     post:
       summary: Get Sample CSV
       tags:
-        - Sessions
-      description: |-
-        You can use this API to create a session 
-         - The API Endpoint for get a Sample CSV is: `/mentoring/v1/sessions/getSampleCSV` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to create a session
+
+
+        * The API Endpoint for get a Sample CSV is:
+        `/mentoring/v1/sessions/getSampleCSV`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters: *ref_0
       requestBody:
         $ref: ''
@@ -7940,12 +8225,18 @@ paths:
     post:
       summary: Bulk Session Upload
       tags:
-        - Sessions
-      description: |-
-        You can use this API to create a session 
-         - The API Endpoint for creating bulk sessions is: `/mentoring/v1/sessions/bulkSessionCreate` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null.
+        - Session
+      description: >-
+        You can use this API to create a session
+
+
+        * The API Endpoint for creating bulk sessions is:
+        `/mentoring/v1/sessions/bulkSessionCreate`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null.
       parameters: *ref_0
       requestBody:
         content:
@@ -8072,7 +8363,7 @@ paths:
       tags:
         - Default-Rules
       description: >-
-        You can use this API to create a default rules
+        You can use this API to create a default rule
 
 
         * The API Endpoint for creating a default rule is
@@ -8092,33 +8383,48 @@ paths:
               properties:
                 type:
                   type: string
+                  enum:
+                    - mentor
+                    - session
                 target_field:
                   type: string
                 is_target_from_sessions_mentor:
                   type: boolean
                 requester_field:
                   type: string
-                field_configs:
-                  type: 'null'
-                matching_operator:
+                operator:
                   type: string
+                  enum:
+                    - '='
+                    - '!='
+                    - '@>'
+                    - <@
+                    - '&&'
+                    - <
+                    - '>'
+                    - <=
+                    - '>='
                 requester_roles:
                   type: array
                   items:
                     type: string
-                role_config:
+                requester_roles_config:
                   type: object
                   properties:
                     exclude:
                       type: boolean
+                  required:
+                    - exclude
               required:
                 - type
                 - target_field
+                - is_target_from_sessions_mentor
                 - requester_field
+                - operator
             examples:
-              example1:
+              sample:
                 value:
-                  type: test
+                  type: mentor
                   target_field: gender
                   is_target_from_sessions_mentor: false
                   requester_field: gender
@@ -8193,20 +8499,24 @@ paths:
                               type: string
                             version:
                               type: number
+                          required:
+                            - id
+                            - type
+                            - version
                       correlation:
                         type: string
                       meetingPlatform:
                         type: string
               examples:
-                example1:
+                sample:
                   value:
                     responseCode: OK
                     message: The default rule has been created successfully.
                     result:
-                      created_at: '2024-06-25T08:50:00.841Z'
-                      updated_at: '2024-06-25T08:50:00.843Z'
-                      id: 1
-                      type: test
+                      created_at: '2024-06-26T07:09:10.916Z'
+                      updated_at: '2024-06-26T07:09:10.917Z'
+                      id: 7
+                      type: mentor
                       target_field: gender
                       is_target_from_sessions_mentor: false
                       requester_field: gender
@@ -8216,19 +8526,43 @@ paths:
                         - session_manager
                       role_config:
                         exclude: true
-                      created_by: 33
-                      updated_by: 33
-                      organization_id: 15
+                      created_by: 15
+                      updated_by: 15
+                      organization_id: 1
                       deleted_at: null
                     meta:
-                      formsVersion:
-                        - id: 1
-                          type: managersSession
-                          version: 0
-                      correlation: bac9d093-25b0-498e-9223-a314e8c7ccec
-                      meetingPlatform: BBB
-        '400': *ref_3
-    parameters: *ref_4
+                      correlation: 73b8bc8c-ab5c-4586-9453-d8e6231d851c
+                      meetingPlatform: 'OFF'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 595ddd1e-a547-4132-af82-799b67f9f9ab
+                    message: The default rule already exists.
+    parameters: *ref_3
   /mentoring/v1/default-rule/read:
     get:
       summary: Read default rules
@@ -8245,57 +8579,145 @@ paths:
         `required`
 
         * This is a mandatory parameter and cannot be empty or null.
-      parameters: *ref_5
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $schema: http://json-schema.org/draft-04/schema#
-              type: object
-              properties:
-                type:
-                  type: string
-                target_field:
-                  type: string
-                is_target_from_sessions_mentor:
-                  type: boolean
-                requester_field:
-                  type: string
-                field_configs:
-                  type: 'null'
-                matching_operator:
-                  type: string
-                requester_roles:
-                  type: array
-                  items:
-                    type: string
-                role_config:
-                  type: object
-                  properties:
-                    exclude:
-                      type: boolean
-              required:
-                - type
-                - target_field
-                - requester_field
-            examples:
-              example1:
-                value:
-                  type: test
-                  target_field: gender
-                  is_target_from_sessions_mentor: true
-                  requester_field: gender
-                  field_configs: null
-                  matching_operator: '='
-                  requester_roles:
-                    - session_manager
-                  role_config:
-                    exclude: true
+      parameters:
+        - *ref_4
+        - in: path
+          name: id
+          description: To get a specific rule
+          schema:
+            type: number
+      requestBody: {}
       responses:
         '200':
           description: OK
           content:
             application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      type:
+                        type: string
+                      target_field:
+                        type: string
+                      is_target_from_sessions_mentor:
+                        type: boolean
+                      requester_field:
+                        type: string
+                      field_configs:
+                        type: 'null'
+                      matching_operator:
+                        type: string
+                      requester_roles:
+                        type: array
+                        items:
+                          type: string
+                      role_config:
+                        type: object
+                        properties:
+                          exclude:
+                            type: boolean
+                      organization_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                            version:
+                              type: number
+                          required:
+                            - id
+                            - type
+                            - version
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example:
+                  value:
+                    responseCode: OK
+                    message: The default rule has been fetched successfully.
+                    result:
+                      id: 7
+                      type: mentor
+                      target_field: gender
+                      is_target_from_sessions_mentor: false
+                      requester_field: gender
+                      field_configs: null
+                      matching_operator: '='
+                      requester_roles:
+                        - session_manager
+                      role_config:
+                        exclude: true
+                      organization_id: 1
+                      created_by: 15
+                      updated_by: 15
+                      created_at: '2024-06-26T07:09:10.916Z'
+                      updated_at: '2024-06-26T07:09:10.917Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion:
+                        - id: 3
+                          type: session
+                          version: 0
+                        - id: 4
+                          type: termsAndConditions
+                          version: 0
+                        - id: 5
+                          type: faq
+                          version: 0
+                        - id: 6
+                          type: helpVideos
+                          version: 0
+                        - id: 7
+                          type: platformApp
+                          version: 0
+                        - id: 8
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: sampleCsvDownload
+                          version: 0
+                        - id: 1
+                          type: managersSession
+                          version: 0
+                        - id: 2
+                          type: editProfile
+                          version: 0
+                        - id: 10
+                          type: mentorQuestionnaire
+                          version: 0
+                      correlation: 458e5a44-78bc-4b25-9220-e9fcfc192e1f
+                      meetingPlatform: 'OFF'
+            application/json:
               schema:
                 $schema: http://json-schema.org/draft-04/schema#
                 type: object
@@ -8363,19 +8785,23 @@ paths:
                               type: string
                             version:
                               type: number
+                          required:
+                            - id
+                            - type
+                            - version
                       correlation:
                         type: string
                       meetingPlatform:
                         type: string
               examples:
-                example1:
+                example:
                   value:
                     responseCode: OK
                     message: The default rules have been fetched successfully.
                     result:
                       data:
-                        - id: 1
-                          type: test
+                        - id: 7
+                          type: mentor
                           target_field: gender
                           is_target_from_sessions_mentor: false
                           requester_field: gender
@@ -8385,24 +8811,79 @@ paths:
                             - session_manager
                           role_config:
                             exclude: true
-                          organization_id: 15
-                          created_by: 33
-                          updated_by: 33
-                          created_at: '2024-06-25T08:50:00.841Z'
-                          updated_at: '2024-06-25T08:50:00.843Z'
+                          organization_id: 1
+                          created_by: 15
+                          updated_by: 15
+                          created_at: '2024-06-26T07:09:10.916Z'
+                          updated_at: '2024-06-26T07:09:10.917Z'
                           deleted_at: null
                       count: 1
                     meta:
                       formsVersion:
+                        - id: 3
+                          type: session
+                          version: 0
+                        - id: 4
+                          type: termsAndConditions
+                          version: 0
+                        - id: 5
+                          type: faq
+                          version: 0
+                        - id: 6
+                          type: helpVideos
+                          version: 0
+                        - id: 7
+                          type: platformApp
+                          version: 0
+                        - id: 8
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: sampleCsvDownload
+                          version: 0
                         - id: 1
                           type: managersSession
                           version: 0
-                      correlation: bf5272ac-e1d5-405a-b990-aa60d6d32c9f
-                      meetingPlatform: BBB
-        '400': *ref_6
+                        - id: 2
+                          type: editProfile
+                          version: 0
+                        - id: 10
+                          type: mentorQuestionnaire
+                          version: 0
+                      correlation: 6f0445fe-b367-459b-b20d-45b0b4c63cac
+                      meetingPlatform: 'OFF'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 54d12838-7cdb-49bd-a02f-11a8ec18365e
+                    message: The default rule was not found.
   /mentoring/v1/default-rule/update/{id}:
     patch:
-      summary: Update default rules
+      summary: Update default rule
       tags:
         - Default-Rules
       description: >-
@@ -8417,11 +8898,11 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - *ref_7
+        - *ref_5
         - in: query
           name: id
           description: default rules id
-          schema: &ref_10
+          schema: &ref_7
             type: integer
           required: true
       requestBody:
@@ -8439,35 +8920,36 @@ paths:
                   type: boolean
                 requester_field:
                   type: string
-                field_configs:
-                  type: 'null'
-                matching_operator:
+                operator:
                   type: string
                 requester_roles:
                   type: array
                   items:
                     type: string
-                role_config:
+                requester_roles_config:
                   type: object
                   properties:
                     exclude:
                       type: boolean
+                  required:
+                    - exclude
               required:
                 - type
                 - target_field
+                - is_target_from_sessions_mentor
                 - requester_field
+                - operator
             examples:
               example1:
                 value:
-                  type: mentor
+                  type: session
                   target_field: gender
-                  is_target_from_sessions_mentor: false
+                  is_target_from_sessions_mentor: true
                   requester_field: gender
-                  field_configs: null
-                  matching_operator: '='
+                  operator: equals
                   requester_roles:
-                    - session_manager
-                  role_config:
+                    - mentee
+                  requester_roles_config:
                     exclude: true
       responses:
         '202':
@@ -8570,10 +9052,38 @@ paths:
                           version: 0
                       correlation: 812307e4-53a7-48e2-8978-bf6725745f31
                       meetingPlatform: BBB
-        '400': *ref_8
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 0e57651e-4f49-4b9c-b264-6c1b3107c904
+                    message: The default rule was not found.
   /mentoring/v1/default-rule/delete/{id}:
     delete:
-      summary: Delete default type
+      summary: Delete default rule
       tags:
         - Default-Rules
       description: >-
@@ -8588,57 +9098,13 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - *ref_9
+        - *ref_6
         - in: query
           name: id
           description: ''
-          schema: *ref_10
+          schema: *ref_7
           required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $schema: http://json-schema.org/draft-04/schema#
-              type: object
-              properties:
-                type:
-                  type: string
-                target_field:
-                  type: string
-                is_target_from_sessions_mentor:
-                  type: boolean
-                requester_field:
-                  type: string
-                field_configs:
-                  type: 'null'
-                matching_operator:
-                  type: string
-                requester_roles:
-                  type: array
-                  items:
-                    type: string
-                role_config:
-                  type: object
-                  properties:
-                    exclude:
-                      type: boolean
-              required:
-                - type
-                - target_field
-                - requester_field
-            examples:
-              example1:
-                value:
-                  type: mentor
-                  target_field: gender
-                  is_target_from_sessions_mentor: true
-                  requester_field: gender
-                  field_configs: null
-                  matching_operator: '='
-                  requester_roles:
-                    - session_manager
-                  role_config:
-                    exclude: true
+      requestBody: {}
       responses:
         '202':
           description: Accepted
@@ -8687,7 +9153,35 @@ paths:
                           version: 0
                       correlation: 21720d01-16ff-40bd-b502-1930a6b249a4
                       meetingPlatform: BBB
-        '400': *ref_11
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 0e57651e-4f49-4b9c-b264-6c1b3107c904
+                    message: The default rule was not found.
 components:
   schemas:
     form:
@@ -11256,27 +11750,24 @@ components:
                     type: string
             correlation:
               type: string
-    schema-1:
-      type: object
-      properties: {}
   securitySchemes:
     bearer:
       type: apiKey
       name: X-auth-token
       in: header
 tags:
-  - name: Config APIs
+  - name: Config
     description: You can use this API to get config related to the service
     externalDocs:
       description: Config APIs
       url: ''
-  - name: Mentee APIs
+  - name: Mentee
     description: mentee APIs
     externalDocs:
       description: ''
       url: ''
-  - name: Mentor APIs
-    description: Mentor APIs
+  - name: Mentor
+    description: Mentor
     externalDocs:
       description: ''
       url: ''
@@ -11285,17 +11776,17 @@ tags:
     externalDocs:
       description: ''
       url: ''
-  - name: Profile APIs
+  - name: Profile
     description: ''
     externalDocs:
       description: ''
       url: ''
-  - name: Organization Admin APIs
+  - name: Organization Admin
     description: ''
     externalDocs:
       description: ''
       url: ''
-  - name: Admin APIs
+  - name: Admin
     description: ''
     externalDocs:
       description: ''
@@ -11315,13 +11806,53 @@ tags:
     externalDocs:
       description: ''
       url: ''
-  - name: Sessions
+  - name: Default-Rules
+    description: Api's for setting default rules for search
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Session
     description: ''
     externalDocs:
       description: ''
       url: ''
-  - name: Default-Rules
-    description: Api's for setting default rules for search
+  - name: Form
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Entity
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Question
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Question Set
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Feedback Form
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Users
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Cloud Services
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Issues
+    description: ''
     externalDocs:
       description: ''
       url: ''

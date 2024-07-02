@@ -22,11 +22,19 @@ module.exports = class MentorExtensionQueries {
 			return error
 		}
 	}
+	static async getTableName() {
+		try {
+			return await MentorExtension.tableName
+		} catch (error) {
+			return error
+		}
+	}
 
 	static async createMentorExtension(data) {
 		try {
 			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -42,6 +50,7 @@ module.exports = class MentorExtensionQueries {
 				...options,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

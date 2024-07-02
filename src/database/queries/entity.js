@@ -1,3 +1,5 @@
+const { Op } = require('sequelize')
+
 const Entity = require('../models/index').Entity
 module.exports = class UserEntityData {
 	static async createEntity(data) {
@@ -53,6 +55,23 @@ module.exports = class UserEntityData {
 			return entityData
 		} catch (error) {
 			return error
+		}
+	}
+
+	static async getAllEntities(filters, attributes, page, limit, search) {
+		try {
+			return await Entity.findAndCountAll({
+				where: {
+					[Op.or]: [{ label: { [Op.iLike]: `%${search}%` } }],
+					...filters,
+				},
+				attributes: attributes,
+				offset: parseInt((page - 1) * limit, 10),
+				limit: parseInt(limit, 10),
+				order: [['created_at', 'DESC']],
+			})
+		} catch (error) {
+			throw error
 		}
 	}
 }

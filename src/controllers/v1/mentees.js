@@ -114,7 +114,7 @@ module.exports = class Mentees {
 
 	async joinSession(req) {
 		try {
-			const session = await menteesService.joinSession(req.params.id, req.decodedToken.token)
+			const session = await menteesService.joinSession(req.params.id, req.decodedToken.id)
 			return session
 		} catch (error) {
 			return error

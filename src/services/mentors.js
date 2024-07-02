@@ -24,7 +24,7 @@ const permissions = require('@helpers/getPermissions')
 const { buildSearchFilter } = require('@helpers/search')
 const searchConfig = require('@configs/search.json')
 const emailEncryption = require('@utils/emailEncryption')
-const { defaultRulesFilter } = require('@helpers/defaultRules')
+const { defaultRulesFilter, validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class MentorsHelper {
 	/**
@@ -115,7 +115,7 @@ module.exports = class MentorsHelper {
 	 */
 	/* 	static async profile(id) {
 		try {
-			const mentorsDetails = await userRequests.details('', id)
+			const mentorsDetails = await userRequests.fetchUserDetails('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -310,12 +310,13 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			if (data.email) {
 				data.email = emailEncryption.encrypt(data.email.toLowerCase())
 			}
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
-
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
+			console.log('USER ORG DETAILS: ', userOrgDetails)
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -347,15 +348,16 @@ module.exports = class MentorsHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
-			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!skipValidation) {
+				let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'SESSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
@@ -552,19 +554,36 @@ module.exports = class MentorsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
 	 */
-	static async read(id, orgId, userId = '', isAMentor = '') {
+	static async read(id, orgId, userId = '', isAMentor = '', roles = '') {
 		try {
-			if (userId !== '' && isAMentor !== '') {
+			let requestedMentorExtension = false
+			if (userId !== '' && isAMentor !== '' && roles !== '') {
 				// Get mentor visibility and org id
-				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, [
-					'mentor_visibility',
-					'mentee_visibility',
-					'organization_id',
-					'visible_to_organizations',
-				])
+				requestedMentorExtension = await mentorQueries.getMentorExtension(id)
 
+				const validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.MENTOR_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: requestedMentorExtension,
+				})
+				if (validateDefaultRules.error && validateDefaultRules.error.missingField) {
+					return responses.failureResponse({
+						message: 'PROFILE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				if (!validateDefaultRules) {
+					return responses.failureResponse({
+						message: 'MENTORS_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				// Throw error if extension not found
-				if (!requstedMentorExtension || Object.keys(requstedMentorExtension).length === 0) {
+				if (!requestedMentorExtension || Object.keys(requestedMentorExtension).length === 0) {
 					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTORS_NOT_FOUND',
@@ -572,7 +591,7 @@ module.exports = class MentorsHelper {
 				}
 
 				// Check for accessibility for reading shared mentor profile
-				const isAccessible = await this.checkIfMentorIsAccessible([requstedMentorExtension], userId, isAMentor)
+				const isAccessible = await this.checkIfMentorIsAccessible([requestedMentorExtension], userId, isAMentor)
 
 				// Throw access error
 				if (!isAccessible) {
@@ -583,7 +602,7 @@ module.exports = class MentorsHelper {
 				}
 			}
 
-			let mentorProfile = await userRequests.details('', id)
+			let mentorProfile = await userRequests.fetchUserDetails({ userId: id })
 			if (!mentorProfile.data.result) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
@@ -593,8 +612,9 @@ module.exports = class MentorsHelper {
 			if (!orgId) {
 				orgId = mentorProfile.data.result.organization_id
 			}
-
-			let mentorExtension = await mentorQueries.getMentorExtension(id)
+			let mentorExtension
+			if (requestedMentorExtension) mentorExtension = requestedMentorExtension
+			else mentorExtension = await mentorQueries.getMentorExtension(id)
 
 			if (!mentorProfile.data.result || !mentorExtension) {
 				return responses.failureResponse({
@@ -635,6 +655,9 @@ module.exports = class MentorsHelper {
 				mentorProfile.permissions = []
 			}
 			mentorProfile.permissions.push(...mentorPermissions)
+
+			const profileMandatoryFields = await utils.validateProfileData(processDbResponse, validationData)
+			mentorProfile.profile_mandatory_fields = profileMandatoryFields
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -816,6 +839,15 @@ module.exports = class MentorsHelper {
 				roles: roles,
 				requesterOrganizationId: orgId,
 			})
+
+			if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
 				pageNo,

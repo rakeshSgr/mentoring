@@ -236,7 +236,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"STRING\"\n}",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"STRING\",\n    \"allow_filtering\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -384,7 +384,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"test\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": false,\n    \"requester_field\": \"gender\",\n    \"field_configs\": null,\n    \"matching_operator\": \"=\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"role_config\": {\n        \"exclude\": true\n    }\n}",
+							"raw": "{\n    \"type\": \"session\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": true,\n    \"requester_field\": \"gender\",\n    \"operator\": \"equals\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"requester_roles_config\": {\n        \"exclude\": true\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -402,9 +402,6 @@
 				},
 				{
 					"name": "Read",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -414,19 +411,50 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"test\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": true,\n    \"requester_field\": \"gender\",\n    \"field_configs\": null,\n    \"matching_operator\": \"=\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"role_config\": {\n        \"exclude\": true\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/default-rule/read/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "default-rule", "read", ":id"],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
 								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Optional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
 							}
-						},
+						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/default-rule/read",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "default-rule", "read"]
+							"path": ["v1", "default-rule", "read"],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
 						}
 					},
 					"response": []
@@ -444,7 +472,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"mentor\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": false,\n    \"requester_field\": \"gender\",\n    \"field_configs\": null,\n    \"matching_operator\": \"=\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"role_config\": {\n        \"exclude\": true\n    }\n}",
+							"raw": "{\n    \"type\": \"session\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": true,\n    \"requester_field\": \"gender\",\n    \"operator\": \"equals\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"requester_roles_config\": {\n        \"exclude\": true\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -472,7 +500,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"mentor\",\n    \"target_field\": \"gender\",\n    \"is_target_from_sessions_mentor\": true,\n    \"requester_field\": \"gender\",\n    \"field_configs\": null,\n    \"matching_operator\": \"=\",\n    \"requester_roles\": [\n        \"session_manager\"\n    ],\n    \"role_config\": {\n        \"exclude\": true\n    }\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -512,7 +540,8 @@
 									"pm.variables.set(\"endDate\", pm.variables.get(\"startDate\") + 1800);",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -527,7 +556,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Introduction to Python\",\n    \"description\": \"Python is a widely used general-purpose, high level programming language. It was created by Guido van Rossum in 1991 and further developed by the Python Software Foundation. It was designed with an emphasis on code readability, and its syntax allows programmers to express their concepts in fewer lines of code.\",\n    \"start_date\": {{startDate}},\n    \"end_date\": {{endDate}},\n    \"recommended_for\": [\n        \"beo\",\n        \"co\"\n    ],\n    \"categories\": [\n        \"communication\",\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"image\": [\n        \"session/undefined-1701770609877-3720230404141603_webp\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"meeting_info\": {\n        \"platform\": \"Google meet\",\n        \"link\": \"https://meet.google.com/xxx-yyyy-zzz\",\n        \"value\": \"Gmeet\",\n        \"meta\": {}\n    },\n    \"mentor_id\": 1\n}",
+							"raw": "{\n    \"title\": \"Introduction to Python Male\",\n    \"description\": \"Python is a widely used general-purpose, high level programming language. It was created by Guido van Rossum in 1991 and further developed by the Python Software Foundation. It was designed with an emphasis on code readability, and its syntax allows programmers to express their concepts in fewer lines of code.\",\n    \"start_date\": {{startDate}},\n    \"end_date\": {{endDate}},\n    \"recommended_for\": [\n        \"beo\",\n        \"co\"\n    ],\n    \"categories\": [\n        \"communication\",\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"image\": [\n        \"session/undefined-1701770609877-3720230404141603_webp\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"meeting_info\": {\n        \"platform\": \"Google meet\",\n        \"link\": \"https://meet.google.com/xxx-yyyy-zzz\",\n        \"value\": \"Gmeet\",\n        \"meta\": {}\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1183,14 +1212,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/homeFeed?search=my data&page=1&limit=4&recommended_for=hm,deo&categories=school_process,sqaa",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/homeFeed?page=1&limit=100",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentees", "homeFeed"],
 							"query": [
 								{
 									"key": "search",
 									"value": "my data",
-									"description": "Base64 encoded search text"
+									"description": "Base64 encoded search text",
+									"disabled": true
 								},
 								{
 									"key": "page",
@@ -1199,18 +1229,20 @@
 								},
 								{
 									"key": "limit",
-									"value": "4",
+									"value": "100",
 									"description": "Limit"
 								},
 								{
 									"key": "recommended_for",
 									"value": "hm,deo",
-									"description": "Filters to be applied should be passed like this.Only to be applied on \"all_sessions\" in response."
+									"description": "Filters to be applied should be passed like this.Only to be applied on \"all_sessions\" in response.",
+									"disabled": true
 								},
 								{
 									"key": "categories",
 									"value": "school_process,sqaa",
-									"description": "Filters to be applied should be passed like this.Only to be applied on \"all_sessions\" in response."
+									"description": "Filters to be applied should be passed like this.Only to be applied on \"all_sessions\" in response.",
+									"disabled": true
 								}
 							]
 						}
@@ -1333,7 +1365,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1",
+									"value": "22",
 									"description": "Mentors ID"
 								}
 							]
@@ -1432,7 +1464,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/list?page=1&limit=2&search=aW50cm8=&area_of_expertise=school_process,sqaa&designation=deo,beo",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/list?page=1&limit=50",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentors", "list"],
 							"query": [
@@ -1443,23 +1475,26 @@
 								},
 								{
 									"key": "limit",
-									"value": "2",
+									"value": "50",
 									"description": "Limit"
 								},
 								{
 									"key": "search",
 									"value": "aW50cm8=",
-									"description": "Base64 encoded search text"
+									"description": "Base64 encoded search text",
+									"disabled": true
 								},
 								{
 									"key": "area_of_expertise",
 									"value": "school_process,sqaa",
-									"description": "Filters to be applied should be passed like this"
+									"description": "Filters to be applied should be passed like this",
+									"disabled": true
 								},
 								{
 									"key": "designation",
 									"value": "deo,beo",
-									"description": "Filters to be applied should be passed like this"
+									"description": "Filters to be applied should be passed like this",
+									"disabled": true
 								}
 							]
 						}
@@ -1963,8 +1998,7 @@
 							{
 								"key": "internal_access_token",
 								"value": "{{internal_access_token}}",
-								"type": "text",
-								"disabled": true
+								"type": "text"
 							},
 							{
 								"key": "X-auth-token",
@@ -2050,7 +2084,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"designation\": [\n        \"beo\",\n        \"deo\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"raw": "{\n    \"designation\": [\n        \"beo\",\n        \"deo\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\",\n    \"gender\": \"male\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2097,7 +2131,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"designation\": [\n        \"beo\",\n        \"deo\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ]\n}",
+							"raw": "{\n    \"designation\": [\n        \"beo\",\n        \"deo\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\",\n    \"gender\": \"male\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
