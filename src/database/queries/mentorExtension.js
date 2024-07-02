@@ -213,7 +213,6 @@ module.exports = class MentorExtensionQueries {
 					${saasFilterClause}
 					${additionalFilter}
 					${defaultFilterClause}
-					AND "deleted_at" IS NULL
 			`
 
 			const replacements = {
@@ -257,7 +256,6 @@ module.exports = class MentorExtensionQueries {
 				${saasFilterClause}
 				${additionalFilter}
 				${defaultFilterClause}
-				AND "deleted_at" IS NULL
 			;
 		`
 			const count = await Sequelize.query(countQuery, {
