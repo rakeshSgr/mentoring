@@ -68,66 +68,81 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async create(decodedToken) {
-		if (!decodedToken.id) decodedToken.id = (await IdMappingQueries.create({ uuid: decodedToken.externalId })).id
-		const userDetails = await userRequests.fetchUserDetails({ userId: decodedToken.id })
-		if (!userDetails.data.result)
-			return responses.failureResponse({
-				message: 'SOMETHING_WENT_WRONG',
-				statusCode: httpStatusCode.not_found,
-				responseCode: 'UNAUTHORIZED',
-			})
-
-		await this.createOrg({ id: userDetails.data.result.organization_id })
-		const userData = {
-			id: userDetails.data.result.id,
+	static getExtensionData(userDetails, orgExtension) {
+		return {
+			uuid: userDetails.id,
 			organization: {
-				id: userDetails.data.result.organization_id,
+				uuid: userDetails.organization_id,
+				id: orgExtension.organization_id,
 			},
-			roles: userDetails.data.result.user_roles,
+			roles: userDetails.user_roles,
+			email: userDetails.email,
+			phone: userDetails.phone,
+			name: userDetails.name,
 		}
-		const result = await this.createUser(userData)
+	}
 
-		return responses.successResponse({
-			statusCode: httpStatusCode.ok,
-			message: 'PROFILE_CREATED_SUCCESSFULLY',
-			result: result,
-		})
+	static async create(decodedToken) {
+		try {
+			let isNew = false
+			if (!decodedToken.id) {
+				decodedToken.id = (await IdMappingQueries.create({ uuid: decodedToken.externalId })).id
+				isNew = true
+			}
+			const userDetails = await userRequests.fetchUserDetails({ userId: decodedToken.id })
+			if (!userDetails?.data?.result)
+				return responses.failureResponse({
+					message: 'SOMETHING_WENT_WRONG',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'UNAUTHORIZED',
+				})
+
+			const orgExtension = await this.createOrg({ uuid: userDetails.data.result.organization_id })
+			const extensionData = this.getExtensionData(userDetails.data.result, orgExtension)
+			const result = await this.createUser(extensionData, isNew)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_CREATED_SUCCESSFULLY',
+				result: result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
 	}
 
 	static async createOrg(orgData) {
-		try {
-			const idUuidMapping = await IdMappingQueries.create({
-				uuid: orgData.id,
-			})
-			const extensionData = {
-				...common.DEFAULT_ORGANISATION_POLICY,
-				organization_id: idUuidMapping.id,
-				created_by: 1,
-				updated_by: 1,
-			}
-			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
-			return orgExtension.toJSON()
-		} catch (error) {
-			console.log(error)
-			throw error
+		const idUuidMapping = await IdMappingQueries.create({
+			uuid: orgData.uuid,
+		})
+		const extensionData = {
+			...common.DEFAULT_ORGANISATION_POLICY,
+			organization_id: idUuidMapping.id,
+			created_by: 1,
+			updated_by: 1,
 		}
+		const orgExtension = await organisationExtensionQueries.upsert(extensionData)
+		return orgExtension.toJSON()
 	}
 
-	static async createUser(userData) {
-		try {
-			const isAMentor = userData.roles.some((role) => role.title == common.MENTOR_ROLE)
-			const idUuidMapping = await IdMappingQueries.create({
-				uuid: userData.id,
-			})
-			const orgId = await IdMappingQueries.getIdByUuid(userData.organization.id)
-			const user = isAMentor
-				? await mentorsService.createMentorExtension(userData, idUuidMapping.id, orgId)
-				: await menteesService.createMenteeExtension(userData, idUuidMapping.id, orgId)
-			return user.result
-		} catch (error) {
-			console.log(error)
-			throw error
+	static async createUser(extensionData, isNew) {
+		const isAMentor = extensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
+		const idUuidMapping = await IdMappingQueries.create({
+			uuid: extensionData.uuid,
+		})
+		extensionData.id = idUuidMapping.id
+		const orgId = extensionData.organization.id
+		let user
+		if (isAMentor) {
+			user = isNew
+				? await mentorsService.createMentorExtension(extensionData, idUuidMapping.id, orgId)
+				: await mentorsService.updateMentorExtension(extensionData, idUuidMapping.id, orgId)
+		} else {
+			user = isNew
+				? await menteesService.createMenteeExtension(extensionData, idUuidMapping.id, orgId)
+				: await menteesService.updateMenteeExtension(extensionData, idUuidMapping.id, orgId)
 		}
+		return user.result
 	}
 }
