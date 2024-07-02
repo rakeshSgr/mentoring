@@ -168,12 +168,9 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fiel
 
 		await Promise.all(
 			uniqueEntityTypeValueList.map(async (attribute) => {
-				// Find the item with the specified key
-				let item = fieldsWithDatatype.find((element) => element.key === attribute)
-
-				if (!item) {
-					item = fieldsWithDatatype.find((element) => element.value === attribute)
-				}
+				const item = fieldsWithDatatype.find(
+					(element) => element.key === attribute || element.value === attribute
+				)
 
 				fieldsWithDatatype.find((element) => element.value === attribute)
 				// Retrieve the type
