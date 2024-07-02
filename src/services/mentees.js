@@ -666,16 +666,14 @@ module.exports = class MenteesHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			if (!skipValidation) {
-				let res = utils.validateInput(data, validationData, userExtensionsModelName)
-				if (!res.success) {
-					return responses.failureResponse({
-						message: 'MENTEE_EXTENSION_CREATION_FAILED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-						result: res.errors,
-					})
-				}
+			let res = utils.validateInput(data, validationData, userExtensionsModelName, skipValidation)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'MENTEE_EXTENSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
 			}
 			let menteeExtensionsModel = await menteeQueries.getColumns()
 			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
