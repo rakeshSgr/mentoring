@@ -92,7 +92,7 @@ module.exports = class Entity {
 
 	async list(req) {
 		try {
-			return await entityService.list(req.query, req.decodedToken.id, req.searchText, req.pageNo, req.pageSize)
+			return await entityService.list(req.query, req.searchText, req.pageNo, req.pageSize)
 		} catch (error) {
 			return error
 		}

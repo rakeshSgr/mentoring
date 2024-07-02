@@ -216,26 +216,10 @@ module.exports = class EntityHelper {
 	 * @param {Integer} pageSize -  page limit per api.
 	 * @returns {JSON} - Entity search matched response.
 	 */
-	static async list(query, userId, searchText, pageNo, pageSize) {
+	static async list(query, searchText, pageNo, pageSize) {
 		try {
 			let entityType = query.entity_type_id ? query.entity_type_id : ''
-			let filter
-			if (query.read_user_entity == true) {
-				filter = {
-					[Op.or]: [
-						{
-							created_by: '0',
-						},
-						{
-							created_by: userId,
-						},
-					],
-				}
-			} else {
-				filter = {
-					created_by: '0',
-				}
-			}
+			let filter = {}
 			if (entityType) {
 				filter['entity_type_id'] = entityType
 			}
