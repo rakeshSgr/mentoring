@@ -169,11 +169,17 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fiel
 		await Promise.all(
 			uniqueEntityTypeValueList.map(async (attribute) => {
 				// Find the item with the specified key
-				const item = fieldsWithDatatype.find((element) => element.key === attribute)
+				let item = fieldsWithDatatype.find((element) => element.key === attribute)
 
+				if (!item) {
+					item = fieldsWithDatatype.find((element) => element.value === attribute)
+				}
+
+				fieldsWithDatatype.find((element) => element.value === attribute)
 				// Retrieve the type
-				const type = item ? item.type : null
+				const type = item ? item.type || item.data_type : undefined
 
+				if (!type) return false
 				// Determine the query based on the type
 				let query
 				if (type === 'character varying') {
@@ -345,10 +351,6 @@ const triggerViewBuild = async () => {
 	try {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
-		// Check if pg_trgm extension is available
-		await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', {
-			type: sequelize.QueryTypes.SELECT,
-		})
 
 		await Promise.all(
 			entityTypesGroupedByModel.map(async (modelEntityTypes) => {
@@ -431,6 +433,10 @@ const triggerPeriodicViewRefresh = async () => {
 const checkAndCreateMaterializedViews = async () => {
 	const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 	const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
+
+	await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', {
+		type: sequelize.QueryTypes.SELECT,
+	})
 
 	const query = 'select matviewname from pg_matviews;'
 	const [result, metadata] = await sequelize.query(query)
