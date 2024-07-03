@@ -8,7 +8,13 @@
 function getPaginationOffset(page, limit) {
 	return (page - 1) * limit
 }
-
+const ENTITY_TYPE_DATA_TYPES = {
+	ARRAY_TYPES: ['ARRAY[STRING]', 'ARRAY[INTEGER]', 'ARRAY[TEXT]'],
+	STRING_TYPES: ['STRING', 'TEXT'],
+	NUMERIC_TYPES: ['INTEGER', 'BIGINT'],
+	BOOLEAN: ['boolean'],
+	JSON: ['json', 'jsonb'],
+}
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -179,10 +185,22 @@ module.exports = {
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
 	azureBlobType: 'BlockBlob',
+	ENTITY_TYPE_DATA_TYPES,
 	DEFAULT_RULES: {
 		SESSION_TYPE: 'session',
 		MENTOR_TYPE: 'mentor',
-		ARRAY_TYPES: ['ARRAY[STRING]', 'ARRAY[INTEGER]', 'ARRAY[TEXT]'],
+		ARRAY_TYPES: ENTITY_TYPE_DATA_TYPES.ARRAY_TYPES,
 		VALID_ARRAY_OPERATORS: ['contains', 'containedBy', 'overlap'],
+		STRING_TYPES: ENTITY_TYPE_DATA_TYPES.STRING_TYPES,
+		VALID_STRING_OPERATORS: ['equals', 'notEquals'],
+		NUMERIC_TYPES: ENTITY_TYPE_DATA_TYPES.NUMERIC_TYPES,
+		VALID_NUMERIC_OPERATORS: [
+			'equals',
+			'notEquals',
+			'greaterThan',
+			'lessThanOrEqual',
+			'lessThan',
+			'greaterThanOrEqual',
+		],
 	},
 }
