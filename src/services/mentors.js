@@ -348,16 +348,14 @@ module.exports = class MentorsHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			if (!skipValidation) {
-				let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
-				if (!res.success) {
-					return responses.failureResponse({
-						message: 'SESSION_CREATION_FAILED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-						result: res.errors,
-					})
-				}
+			let res = utils.validateInput(data, validationData, mentorExtensionsModelName, skipValidation)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
@@ -886,16 +884,17 @@ module.exports = class MentorsHelper {
 				)
 			}
 
-			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+			// Create a map from userDetails.result for quick lookups
+			const userDetailsMap = new Map(userDetails.result.map((userDetail) => [userDetail.id, userDetail]))
 
-			userDetails.result = userDetails.result
-				.map((userDetail) => {
-					// Map over each value in the values array of the current group
-					const user_id = userDetail.id
-					// Check if extensionDataMap has an entry with the key equal to the user_id
-					if (extensionDataMap.has(user_id)) {
-						const newItem = extensionDataMap.get(user_id)
-						userDetail = { ...userDetail, ...newItem }
+			// Map over extensionDetails.data to merge with the corresponding userDetail
+			extensionDetails.data = extensionDetails.data
+				.map((extensionDetail) => {
+					const user_id = extensionDetail.user_id
+					if (userDetailsMap.has(user_id)) {
+						let userDetail = userDetailsMap.get(user_id)
+						// Merge userDetail with extensionDetail, prioritize extensionDetail properties
+						userDetail = { ...userDetail, ...extensionDetail }
 						delete userDetail.user_id
 						delete userDetail.mentor_visibility
 						delete userDetail.mentee_visibility
@@ -905,12 +904,12 @@ module.exports = class MentorsHelper {
 					}
 					return null
 				})
-				.filter((userDetail) => userDetail !== null)
+				.filter((extensionDetail) => extensionDetail !== null)
 
 			if (directory) {
 				let foundKeys = {}
 				let result = []
-				for (let user of userDetails.result) {
+				for (let user of extensionDetails.data) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
@@ -927,11 +926,11 @@ module.exports = class MentorsHelper {
 				}
 
 				const sortedData = _.sortBy(result, 'key') || []
-				userDetails.result = sortedData
+				extensionDetails.data = sortedData
 			} else {
 				// Check if sortBy and order have values before applying sorting
 				if (sortBy) {
-					userDetails.result = userDetails.result.sort((a, b) => {
+					extensionDetails.data = extensionDetails.data.sort((a, b) => {
 						// Determine the sorting order based on the 'order' value
 						const sortOrder = order.toLowerCase() === 'asc' ? 1 : order.toLowerCase() === 'desc' ? -1 : 1
 
@@ -944,10 +943,7 @@ module.exports = class MentorsHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.message,
-				result: {
-					data: userDetails.result,
-					count: extensionDetails.count,
-				},
+				result: extensionDetails,
 			})
 		} catch (error) {
 			console.log(error)

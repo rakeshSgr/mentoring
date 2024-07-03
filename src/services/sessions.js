@@ -381,6 +381,7 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method, orgId, notifyUser) {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
+		let skipValidation = true
 		try {
 			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
@@ -507,7 +508,7 @@ module.exports = class SessionsHelper {
 			}
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			if (!method === common.DELETE_METHOD) {
-				let res = utils.validateInput(bodyData, validationData, sessionModelName)
+				let res = utils.validateInput(bodyData, validationData, sessionModelName, skipValidation)
 				if (!res.success) {
 					return responses.failureResponse({
 						message: 'SESSION_CREATION_FAILED',
