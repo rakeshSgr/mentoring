@@ -75,6 +75,14 @@ module.exports = class DefaultRuleHelper {
 				param: 'target_field,requester_field',
 				msg: `Data types of target_field and requester_field should match`,
 			})
+		} else if (
+			common.DEFAULT_RULES.ARRAY_TYPES.includes(validTargeField[0]?.data_type) &&
+			!common.DEFAULT_RULES.VALID_ARRAY_OPERATORS.includes(bodyData.operator)
+		) {
+			errors.push({
+				param: 'operator',
+				msg: `Invalid operator for ARRAY field type`,
+			})
 		}
 
 		if (errors.length !== 0) {

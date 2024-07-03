@@ -8388,26 +8388,38 @@ paths:
                     - session
                 target_field:
                   type: string
+                  description: >-
+                    One of the valid entity types, which will be matched against
+                    the details of the session or the session's mentor.
                 is_target_from_sessions_mentor:
                   type: boolean
+                  description: >-
+                    Specifies whether the target field is in the session or
+                    mentor details.
                 requester_field:
                   type: string
+                  description: >-
+                    One of the valid entity types, which will be matched against
+                    the requesting user's profile details.
                 operator:
                   type: string
                   enum:
-                    - '='
-                    - '!='
-                    - '@>'
-                    - <@
-                    - '&&'
-                    - <
-                    - '>'
-                    - <=
-                    - '>='
+                    - equals
+                    - notEquals
+                    - contains
+                    - containedBy
+                    - overlap
+                    - lessThan
+                    - greaterThan
+                    - lessThanOrEqual
+                    - greaterThanOrEqual
                 requester_roles:
                   type: array
                   items:
                     type: string
+                  minItems: 1
+                  default:
+                    - ALL
                 requester_roles_config:
                   type: object
                   properties:
@@ -8415,6 +8427,8 @@ paths:
                       type: boolean
                   required:
                     - exclude
+                  default:
+                    exclude: false
               required:
                 - type
                 - target_field
@@ -8914,18 +8928,44 @@ paths:
               properties:
                 type:
                   type: string
+                  enum:
+                    - mentor
+                    - session
                 target_field:
                   type: string
+                  description: >-
+                    One of the valid entity types, which will be matched against
+                    the details of the session or the session's mentor.
                 is_target_from_sessions_mentor:
                   type: boolean
+                  default: false
+                  description: >-
+                    Specifies whether the target field is in the session or
+                    mentor details.
                 requester_field:
                   type: string
+                  description: >-
+                    One of the valid entity types, which will be matched against
+                    the requesting user's profile details.
                 operator:
                   type: string
+                  enum:
+                    - equals
+                    - notEquals
+                    - contains
+                    - containedBy
+                    - overlap
+                    - lessThan
+                    - greaterThan
+                    - lessThanOrEqual
+                    - greaterThanOrEqual
                 requester_roles:
                   type: array
                   items:
                     type: string
+                  minItems: 1
+                  default:
+                    - ALL
                 requester_roles_config:
                   type: object
                   properties:
@@ -8933,12 +8973,8 @@ paths:
                       type: boolean
                   required:
                     - exclude
-              required:
-                - type
-                - target_field
-                - is_target_from_sessions_mentor
-                - requester_field
-                - operator
+                  default:
+                    exclude: false
             examples:
               example1:
                 value:

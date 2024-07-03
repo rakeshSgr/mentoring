@@ -182,5 +182,7 @@ module.exports = {
 	DEFAULT_RULES: {
 		SESSION_TYPE: 'session',
 		MENTOR_TYPE: 'mentor',
+		ARRAY_TYPES: ['ARRAY[STRING]', 'ARRAY[INTEGER]', 'ARRAY[TEXT]'],
+		VALID_ARRAY_OPERATORS: ['contains', 'containedBy', 'overlap'],
 	},
 }
