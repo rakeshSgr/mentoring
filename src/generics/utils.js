@@ -151,14 +151,16 @@ function isNumeric(value) {
 	return /^\d+$/.test(value)
 }
 
-function validateInput(input, validationData, modelName) {
+function validateInput(input, validationData, modelName, skipValidation = false) {
 	const errors = []
 	for (const field of validationData) {
-		if (field.required === true && !input.hasOwnProperty(field.value)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is required but missing in the input data.`,
-			})
+		if (!skipValidation) {
+			if (field.required === true && !input.hasOwnProperty(field.value)) {
+				errors.push({
+					param: field.value,
+					msg: `${field.value} is required but missing in the input data.`,
+				})
+			}
 		}
 
 		const fieldValue = input[field.value] // Get the value of the current field from the input data

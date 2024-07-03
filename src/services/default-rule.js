@@ -37,7 +37,6 @@ module.exports = class DefaultRuleHelper {
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
 				required: true,
-				allow_custom_entities: false,
 			}),
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
@@ -50,7 +49,6 @@ module.exports = class DefaultRuleHelper {
 					],
 				},
 				required: true,
-				allow_custom_entities: false,
 			}),
 		])
 
@@ -76,6 +74,14 @@ module.exports = class DefaultRuleHelper {
 			errors.push({
 				param: 'target_field,requester_field',
 				msg: `Data types of target_field and requester_field should match`,
+			})
+		} else if (
+			common.DEFAULT_RULES.ARRAY_TYPES.includes(validTargeField[0]?.data_type) &&
+			!common.DEFAULT_RULES.VALID_ARRAY_OPERATORS.includes(bodyData.operator)
+		) {
+			errors.push({
+				param: 'operator',
+				msg: `Invalid operator for ARRAY field type`,
 			})
 		}
 

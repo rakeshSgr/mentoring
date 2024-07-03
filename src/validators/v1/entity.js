@@ -14,14 +14,14 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('value field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[A-Za-z0-9_]*$/)
 			.withMessage('value is invalid, must not contain spaces')
 
 		req.checkBody('label')
 			.trim()
 			.notEmpty()
 			.withMessage('label field is empty')
-			.matches(/^[A-Za-z0-9 ]+$/)
+			.matches(/^[A-Za-z0-9 ()-]*$/)
 			.withMessage('label is invalid')
 
 		req.checkBody('entity_type_id')
@@ -91,5 +91,13 @@ module.exports = {
 
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
+	},
+	list: (req) => {
+		req.checkQuery('entity_type_id')
+			.trim()
+			.notEmpty()
+			.withMessage('entity_type_id param is empty')
+			.isNumeric()
+			.withMessage('entity_type_id param is invalid, must be an integer')
 	},
 }

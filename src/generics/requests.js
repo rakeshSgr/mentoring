@@ -23,7 +23,10 @@ var get = function (url, token = '', internal_access_token = false) {
 				let response = data.body
 				if (data.headers['content-type'].includes('application/json')) {
 					response = JSON.parse(response)
+				} else if (/text\/xml|application\/xml/.test(data.headers['content-type'])) {
+					response = parser.toJson(response, { object: true })
 				}
+
 				result.data = response
 				return resolve(result)
 			})
