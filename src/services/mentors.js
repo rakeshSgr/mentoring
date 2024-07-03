@@ -911,7 +911,7 @@ module.exports = class MentorsHelper {
 			if (directory) {
 				let foundKeys = {}
 				let result = []
-				for (let user of userDetails.result) {
+				for (let user of extensionDetails.data) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
@@ -928,11 +928,11 @@ module.exports = class MentorsHelper {
 				}
 
 				const sortedData = _.sortBy(result, 'key') || []
-				userDetails.result = sortedData
+				extensionDetails.data = sortedData
 			} else {
 				// Check if sortBy and order have values before applying sorting
 				if (sortBy) {
-					userDetails.result = userDetails.result.sort((a, b) => {
+					extensionDetails.data = extensionDetails.data.sort((a, b) => {
 						// Determine the sorting order based on the 'order' value
 						const sortOrder = order.toLowerCase() === 'asc' ? 1 : order.toLowerCase() === 'desc' ? -1 : 1
 
