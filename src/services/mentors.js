@@ -884,16 +884,17 @@ module.exports = class MentorsHelper {
 				)
 			}
 
-			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+			// Create a map from userDetails.result for quick lookups
+			const userDetailsMap = new Map(userDetails.result.map((userDetail) => [userDetail.id, userDetail]))
 
-			userDetails.result = userDetails.result
-				.map((userDetail) => {
-					// Map over each value in the values array of the current group
-					const user_id = userDetail.id
-					// Check if extensionDataMap has an entry with the key equal to the user_id
-					if (extensionDataMap.has(user_id)) {
-						const newItem = extensionDataMap.get(user_id)
-						userDetail = { ...userDetail, ...newItem }
+			// Map over extensionDetails.data to merge with the corresponding userDetail
+			extensionDetails.data = extensionDetails.data
+				.map((extensionDetail) => {
+					const user_id = extensionDetail.user_id
+					if (userDetailsMap.has(user_id)) {
+						let userDetail = userDetailsMap.get(user_id)
+						// Merge userDetail with extensionDetail, prioritize extensionDetail properties
+						userDetail = { ...userDetail, ...extensionDetail }
 						delete userDetail.user_id
 						delete userDetail.mentor_visibility
 						delete userDetail.mentee_visibility
@@ -903,7 +904,7 @@ module.exports = class MentorsHelper {
 					}
 					return null
 				})
-				.filter((userDetail) => userDetail !== null)
+				.filter((extensionDetail) => extensionDetail !== null)
 
 			if (directory) {
 				let foundKeys = {}
@@ -942,10 +943,7 @@ module.exports = class MentorsHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.message,
-				result: {
-					data: userDetails.result,
-					count: extensionDetails.count,
-				},
+				result: extensionDetails,
 			})
 		} catch (error) {
 			console.log(error)
