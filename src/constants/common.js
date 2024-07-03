@@ -12,8 +12,8 @@ const ENTITY_TYPE_DATA_TYPES = {
 	ARRAY_TYPES: ['ARRAY[STRING]', 'ARRAY[INTEGER]', 'ARRAY[TEXT]'],
 	STRING_TYPES: ['STRING', 'TEXT'],
 	NUMERIC_TYPES: ['INTEGER', 'BIGINT'],
-	BOOLEAN: ['boolean'],
-	JSON: ['json', 'jsonb'],
+	BOOLEAN: ['BOOLEAN'],
+	JSON: ['JSON', 'JSONB'],
 }
 module.exports = {
 	pagination: {
