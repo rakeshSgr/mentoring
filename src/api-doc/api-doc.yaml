@@ -1105,13 +1105,11 @@ paths:
                           created_by: 0
                           created_at: '2023-07-21T21:46:41.392Z'
                       count: 1
-
                     meta:
                       formsVersion: []
                       correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
                       meeting_platform: BBB
                     parameters: []
-
   /mentoring/v1/entity/delete/{id}:
     delete:
       summary: Delete entity
@@ -8436,18 +8434,28 @@ paths:
                 - requester_field
                 - operator
             examples:
-              sample:
+              Rule for Gender-Matched Session:
+                value:
+                  type: session
+                  target_field: gender
+                  is_target_from_sessions_mentor: true
+                  requester_field: gender
+                  operator: equals
+                  requester_roles:
+                    - session_manager
+                  requester_roles_config:
+                    exclude: 'true'
+              Rule for Gender-Matched Mentors:
                 value:
                   type: mentor
                   target_field: gender
                   is_target_from_sessions_mentor: false
                   requester_field: gender
-                  field_configs: null
-                  matching_operator: '='
+                  operator: equals
                   requester_roles:
                     - session_manager
-                  role_config:
-                    exclude: true
+                  requester_roles_config:
+                    exclude: 'true'
       responses:
         '201':
           description: Created
@@ -8478,25 +8486,25 @@ paths:
                         type: boolean
                       requester_field:
                         type: string
-                      field_configs:
-                        type: 'null'
-                      matching_operator:
+                      operator:
                         type: string
                       requester_roles:
                         type: array
                         items:
                           type: string
-                      role_config:
+                      requester_roles_config:
                         type: object
                         properties:
                           exclude:
-                            type: boolean
+                            type: string
                       created_by:
                         type: number
                       updated_by:
                         type: number
                       organization_id:
                         type: number
+                      field_configs:
+                        type: 'null'
                       deleted_at:
                         type: 'null'
                   meta:
@@ -8527,26 +8535,27 @@ paths:
                     responseCode: OK
                     message: The default rule has been created successfully.
                     result:
-                      created_at: '2024-06-26T07:09:10.916Z'
-                      updated_at: '2024-06-26T07:09:10.917Z'
-                      id: 7
-                      type: mentor
+                      created_at: '2024-07-03T07:18:19.916Z'
+                      updated_at: '2024-07-03T07:18:19.916Z'
+                      id: 54
+                      type: session
                       target_field: gender
-                      is_target_from_sessions_mentor: false
+                      is_target_from_sessions_mentor: true
                       requester_field: gender
-                      field_configs: null
-                      matching_operator: '='
+                      operator: equals
                       requester_roles:
                         - session_manager
-                      role_config:
-                        exclude: true
+                      requester_roles_config:
+                        exclude: 'true'
                       created_by: 15
                       updated_by: 15
                       organization_id: 1
+                      field_configs: null
                       deleted_at: null
                     meta:
-                      correlation: 73b8bc8c-ab5c-4586-9453-d8e6231d851c
-                      meetingPlatform: 'OFF'
+                      formsVersion: []
+                      correlation: d8402981-0352-4f72-87de-4cd76e9b30e5
+                      meetingPlatform: BBB
         '400':
           description: Bad Request.
           content:
@@ -8984,9 +8993,9 @@ paths:
                   requester_field: gender
                   operator: equals
                   requester_roles:
-                    - mentee
+                    - session_manager
                   requester_roles_config:
-                    exclude: true
+                    exclude: 'true'
       responses:
         '202':
           description: Accepted
@@ -9017,17 +9026,17 @@ paths:
                           type: string
                         field_configs:
                           type: 'null'
-                        matching_operator:
+                        operator:
                           type: string
                         requester_roles:
                           type: array
                           items:
                             type: string
-                        role_config:
+                        requester_roles_config:
                           type: object
                           properties:
                             exclude:
-                              type: boolean
+                              type: string
                         organization_id:
                           type: number
                         created_by:
@@ -9054,6 +9063,10 @@ paths:
                               type: string
                             version:
                               type: number
+                          required:
+                            - id
+                            - type
+                            - version
                       correlation:
                         type: string
                       meetingPlatform:
@@ -9064,29 +9077,56 @@ paths:
                     responseCode: OK
                     message: The default rule has been updated successfully.
                     result:
-                      - id: 1
-                        type: mentor
+                      - id: 54
+                        type: session
                         target_field: gender
-                        is_target_from_sessions_mentor: false
+                        is_target_from_sessions_mentor: true
                         requester_field: gender
                         field_configs: null
-                        matching_operator: '='
+                        operator: equals
                         requester_roles:
                           - session_manager
-                        role_config:
-                          exclude: true
-                        organization_id: 15
-                        created_by: 33
-                        updated_by: 33
-                        created_at: '2024-06-25T08:50:00.841Z'
-                        updated_at: '2024-06-25T09:02:03.177Z'
+                        requester_roles_config:
+                          exclude: 'true'
+                        organization_id: 1
+                        created_by: 15
+                        updated_by: 15
+                        created_at: '2024-07-03T07:18:19.916Z'
+                        updated_at: '2024-07-03T07:20:40.850Z'
                         deleted_at: null
                     meta:
                       formsVersion:
+                        - id: 3
+                          type: session
+                          version: 0
+                        - id: 4
+                          type: termsAndConditions
+                          version: 0
+                        - id: 5
+                          type: faq
+                          version: 0
+                        - id: 6
+                          type: helpVideos
+                          version: 0
+                        - id: 7
+                          type: platformApp
+                          version: 0
+                        - id: 8
+                          type: helpApp
+                          version: 0
+                        - id: 9
+                          type: sampleCsvDownload
+                          version: 0
                         - id: 1
                           type: managersSession
                           version: 0
-                      correlation: 812307e4-53a7-48e2-8978-bf6725745f31
+                        - id: 2
+                          type: editProfile
+                          version: 0
+                        - id: 10
+                          type: mentorQuestionnaire
+                          version: 0
+                      correlation: 1a216c8b-8eec-41e7-829f-10fa961bc44d
                       meetingPlatform: BBB
         '400':
           description: Bad Request.
