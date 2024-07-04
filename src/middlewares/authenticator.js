@@ -60,6 +60,13 @@ module.exports = async function (req, res, next) {
 		console.log('DECODED TOKEN: ', req.decodedToken)
 		next()
 	} catch (err) {
+		if (err.message === 'USER_SERVICE_DOWN') {
+			err = responses.failureResponse({
+				message: 'USER_SERVICE_DOWN',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'SERVER_ERROR',
+			})
+		}
 		console.error(err)
 		next(err)
 	}
@@ -115,8 +122,9 @@ async function validateSession(authHeader) {
 
 	const isSessionActive = await requests.post(validateSessionEndpoint, reqBody, '', true)
 
-	if (isSessionActive.data.responseCode === 'UNAUTHORIZED') throw new Error('ACCESS_TOKEN_EXPIRED')
-	if (!isSessionActive.data.result.data.user_session_active) throw new Error('USER_SERVICE_DOWN')
+	if (isSessionActive?.data?.responseCode === 'UNAUTHORIZED') throw createUnauthorizedResponse('ACCESS_TOKEN_EXPIRED')
+	if (!isSessionActive?.success || !isSessionActive?.data?.result?.data?.user_session_active)
+		throw new Error('USER_SERVICE_DOWN')
 }
 
 async function fetchUserProfile(userId) {
