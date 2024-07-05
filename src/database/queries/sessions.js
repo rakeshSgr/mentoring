@@ -639,7 +639,7 @@ exports.getUpcomingSessionsFromView = async (
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
-		const filterClause = filter.query.length > 0 ? `AND (${filter.query})` : ''
+		const filterClause = filter?.query.length > 0 ? `AND (${filter.query})` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
@@ -772,7 +772,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
-		const filterClause = filter.query.length > 0 ? `AND ${filter.query}` : ''
+		const filterClause = filter?.query.length > 0 ? `AND ${filter.query}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
