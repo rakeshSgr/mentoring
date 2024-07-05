@@ -85,7 +85,6 @@ module.exports = {
 	update: (req) => {
 		try {
 			req.checkBody('type')
-				.optional()
 				.isString()
 				.notEmpty()
 				.isIn(['session', 'mentor'])
@@ -94,18 +93,15 @@ module.exports = {
 				)
 
 			req.checkBody('target_field')
-				.optional()
 				.isString()
 				.notEmpty()
 				.withMessage('The target_field field is required and must be a non-empty string.')
 
 			req.checkBody('is_target_from_sessions_mentor')
-				.optional()
 				.isBoolean()
 				.withMessage('The is_target_from_sessions_mentor field must be a boolean if provided.')
 
 			req.checkBody('requester_field')
-				.optional()
 				.isString()
 				.notEmpty()
 				.withMessage('The requester_field field is required and must be a non-empty string.')
