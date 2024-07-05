@@ -421,7 +421,9 @@ module.exports = class OrgAdminService {
 				organization_id: orgId,
 				external_session_visibility: orgPolicies.external_session_visibility_policy,
 				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
-				visibility: orgPolicies.mentor_visibility_policy,
+				mentor_visibility: orgPolicies.mentor_visibility_policy,
+				mentee_visibility: orgPolicies.mentee_visibility_policy,
+				external_mentee_visibility: orgPolicies.external_mentee_visibility_policy,
 				visible_to_organizations: organizationDetails.data.result.related_orgs,
 			}
 			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE))
