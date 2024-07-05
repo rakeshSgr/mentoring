@@ -131,6 +131,40 @@ module.exports = {
 			.optional()
 			.isBoolean()
 			.withMessage('allow_filtering is invalid, must be boolean')
+
+		req.checkBody('has_entities').optional().isBoolean().withMessage('has_entities is invalid, must be boolean')
+
+		req.checkBody('required').optional().isBoolean().withMessage('required is invalid, must be boolean')
+
+		req.checkBody('regex')
+			.optional()
+			.notEmpty()
+			.withMessage('regex field is empty')
+			.isString()
+			.withMessage('regex is invalid,must be string')
+
+		req.checkBody('status')
+			.optional()
+			.notEmpty()
+			.withMessage('status field is empty')
+			.isString()
+			.withMessage('status is invalid,must be string')
+
+		req.checkBody('parent_id')
+			.optional()
+			.notEmpty()
+			.withMessage('parent_id field is empty')
+			.isInt()
+			.withMessage('parent_id is invalid,must be integer')
+
+		if (req.body.has_entities == false) {
+			req.checkBody('allow_filtering').custom((value) => {
+				if (value) {
+					throw new Error('The allow_filtering can be true only if has_entities is set to true')
+				}
+				return true
+			})
+		}
 	},
 
 	read: (req) => {
