@@ -159,16 +159,6 @@ module.exports = class MentorExtensionQueries {
 		defaultFilter = ''
 	) {
 		try {
-			const filterConditions = []
-
-			if (filter && typeof filter === 'object') {
-				for (const key in filter) {
-					if (Array.isArray(filter[key])) {
-						filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-					}
-				}
-			}
-
 			const excludeUserIds = ids.length === 0
 			let userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
 			let additionalFilter = ''
@@ -182,12 +172,12 @@ module.exports = class MentorExtensionQueries {
 				additionalFilter = `${searchFilter.whereClause}`
 			}
 
-			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
+			const filterClause = filter.query.length > 0 ? `${filter.query}` : ''
 
 			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
 			const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
 
-			if (excludeUserIds && Object.keys(filter).length === 0) {
+			if (excludeUserIds && filter.query.length === 0) {
 				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
 			}
 
@@ -216,7 +206,7 @@ module.exports = class MentorExtensionQueries {
 			`
 
 			const replacements = {
-				...filter, // Add filter parameters to replacements
+				...filter.replacements, // Add filter parameters to replacements
 				search: `%${searchText}%`,
 			}
 

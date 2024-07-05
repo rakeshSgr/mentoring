@@ -368,7 +368,7 @@ module.exports = class MenteesHelper {
 			model_names: { [Op.contains]: [sessionModelName] },
 		})
 
-		let filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
+		let filteredQuery = utils.validateAndBuildFilters(query, validationData, sessionModelName)
 
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
@@ -1220,7 +1220,7 @@ module.exports = class MenteesHelper {
 				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
 			})
 
-			let filteredQuery = utils.validateFilters(
+			let filteredQuery = utils.validateAndBuildFilters(
 				query,
 				JSON.parse(JSON.stringify(validationData)),
 				userExtensionModelName

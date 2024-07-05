@@ -563,6 +563,70 @@ const generateWhereClause = (tableName) => {
 	return whereClause
 }
 
+/**
+ * Validates the input against validation data and builds a SQL query filter.
+ *
+ * @param {Object} input - The input object containing filters.
+ * @param {Array} validationData - Array of objects containing entity type and data type information.
+ * @returns {Object} An object containing the SQL query string and replacements for Sequelize.
+ */
+function validateAndBuildFilters(input, validationData) {
+	const entityTypes = {}
+
+	// Build the entityTypes dictionary
+	validationData.forEach((entityType) => {
+		entityTypes[entityType.value] = entityType.data_type
+	})
+
+	const queryParts = [] // Array to store parts of the query
+	const replacements = {} // Object to store replacements for Sequelize
+
+	// Function to handle string types
+	function handleStringType(key, values) {
+		const orConditions = values
+			.map((value, index) => {
+				replacements[`${key}_${index}`] = value
+				return `${key} = :${key}_${index}`
+			})
+			.join(' OR ')
+		queryParts.push(`(${orConditions})`)
+	}
+
+	// Function to handle array types
+	function handleArrayType(key, values) {
+		const arrayValues = values
+			.map((value, index) => {
+				replacements[`${key}_${index}`] = value
+				return `:${key}_${index}`
+			})
+			.join(', ')
+		queryParts.push(`"${key}" @> ARRAY[${arrayValues}]::character varying[]`)
+	}
+
+	// Iterate over each key in the input object
+	for (const key in input) {
+		if (input.hasOwnProperty(key)) {
+			const dataType = entityTypes[key]
+
+			if (dataType) {
+				if (common.ENTITY_TYPE_DATA_TYPES.STRING_TYPES.includes(dataType)) {
+					handleStringType(key, input[key])
+				} else if (common.ENTITY_TYPE_DATA_TYPES.ARRAY_TYPES.includes(dataType)) {
+					handleArrayType(key, input[key])
+				}
+			} else {
+				// Remove keys that are not in the validationData
+				delete input[key]
+			}
+		}
+	}
+
+	// Join all query parts with AND
+	const query = queryParts.join(' AND ')
+
+	return { query, replacements }
+}
+
 function validateFilters(input, validationData, modelName) {
 	const entityTypes = []
 	validationData.forEach((entityType) => {
@@ -728,4 +792,5 @@ module.exports = {
 	isValidEmail,
 	transformCustomFields,
 	validateProfileData,
+	validateAndBuildFilters,
 }
