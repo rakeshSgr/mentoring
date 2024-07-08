@@ -57,7 +57,7 @@ module.exports = class MentorsHelper {
 				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
-			const filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
+			const filteredQuery = utils.validateAndBuildFilters(query, validationData, sessionModelName)
 
 			// Filter upcoming sessions based on saas policy
 			const saasFilter = await menteesService.filterSessionsBasedOnSaasPolicy(menteeUserId, isAMentor)
@@ -807,7 +807,7 @@ module.exports = class MentorsHelper {
 				model_names: { [Op.contains]: [mentorExtensionsModelName] },
 			})
 
-			const filteredQuery = utils.validateFilters(query, validationData, mentorExtensionsModelName)
+			const filteredQuery = utils.validateAndBuildFilters(query, validationData, mentorExtensionsModelName)
 
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor, organization_ids)
 
