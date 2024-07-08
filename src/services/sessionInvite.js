@@ -156,7 +156,10 @@ module.exports = class UserInviteHelper {
 	static async extractDataFromCSV(csvFilePath) {
 		try {
 			const parsedCSVData = []
-			const csvToJsonData = await csv().fromFile(csvFilePath)
+			let csvToJsonData = await csv().fromFile(csvFilePath)
+
+			// Filter out empty rows
+			csvToJsonData = csvToJsonData.filter((row) => Object.values(row).some((value) => value.trim() !== ''))
 
 			for (const row of csvToJsonData) {
 				const {
