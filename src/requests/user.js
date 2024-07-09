@@ -63,7 +63,14 @@ const fetchUserDetails = async ({ token, userId }) => {
 
 		const isInternalTokenRequired = true
 		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
-		if (!userDetails.data.result.user_roles) userDetails.data.result.user_roles = [{ title: 'mentee' }]
+
+		if (!userDetails.data?.result?.user_roles) {
+			userDetails.data = userDetails.data || {}
+			userDetails.data.result = userDetails.data.result || {}
+			userDetails.data.result.user_roles = [{ title: 'mentee' }]
+		}
+		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
+			userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
 		return userDetails
 	} catch (error) {
 		console.error(error)
