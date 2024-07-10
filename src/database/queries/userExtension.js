@@ -1,4 +1,4 @@
-const MenteeExtension = require('../models/index').UserExtension
+const MenteeExtension = require('@database/models/index').UserExtension
 const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
 const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
