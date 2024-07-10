@@ -20,17 +20,27 @@ module.exports = class DefaultRuleHelper {
 	 * @param {boolean} bodyData.is_target_from_sessions_mentor - Whether the target is from sessions mentor.
 	 * @param {string} bodyData.target_field - The target field to be validated.
 	 * @param {string} bodyData.requester_field - The requester field to be validated.
+	 * @param {string} bodyData.operator - The operator to be validated if applicable.
 	 *
 	 * @returns {Promise<Object>} A promise that resolves to an object indicating the validation result.
 	 * The object contains a boolean `isValid` indicating if the validation passed and an array `errors` with the validation errors if any.
 	 */
-	static async validateFields(defaultOrgId, bodyData) {
-		const modelName =
-			bodyData.type === common.DEFAULT_RULES.SESSION_TYPE && !bodyData.is_target_from_sessions_mentor
-				? await sessionQueries.getModelName()
-				: await mentorExtensionQueries.getModelName()
 
-		const [validTargeField, validRequesterField] = await Promise.all([
+	static async validateFields(defaultOrgId, bodyData) {
+		const isSessionType =
+			bodyData.type === common.DEFAULT_RULES.SESSION_TYPE && !bodyData.is_target_from_sessions_mentor
+		const modelNamePromise = isSessionType ? sessionQueries.getModelName() : mentorExtensionQueries.getModelName()
+
+		const mentorModelNamePromise = mentorExtensionQueries.getModelName()
+		const menteeModelNamePromise = menteeExtensionQueries.getModelName()
+
+		const [modelName, mentorModelName, menteeModelName] = await Promise.all([
+			modelNamePromise,
+			mentorModelNamePromise,
+			menteeModelNamePromise,
+		])
+
+		const validFieldsPromise = Promise.all([
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
 				organization_id: defaultOrgId,
@@ -42,61 +52,58 @@ module.exports = class DefaultRuleHelper {
 				status: 'ACTIVE',
 				organization_id: defaultOrgId,
 				value: bodyData.requester_field,
-				model_names: {
-					[Op.contains]: [
-						await mentorExtensionQueries.getModelName(),
-						await menteeExtensionQueries.getModelName(),
-					],
-				},
+				model_names: { [Op.contains]: [mentorModelName, menteeModelName] },
 				required: true,
 			}),
 		])
 
+		const [validTargetField, validRequesterField] = await validFieldsPromise
+
 		const errors = []
 
-		if (validTargeField.length === 0) {
-			errors.push({
-				param: 'target_field',
-				msg: `Invalid target_field`,
-			})
+		if (validTargetField.length === 0) {
+			errors.push({ param: 'target_field', msg: 'Invalid target_field' })
 		}
 
 		if (validRequesterField.length === 0) {
-			errors.push({
-				param: 'requester_field',
-				msg: `Invalid requester_field`,
-			})
-		}
-		if (validTargeField.length === 0 || validRequesterField.length === 0) {
-			return errors
-		}
-		if (validTargeField[0]?.data_type != validRequesterField[0]?.data_type) {
-			errors.push({
-				param: 'target_field,requester_field',
-				msg: `Data types of target_field and requester_field should match`,
-			})
-		} else if (
-			common.DEFAULT_RULES.ARRAY_TYPES.includes(validTargeField[0]?.data_type) &&
-			!common.DEFAULT_RULES.VALID_ARRAY_OPERATORS.includes(bodyData.operator)
-		) {
-			errors.push({
-				param: 'operator',
-				msg: `Invalid operator for ARRAY field type`,
-			})
+			errors.push({ param: 'requester_field', msg: 'Invalid requester_field' })
 		}
 
-		if (errors.length !== 0) {
-			return {
-				isValid: false,
-				errors,
+		if (validTargetField.length > 0 && validRequesterField.length > 0) {
+			if (validTargetField[0]?.data_type !== validRequesterField[0]?.data_type) {
+				errors.push({
+					param: 'target_field,requester_field',
+					msg: 'Data types of target_field and requester_field should match',
+				})
+			} else {
+				const operatorValidation = {
+					ARRAY: common.DEFAULT_RULES.ARRAY_TYPES.includes(validTargetField[0]?.data_type)
+						? common.DEFAULT_RULES.VALID_ARRAY_OPERATORS
+						: [],
+					STRING: common.DEFAULT_RULES.STRING_TYPES.includes(validTargetField[0]?.data_type)
+						? common.DEFAULT_RULES.VALID_STRING_OPERATORS
+						: [],
+					NUMERIC: common.DEFAULT_RULES.NUMERIC_TYPES.includes(validTargetField[0]?.data_type)
+						? common.DEFAULT_RULES.VALID_NUMERIC_OPERATORS
+						: [],
+				}
+
+				const validOperators = Object.values(operatorValidation).flat()
+				if (!validOperators.includes(bodyData.operator)) {
+					errors.push({
+						param: 'operator',
+						msg: `Invalid operator for ${validTargetField[0]?.data_type} field type`,
+					})
+				}
 			}
 		}
 
-		return {
-			isValid: true,
+		if (errors.length !== 0) {
+			return { isValid: false, errors }
 		}
-	}
 
+		return { isValid: true }
+	}
 	/**
 	 * Create default rule.
 	 * @method

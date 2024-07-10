@@ -368,7 +368,7 @@ module.exports = class MenteesHelper {
 			model_names: { [Op.contains]: [sessionModelName] },
 		})
 
-		let filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
+		let filteredQuery = utils.validateAndBuildFilters(query, validationData, sessionModelName)
 
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
@@ -1220,7 +1220,7 @@ module.exports = class MenteesHelper {
 				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
 			})
 
-			let filteredQuery = utils.validateFilters(
+			let filteredQuery = utils.validateAndBuildFilters(
 				query,
 				JSON.parse(JSON.stringify(validationData)),
 				userExtensionModelName
@@ -1237,7 +1237,7 @@ module.exports = class MenteesHelper {
 			const hasValidEmails = emailIds.length > 0
 
 			const saasFilter = await this.filterMenteeListBasedOnSaasPolicy(userId, isAMentor, organization_ids)
-			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+			let extensionDetails = await menteeQueries.getAllUsers(
 				[],
 				pageNo,
 				pageSize,
@@ -1248,29 +1248,11 @@ module.exports = class MenteesHelper {
 				hasValidEmails ? emailIds : searchText
 			)
 
-			let mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				[],
-				pageNo,
-				pageSize,
-				filteredQuery,
-				saasFilter,
-				additionalProjectionString,
-				false,
-				'',
-				hasValidEmails ? emailIds : searchText
-			)
-
-			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
-			extensionDetails.count += mentorExtensionDetails.count
-
-			if (extensionDetails.count == 0) {
+			if (extensionDetails?.data.length == 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTEE_LIST',
-					result: {
-						data: [],
-						count: 0,
-					},
+					result: extensionDetails,
 				})
 			}
 
@@ -1301,6 +1283,7 @@ module.exports = class MenteesHelper {
 						delete value.organization_id
 						delete value.meta
 						delete value.rating
+						delete value.permissions
 						return value
 					}
 					return null

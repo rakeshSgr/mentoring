@@ -638,16 +638,8 @@ exports.getUpcomingSessionsFromView = async (
 ) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
-		let filterConditions = []
 
-		if (filter && typeof filter === 'object') {
-			for (const key in filter) {
-				if (Array.isArray(filter[key])) {
-					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-				}
-			}
-		}
-		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		const filterClause = filter?.query.length > 0 ? `AND (${filter.query})` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
@@ -718,6 +710,7 @@ exports.getUpcomingSessionsFromView = async (
 			currentEpochTime: currentEpochTime,
 			offset: limit * (page - 1),
 			limit: limit,
+			...filter.replacements,
 		}
 
 		if (filter && typeof filter === 'object') {
@@ -779,16 +772,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
-		const filterConditions = []
-
-		if (filter && typeof filter === 'object') {
-			for (const key in filter) {
-				if (Array.isArray(filter[key])) {
-					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-				}
-			}
-		}
-		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		const filterClause = filter?.query.length > 0 ? `AND ${filter.query}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
@@ -831,7 +815,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			search: `%${search.toLowerCase()}%`,
 			offset: limit * (page - 1),
 			limit: limit,
-			...filter, // Add filter parameters to replacements
+			...filter.replacements, // Add filter parameters to replacements
 		}
 
 		const sessionAttendeesData = await Sequelize.query(query, {
@@ -862,7 +846,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			count: Number(count[0].count),
 		}
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
