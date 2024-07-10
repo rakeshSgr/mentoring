@@ -1,4 +1,5 @@
-const MenteeExtension = require('../models/index').UserExtension
+const MenteeExtension = require('@database/models/index').UserExtension
+const MentorExtension = require('@database/models/index').MentorExtension
 const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
@@ -351,6 +352,125 @@ module.exports = class MenteeExtensionQueries {
 			return user.length > 0 ? user[0] : null
 		} catch (error) {
 			return error
+		}
+	}
+
+	static async getAllUsers(
+		ids,
+		page,
+		limit,
+		filter,
+		saasFilter = '',
+		additionalProjectionClause = '',
+		returnOnlyUserId,
+		searchText = '',
+		defaultFilter = ''
+	) {
+		try {
+			const excludeUserIds = ids.length === 0
+			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let additionalFilter = ''
+
+			if (searchText) {
+				additionalFilter = `AND name ILIKE :search`
+			}
+			if (Array.isArray(searchText)) {
+				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
+
+			const filterClause = filter?.query.length > 0 ? `${filter.query}` : ''
+			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
+
+			if (excludeUserIds && filter.query.length === 0) {
+				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
+			}
+
+			let projectionClause = `
+				user_id,
+				mentee_visibility,
+				organization_id,
+				designation,
+				area_of_expertise,
+				education_qualification,
+				custom_entity_text::JSONB AS custom_entity_text,
+				meta::JSONB AS meta
+			`
+			if (returnOnlyUserId) {
+				projectionClause = 'user_id'
+			} else if (additionalProjectionClause !== '') {
+				projectionClause += `, ${additionalProjectionClause}`
+			}
+
+			if (userFilterClause && filter?.query.length > 0) {
+				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND ' + filterClause
+			}
+
+			const cteQueries = `
+				WITH mentees AS (
+					SELECT ${projectionClause}
+					FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+					WHERE
+						${userFilterClause}
+						${filterClause}
+						${saasFilterClause}
+						${additionalFilter}
+				), mentors AS (
+					SELECT ${projectionClause}
+					FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+					WHERE
+						${userFilterClause}
+						${filterClause}
+						${saasFilterClause}
+						${additionalFilter}
+						${defaultFilter}
+				)
+			`
+
+			let combinedQuery = `
+				${cteQueries}
+				SELECT * FROM mentees
+				UNION
+				SELECT * FROM mentors
+				OFFSET :offset
+				LIMIT :limit
+			`
+
+			const replacements = {
+				...filter.replacements, // Add filter parameters to replacements
+				search: `%${searchText}%`,
+			}
+
+			if (page !== null && limit !== null) {
+				replacements.offset = limit * (page - 1)
+				replacements.limit = limit
+			}
+
+			const combinedResults = await Sequelize.query(combinedQuery, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
+			const countQuery = `
+				${cteQueries}
+				SELECT COUNT(*) AS count
+				FROM (
+					SELECT * FROM mentees
+					UNION
+					SELECT * FROM mentors
+				) AS combined
+			`
+
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
+			return {
+				data: combinedResults,
+				count: Number(count[0].count),
+			}
+		} catch (error) {
+			throw error
 		}
 	}
 }
