@@ -183,4 +183,5 @@ module.exports = {
 		SESSION_TYPE: 'session',
 		MENTOR_TYPE: 'mentor',
 	},
+	FALSE: 'false',
 }
