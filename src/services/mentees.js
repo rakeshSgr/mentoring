@@ -895,7 +895,7 @@ module.exports = class MenteesHelper {
 	 * @param {Boolean} queryParams - queryParams
 	 * @returns {JSON} - Filter list.
 	 */
-	static async getFilterList(entity_type, filterType, tokenInformation) {
+	static async getFilterList(organization, entity_type, filterType, tokenInformation) {
 		try {
 			let result = {
 				organizations: [],
@@ -959,6 +959,10 @@ module.exports = class MenteesHelper {
 						}
 					}
 				}
+			}
+
+			if (organization.toLowerCase() === common.FALSE) {
+				delete result.organizations
 			}
 
 			return responses.successResponse({

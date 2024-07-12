@@ -203,4 +203,5 @@ module.exports = {
 			'greaterThanOrEqual',
 		],
 	},
+	FALSE: 'false',
 }
