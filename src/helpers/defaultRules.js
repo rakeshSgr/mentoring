@@ -39,7 +39,7 @@ function getValidConfigs(config, userRoles) {
 		const { requester_roles, requester_roles_config } = conf
 		let { exclude } = requester_roles_config
 
-		exclude = exclude === 'true' ? true : false
+		exclude = exclude.toString() == 'true' ? true : false
 		//check exclusion or inclusion based on the flag
 		const isValid = exclude ? !hasMatchingRole(requester_roles) : hasMatchingRole(requester_roles)
 
