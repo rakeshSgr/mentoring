@@ -72,7 +72,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('data_type field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[A-Za-z\[\]]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
 
 		req.checkBody('model_names')
