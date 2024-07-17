@@ -16,9 +16,7 @@ module.exports = async function (req, res, next) {
 		const authHeader = req.get('X-auth-token')
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
-			console.log(req.path)
 			if (req.path.includes(path)) {
-				console.log(path)
 				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
 				throw createUnauthorizedResponse()
 			}
