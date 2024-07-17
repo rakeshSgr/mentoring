@@ -69,8 +69,10 @@ const fetchUserDetails = async ({ token, userId }) => {
 			userDetails.data.result = userDetails.data.result || {}
 			userDetails.data.result.user_roles = [{ title: 'mentee' }]
 		}
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
+		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
+			userDetails.data.result.uuid = userDetails.data.result.id
 			userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
+		}
 		return userDetails
 	} catch (error) {
 		console.error(error)
