@@ -68,7 +68,59 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static getExtensionData(userDetails, orgExtension) {
+	static async create(decodedToken) {
+		try {
+			let isNew = false
+			if (!decodedToken.id) {
+				decodedToken.id = (await IdMappingQueries.findOrCreate({ uuid: decodedToken.externalId })).id
+				isNew = true
+			}
+			const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNew)
+			return result
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	static async update(updateData) {
+		try {
+			const userId = updateData.userId
+			const [idMapping, isNew] = await IdMappingQueries.findOrCreate({ uuid: userId })
+			const result = await this.#createOrUpdateUserAndOrg(idMapping.id, isNew, updateData)
+			return result
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	static async #createOrUpdateUserAndOrg(userId, isNew, updateData = null) {
+		const userDetails = await userRequests.fetchUserDetails({ userId })
+		if (!userDetails?.data?.result) {
+			return responses.failureResponse({
+				message: 'SOMETHING_WENT_WRONG',
+				statusCode: httpStatusCode.not_found,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
+
+		const orgExtension = await this.#createOrg({ uuid: userDetails.data.result.organization_id })
+		const extensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
+		const result = await this.#createUser(extensionData, isNew)
+
+		if (updateData) {
+			console.log({ updateData })
+		}
+
+		return responses.successResponse({
+			statusCode: httpStatusCode.ok,
+			message: 'PROFILE_CREATED_SUCCESSFULLY',
+			result: result,
+		})
+	}
+
+	static #getExtensionData(userDetails, orgExtension) {
 		return {
 			uuid: userDetails.uuid,
 			organization: {
@@ -82,37 +134,7 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async create(decodedToken) {
-		try {
-			let isNew = false
-			if (!decodedToken.id) {
-				decodedToken.id = (await IdMappingQueries.findOrCreate({ uuid: decodedToken.externalId })).id
-				isNew = true
-			}
-			const userDetails = await userRequests.fetchUserDetails({ userId: decodedToken.id })
-			if (!userDetails?.data?.result)
-				return responses.failureResponse({
-					message: 'SOMETHING_WENT_WRONG',
-					statusCode: httpStatusCode.not_found,
-					responseCode: 'UNAUTHORIZED',
-				})
-
-			const orgExtension = await this.createOrg({ uuid: userDetails.data.result.organization_id })
-			const extensionData = this.getExtensionData(userDetails.data.result, orgExtension)
-			const result = await this.createUser(extensionData, isNew)
-
-			return responses.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_CREATED_SUCCESSFULLY',
-				result: result,
-			})
-		} catch (error) {
-			console.log(error)
-			throw error
-		}
-	}
-
-	static async createOrg(orgData) {
+	static async #createOrg(orgData) {
 		const [idMapping] = await IdMappingQueries.findOrCreate({
 			uuid: orgData.uuid,
 		})
@@ -126,7 +148,7 @@ module.exports = class UserHelper {
 		return orgExtension.toJSON()
 	}
 
-	static async createUser(extensionData, isNew) {
+	static async #createUser(extensionData, isNew) {
 		const isAMentor = extensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
 		const [idMapping] = await IdMappingQueries.findOrCreate({
 			uuid: extensionData.uuid,
@@ -144,33 +166,5 @@ module.exports = class UserHelper {
 				: await menteesService.updateMenteeExtension(extensionData, idMapping.id, orgId)
 		}
 		return user.result
-	}
-
-	static async update(updateData) {
-		try {
-			const userId = updateData.user_id
-			const [idMapping, isNew] = await IdMappingQueries.findOrCreate({ uuid: userId })
-			console.log(idMapping, isNew)
-			const userDetails = await userRequests.fetchUserDetails({ userId: idMapping.id })
-			if (!userDetails?.data?.result)
-				return responses.failureResponse({
-					message: 'SOMETHING_WENT_WRONG',
-					statusCode: httpStatusCode.not_found,
-					responseCode: 'UNAUTHORIZED',
-				})
-			console.log({ updateData })
-			const orgExtension = await this.createOrg({ uuid: userDetails.data.result.organization_id })
-			const extensionData = this.getExtensionData(userDetails.data.result, orgExtension)
-			const result = await this.createUser(extensionData, isNew)
-
-			return responses.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_CREATED_SUCCESSFULLY',
-				result: result,
-			})
-		} catch (error) {
-			console.log(error)
-			throw error
-		}
 	}
 }
