@@ -86,7 +86,7 @@ module.exports = class UserHelper {
 		try {
 			let isNew = false
 			if (!decodedToken.id) {
-				decodedToken.id = (await IdMappingQueries.create({ uuid: decodedToken.externalId })).id
+				decodedToken.id = (await IdMappingQueries.findOrCreate({ uuid: decodedToken.externalId })).id
 				isNew = true
 			}
 			const userDetails = await userRequests.fetchUserDetails({ userId: decodedToken.id })
@@ -113,12 +113,12 @@ module.exports = class UserHelper {
 	}
 
 	static async createOrg(orgData) {
-		const idUuidMapping = await IdMappingQueries.create({
+		const [idMapping] = await IdMappingQueries.findOrCreate({
 			uuid: orgData.uuid,
 		})
 		const extensionData = {
 			...common.DEFAULT_ORGANISATION_POLICY,
-			organization_id: idUuidMapping.id,
+			organization_id: idMapping.id,
 			created_by: 1,
 			updated_by: 1,
 		}
@@ -128,21 +128,49 @@ module.exports = class UserHelper {
 
 	static async createUser(extensionData, isNew) {
 		const isAMentor = extensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
-		const idUuidMapping = await IdMappingQueries.create({
+		const [idMapping] = await IdMappingQueries.findOrCreate({
 			uuid: extensionData.uuid,
 		})
-		extensionData.id = idUuidMapping.id
+		extensionData.id = idMapping.id
 		const orgId = extensionData.organization.id
 		let user
 		if (isAMentor) {
 			user = isNew
-				? await mentorsService.createMentorExtension(extensionData, idUuidMapping.id, orgId)
-				: await mentorsService.updateMentorExtension(extensionData, idUuidMapping.id, orgId)
+				? await mentorsService.createMentorExtension(extensionData, idMapping.id, orgId)
+				: await mentorsService.updateMentorExtension(extensionData, idMapping.id, orgId)
 		} else {
 			user = isNew
-				? await menteesService.createMenteeExtension(extensionData, idUuidMapping.id, orgId)
-				: await menteesService.updateMenteeExtension(extensionData, idUuidMapping.id, orgId)
+				? await menteesService.createMenteeExtension(extensionData, idMapping.id, orgId)
+				: await menteesService.updateMenteeExtension(extensionData, idMapping.id, orgId)
 		}
 		return user.result
+	}
+
+	static async update(updateData) {
+		try {
+			const userId = updateData.user_id
+			const [idMapping, isNew] = await IdMappingQueries.findOrCreate({ uuid: userId })
+			console.log(idMapping, isNew)
+			const userDetails = await userRequests.fetchUserDetails({ userId: idMapping.id })
+			if (!userDetails?.data?.result)
+				return responses.failureResponse({
+					message: 'SOMETHING_WENT_WRONG',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'UNAUTHORIZED',
+				})
+			console.log({ updateData })
+			const orgExtension = await this.createOrg({ uuid: userDetails.data.result.organization_id })
+			const extensionData = this.getExtensionData(userDetails.data.result, orgExtension)
+			const result = await this.createUser(extensionData, isNew)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_CREATED_SUCCESSFULLY',
+				result: result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
 	}
 }
