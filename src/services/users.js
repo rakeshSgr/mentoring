@@ -70,7 +70,7 @@ module.exports = class UserHelper {
 
 	static getExtensionData(userDetails, orgExtension) {
 		return {
-			uuid: userDetails.id,
+			uuid: userDetails.uuid,
 			organization: {
 				uuid: userDetails.organization_id,
 				id: orgExtension.organization_id,
