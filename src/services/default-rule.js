@@ -47,6 +47,7 @@ module.exports = class DefaultRuleHelper {
 				value: bodyData.target_field,
 				model_names: { [Op.contains]: [modelName] },
 				required: true,
+				allow_filtering: true,
 			}),
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
 				status: 'ACTIVE',
@@ -54,6 +55,7 @@ module.exports = class DefaultRuleHelper {
 				value: bodyData.requester_field,
 				model_names: { [Op.contains]: [mentorModelName, menteeModelName] },
 				required: true,
+				allow_filtering: true,
 			}),
 		])
 
@@ -117,6 +119,8 @@ module.exports = class DefaultRuleHelper {
 		bodyData.created_by = userId
 		bodyData.updated_by = userId
 		bodyData.organization_id = orgId
+		bodyData.target_field = bodyData.target_field.toLowerCase()
+		bodyData.requester_field = bodyData.requester_field.toLowerCase()
 
 		try {
 			const defaultOrgId = await getDefaultOrgId()
@@ -163,6 +167,8 @@ module.exports = class DefaultRuleHelper {
 	static async update(bodyData, ruleId, userId, orgId) {
 		bodyData.updated_by = userId
 		bodyData.organization_id = orgId
+		bodyData.target_field = bodyData.target_field.toLowerCase()
+		bodyData.requester_field = bodyData.requester_field.toLowerCase()
 
 		try {
 			const defaultOrgId = await getDefaultOrgId()

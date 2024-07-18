@@ -22,6 +22,7 @@ module.exports = class EntityHelper {
 		bodyData.created_by = id
 		bodyData.updated_by = id
 		bodyData.organization_id = orgId
+		bodyData.value = bodyData.value.toLowerCase()
 		try {
 			if (bodyData.allow_filtering) {
 				const isAdmin = roles.some((role) => role.title === common.ADMIN_ROLE)
@@ -58,6 +59,9 @@ module.exports = class EntityHelper {
 
 	static async update(bodyData, id, loggedInUserId, orgId, roles) {
 		bodyData.updated_by = loggedInUserId
+		if (bodyData.value) {
+			bodyData.value = bodyData.value.toLowerCase()
+		}
 
 		try {
 			if (bodyData.allow_filtering) {
