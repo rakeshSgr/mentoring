@@ -59,7 +59,9 @@ module.exports = class EntityHelper {
 
 	static async update(bodyData, id, loggedInUserId, orgId, roles) {
 		bodyData.updated_by = loggedInUserId
-		bodyData.value = bodyData.value.toLowerCase()
+		if (bodyData.value) {
+			bodyData.value = bodyData.value.toLowerCase()
+		}
 
 		try {
 			if (bodyData.allow_filtering) {
