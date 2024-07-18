@@ -25,18 +25,18 @@ module.exports = class OrgAdminService {
 	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
 	 */
 
-	static async roleChange(bodyData) {
+	static async roleChange(bodyData, updateData = {}) {
 		try {
 			if (
 				utils.validateRoleAccess(bodyData.current_roles, common.MENTOR_ROLE) &&
 				utils.validateRoleAccess(bodyData.new_roles, common.MENTEE_ROLE)
 			) {
-				return await this.changeRoleToMentee(bodyData)
+				return await this.changeRoleToMentee(bodyData, updateData)
 			} else if (
 				utils.validateRoleAccess(bodyData.current_roles, common.MENTEE_ROLE) &&
 				utils.validateRoleAccess(bodyData.new_roles, common.MENTOR_ROLE)
 			) {
-				return await this.changeRoleToMentor(bodyData)
+				return await this.changeRoleToMentor(bodyData, updateData)
 			}
 		} catch (error) {
 			console.log(error)
@@ -51,11 +51,12 @@ module.exports = class OrgAdminService {
 	 * @param {Object} bodyData 	- The request body.
 	 * @returns {Object} 			- A Promise that resolves to a response object.
 	 */
-	static async changeRoleToMentee(bodyData) {
+	static async changeRoleToMentee(bodyData, updateData = {}) {
 		try {
 			// Check current role based on that swap data
 			// If current role is mentor validate data from mentor_extenion table
-			let mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
+			let mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id, [], true)
+			console.log('MENTOR DETAILS 1: ', mentorDetails)
 			// If such mentor return error
 			if (!mentorDetails) {
 				return responses.failureResponse({
@@ -90,11 +91,12 @@ module.exports = class OrgAdminService {
 				}
 				mentorDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
-				mentorDetails = _.merge({}, mentorDetails, newPolicy)
+				mentorDetails = _.merge({}, mentorDetails, newPolicy, updateData)
 				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentor details to user_extension table
+			console.log('MENTOR DETAAAAILS 2: ', mentorDetails)
 			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
 			if (!menteeCreationData) {
 				return responses.failureResponse({
@@ -138,10 +140,11 @@ module.exports = class OrgAdminService {
 	 * @returns {Promise<Object>} 	- A Promise that resolves to a response object.
 	 */
 
-	static async changeRoleToMentor(bodyData) {
+	static async changeRoleToMentor(bodyData, updateData = {}) {
 		try {
 			// Get mentee_extension data
 			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id, '', true)
+			console.log('MENTEE DETAILS 1:', menteeDetails)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return responses.failureResponse({
@@ -174,11 +177,12 @@ module.exports = class OrgAdminService {
 				}
 				menteeDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
-				menteeDetails = _.merge({}, menteeDetails, newPolicy)
+				menteeDetails = _.merge({}, menteeDetails, newPolicy, updateData)
 				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentee details to mentor_extension table
+			console.log('MENTEEEE DETAAAAILS 2: ', menteeDetails)
 			const mentorCreationData = await mentorQueries.createMentorExtension(menteeDetails)
 			if (!mentorCreationData) {
 				return responses.failureResponse({
