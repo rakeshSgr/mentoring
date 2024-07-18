@@ -303,7 +303,7 @@ module.exports = class UserInviteHelper {
 							if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
 								setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, common.BBB_VALUE)
 							} else {
-								setMeetingInfo(common.MEETING_VALUES.BBB_LABEL, '')
+								setMeetingInfo(process.env.DEFAULT_MEETING_SERVICE, process.env.DEFAULT_MEETING_SERVICE)
 								lastEntry.statusMessage = await processInvalidLink(
 									lastEntry.statusMessage,
 									'Set Meeting Later'
@@ -862,7 +862,10 @@ module.exports = class UserInviteHelper {
 				})
 
 				if (meeting_info) {
-					const meetingPlatform = meeting_info.platform
+					const meetingPlatform =
+						meeting_info.platform === process.env.DEFAULT_MEETING_SERVICE
+							? common.MEETING_VALUES.BBB_LABEL
+							: meeting_info.platform
 					const meetingLinkOrId = meeting_info.link
 					let meetingPasscode = ''
 
