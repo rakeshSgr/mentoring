@@ -782,6 +782,7 @@ module.exports = class MenteesHelper {
 				//Do a org policy update for the user only if the data object explicitly includes an
 				//organization.id. This is added for the users/update workflow where
 				//both both user data and organisation can change at the same time.
+				let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: data.organization.id })
 				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
 					data.organization.id
 				)
@@ -794,8 +795,10 @@ module.exports = class MenteesHelper {
 				}
 				data.organization_id = data.organization.id
 				const newPolicy = await orgAdminService.constructOrgPolicyObject(orgPolicies, true)
-				mentorDetails = _.merge({}, data, newPolicy)
-				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
+				data = _.merge({}, data, newPolicy)
+				data.visible_to_organizations = Array.from(
+					new Set([...userOrgDetails.data.result.related_orgs, data.organization.id])
+				)
 			}
 
 			const [updateCount, updatedUser] = await menteeQueries.updateMenteeExtension(userId, data, {

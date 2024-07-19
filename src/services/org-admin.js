@@ -92,11 +92,12 @@ module.exports = class OrgAdminService {
 				mentorDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				mentorDetails = _.merge({}, mentorDetails, newPolicy, updateData)
-				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
+				mentorDetails.visible_to_organizations = Array.from(
+					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+				)
 			}
 
 			// Add fetched mentor details to user_extension table
-			console.log('MENTOR DETAAAAILS 2: ', mentorDetails)
 			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
 			if (!menteeCreationData) {
 				return responses.failureResponse({
@@ -144,7 +145,6 @@ module.exports = class OrgAdminService {
 		try {
 			// Get mentee_extension data
 			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id, '', true)
-			console.log('MENTEE DETAILS 1:', menteeDetails)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return responses.failureResponse({
@@ -178,11 +178,12 @@ module.exports = class OrgAdminService {
 				menteeDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				menteeDetails = _.merge({}, menteeDetails, newPolicy, updateData)
-				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
+				menteeDetails.visible_to_organizations = Array.from(
+					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+				)
 			}
 
 			// Add fetched mentee details to mentor_extension table
-			console.log('MENTEEEE DETAAAAILS 2: ', menteeDetails)
 			const mentorCreationData = await mentorQueries.createMentorExtension(menteeDetails)
 			if (!mentorCreationData) {
 				return responses.failureResponse({
@@ -399,7 +400,6 @@ module.exports = class OrgAdminService {
 	static async updateOrganization(bodyData) {
 		try {
 			const orgId = bodyData.organization_id
-			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
 			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
@@ -568,7 +568,6 @@ module.exports = class OrgAdminService {
 				},
 				['id', 'code']
 			)
-			console.log('QUESTIONSETS: ', questionSets)
 			if (
 				questionSets.length === 0 ||
 				(questionSets.length === 1 &&

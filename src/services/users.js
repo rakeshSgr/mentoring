@@ -77,7 +77,6 @@ module.exports = class UserHelper {
 				decodedToken.id = idMapping.id
 				isNew = true
 			}
-			console.log('DECODED TOKEN: ', decodedToken)
 			const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNew)
 			return result
 		} catch (error) {
@@ -134,76 +133,93 @@ module.exports = class UserHelper {
 	}
 
 	static async #createOrUpdateOrg(orgData) {
-		const [idMapping] = await IdMappingQueries.findOrCreate({
+		const [idMapping, isNew] = await IdMappingQueries.findOrCreate({
 			uuid: orgData.uuid,
 		})
-		const orgExtensionData = {
-			...common.DEFAULT_ORGANISATION_POLICY,
-			organization_id: idMapping.id,
-			created_by: 1,
-			updated_by: 1,
+		if (isNew) {
+			const orgExtensionData = {
+				...common.DEFAULT_ORGANISATION_POLICY,
+				organization_id: idMapping.id,
+				created_by: 1,
+				updated_by: 1,
+			}
+			const orgExtension = await organisationExtensionQueries.upsert(orgExtensionData)
+			return orgExtension.toJSON()
+		} else {
+			return await organisationExtensionQueries.getById(idMapping.id)
 		}
-		const orgExtension = await organisationExtensionQueries.upsert(orgExtensionData)
-		return orgExtension.toJSON()
 	}
 
-	static async #createUser(extensionData) {
-		const isAMentor = extensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
+	static async #createUser(userExtensionData) {
+		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
 		const [idMapping] = await IdMappingQueries.findOrCreate({
-			uuid: extensionData.uuid,
+			uuid: userExtensionData.uuid,
 		})
-		extensionData.id = idMapping.id
-		const orgId = extensionData.organization.id
+		userExtensionData.id = idMapping.id
+		const orgId = userExtensionData.organization.id
 		const user = isAMentor
-			? await mentorsService.createMentorExtension(extensionData, idMapping.id, orgId)
-			: await menteesService.createMenteeExtension(extensionData, idMapping.id, orgId)
+			? await mentorsService.createMentorExtension(userExtensionData, idMapping.id, orgId)
+			: await menteesService.createMenteeExtension(userExtensionData, idMapping.id, orgId)
 		return user.result
 	}
 
 	static #checkOrgChange = (existingOrgId, newOrgId) => existingOrgId !== newOrgId
 
-	static async #updateUser(extensionData) {
-		const isAMentee = extensionData.roles.some((role) => role.title === common.MENTEE_ROLE)
+	static async #updateUser(userExtensionData) {
+		const isAMentee = userExtensionData.roles.some((role) => role.title === common.MENTEE_ROLE)
 		const roleChangePayload = {
-			user_id: extensionData.id,
-			organization_id: extensionData.organization.id,
+			user_id: userExtensionData.id,
+			organization_id: userExtensionData.organization.id,
 		}
 
 		let isRoleChanged = false
-		let isOrgChanged = false
 
 		if (isAMentee) {
-			const menteeExtension = await menteeQueries.getMenteeExtension(extensionData.id, ['organization_id'])
+			const menteeExtension = await menteeQueries.getMenteeExtension(userExtensionData.id, ['organization_id'])
 
 			if (!menteeExtension) {
-				const mentorExtension = await mentorQueries.getMentorExtension(extensionData.id, ['organization_id'])
+				const mentorExtension = await mentorQueries.getMentorExtension(userExtensionData.id, [
+					'organization_id',
+				])
 				if (!mentorExtension) throw new Error('User Not Found')
 
 				roleChangePayload.current_roles = [common.MENTOR_ROLE]
 				roleChangePayload.new_roles = [common.MENTEE_ROLE]
 				isRoleChanged = true
-				isOrgChanged = this.#checkOrgChange(mentorExtension.organization_id, extensionData.organization.id)
-			} else isOrgChanged = this.#checkOrgChange(menteeExtension.organization_id, extensionData.organization.id)
+			}
 		} else {
-			const mentorExtension = await mentorQueries.getMentorExtension(extensionData.id, ['organization_id'])
-
+			const mentorExtension = await mentorQueries.getMentorExtension(userExtensionData.id, ['organization_id'])
 			if (!mentorExtension) {
-				const menteeExtension = await menteeQueries.getMenteeExtension(extensionData.id, ['organization_id'])
+				const menteeExtension = await menteeQueries.getMenteeExtension(userExtensionData.id, [
+					'organization_id',
+				])
 				if (!menteeExtension) throw new Error('User Not Found')
 
 				roleChangePayload.current_roles = [common.MENTEE_ROLE]
 				roleChangePayload.new_roles = [common.MENTOR_ROLE]
 				isRoleChanged = true
-				isOrgChanged = this.#checkOrgChange(menteeExtension.organization_id, extensionData.organization.id)
-			} else isOrgChanged = this.#checkOrgChange(mentorExtension.organization_id, extensionData.organization.id)
+			}
 		}
-		console.log('STATUSSSSSSSSSSSSS:', { isRoleChanged, isOrgChanged })
 		if (isRoleChanged) {
 			//If role is changed, the role change, org policy changes for that user
 			//and additional data update of the user is done by orgAdmin's roleChange workflow
-			const roleChangeResult = await orgAdminService.roleChange(roleChangePayload, extensionData)
+			const roleChangeResult = await orgAdminService.roleChange(roleChangePayload, userExtensionData)
 			return roleChangeResult.result
-		} else if (isOrgChanged) {
+		} else {
+			//If role is not changed, org policy changes along with other user data updation is done
+			//using the updateMentee or updateMentor workflows
+			const user = isAMentee
+				? await menteesService.updateMenteeExtension(
+						userExtensionData,
+						userExtensionData.id,
+						userExtensionData.organization.id
+				  )
+				: await mentorsService.updateMentorExtension(
+						userExtensionData,
+						userExtensionData.id,
+						userExtensionData.organization.id
+				  )
+			return user.result
 		}
 	}
 }
