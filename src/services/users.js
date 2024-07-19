@@ -199,8 +199,11 @@ module.exports = class UserHelper {
 		}
 		console.log('STATUSSSSSSSSSSSSS:', { isRoleChanged, isOrgChanged })
 		if (isRoleChanged) {
+			//If role is changed, the role change, org policy changes for that user
+			//and additional data update of the user is done by orgAdmin's roleChange workflow
 			const roleChangeResult = await orgAdminService.roleChange(roleChangePayload, extensionData)
 			return roleChangeResult.result
-		} else return null
+		} else if (isOrgChanged) {
+		}
 	}
 }
