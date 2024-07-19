@@ -55,28 +55,6 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	/* static async getMenteeExtension(userId, attributes = [], unScoped = false) {
-		try {
-			const queryOptions = {
-				where: { user_id: userId },
-				raw: true,
-			}
-			// If attributes are passed update query
-			if (attributes.length > 0) {
-				queryOptions.attributes = attributes
-			}
-			let mentee
-			if (unScoped) {
-				mentee = await MenteeExtension.unscoped().findOne(queryOptions)
-			} else {
-				mentee = await MenteeExtension.findOne(queryOptions)
-			}
-			return mentee
-		} catch (error) {
-			throw error
-		}
-	} */
-
 	static async getMentorExtension(userId, attributes = [], unScoped = false) {
 		try {
 			const queryOptions = {
