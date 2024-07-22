@@ -352,6 +352,7 @@ module.exports = class SessionsHelper {
 							}),
 						},
 					}
+					console.log('EMAIL PAYLOAD: ', payload)
 					await kafkaCommunication.pushEmailToKafka(payload)
 				}
 			}
