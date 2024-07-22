@@ -9,6 +9,6 @@ module.exports = {
 
 	async down(queryInterface, Sequelize) {
 		// Revert the deletion if needed (rollback)
-		await queryInterface.bulkDelete('entities', { label: 'Unfulfilled', value: 'UNFULFILLED' }, {})
+		await queryInterface.bulkInsert('entities', { label: 'Unfulfilled', value: 'UNFULFILLED' }, {})
 	},
 }
