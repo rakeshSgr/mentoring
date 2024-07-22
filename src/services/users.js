@@ -129,6 +129,7 @@ module.exports = class UserHelper {
 			email: userDetails.email,
 			phone: userDetails.phone,
 			name: userDetails.name,
+			skipValidation: true,
 		}
 	}
 

@@ -404,9 +404,8 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
-			if (data.email) {
-				data.email = emailEncryption.encrypt(data.email.toLowerCase())
-			}
+			if (data.email) data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
@@ -443,7 +442,7 @@ module.exports = class MentorsHelper {
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
-			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
+			let res = utils.validateInput(data, validationData, mentorExtensionsModelName, skipValidation)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'PROFILE_UPDATE_FAILED',
@@ -477,7 +476,7 @@ module.exports = class MentorsHelper {
 					new Set([...userOrgDetails.data.result.related_orgs, data.organization.id])
 				)
 			}
-
+			console.log('UPDATED MENTOR EXTENSIONS: ', data)
 			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
 				returning: true,
 				raw: true,
