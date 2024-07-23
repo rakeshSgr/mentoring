@@ -902,30 +902,37 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let validateDefaultRules
-			if (userId != sessionDetails.mentor_id) {
-				validateDefaultRules = await validateDefaultRulesFilter({
-					ruleType: common.DEFAULT_RULES.SESSION_TYPE,
-					requesterId: userId,
-					roles: roles,
-					requesterOrganizationId: orgId,
-					data: sessionDetails,
-				})
-			}
-			if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
-				return responses.failureResponse({
-					message: 'PROFILE_NOT_UPDATED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 
-			if (!validateDefaultRules && userId != sessionDetails.mentor_id) {
-				return responses.failureResponse({
-					message: 'SESSION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			let sessionAttendee = await sessionAttendeesQueries.findOne({
+				session_id: sessionDetails.id,
+				mentee_id: userId,
+			})
+			if (!sessionAttendee) {
+				let validateDefaultRules
+				if (userId != sessionDetails.mentor_id) {
+					validateDefaultRules = await validateDefaultRulesFilter({
+						ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+						requesterId: userId,
+						roles: roles,
+						requesterOrganizationId: orgId,
+						data: sessionDetails,
+					})
+				}
+				if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
+					return responses.failureResponse({
+						message: 'PROFILE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				if (!validateDefaultRules && userId != sessionDetails.mentor_id) {
+					return responses.failureResponse({
+						message: 'SESSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
 
 			sessionDetails.is_enrolled = false
