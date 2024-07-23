@@ -1480,6 +1480,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 }
+
 function convertEntitiesForFilter(entityTypes) {
 	const result = {}
 
