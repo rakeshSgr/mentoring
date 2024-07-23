@@ -122,19 +122,24 @@ module.exports = class MentorExtensionQueries {
 			throw error
 		}
 	}
-	static async getMentorsByUserIds(ids, options = {}) {
+	static async getMentorsByUserIds(ids, options = {}, unscoped = false) {
 		try {
-			const result = await MentorExtension.findAll({
+			const query = {
 				where: {
 					user_id: ids,
 				},
 				...options,
 				returning: true,
 				raw: true,
-			})
+			}
+
+			const result = unscoped
+				? await MentorExtension.unscoped().findAll(query)
+				: await MentorExtension.findAll(query)
 
 			return result
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
