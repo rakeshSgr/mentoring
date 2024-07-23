@@ -977,7 +977,7 @@ module.exports = class MentorsHelper {
 			// searching for specific organization
 			let additionalFilter = ``
 			if (organization_ids.length !== 0) {
-				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')}) `
+				additionalFilter = `AND "organization_id" in (${organization_ids.map((id) => `'${id}'`).join(',')}) `
 			}
 
 			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
@@ -988,7 +988,7 @@ module.exports = class MentorsHelper {
 					 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
 					 * so we will check mentor's organization_id and user organization_id are matching
 					 */
-					filter = `AND "organization_id" = ${userPolicyDetails.organization_id}`
+					filter = `AND "organization_id" = '${userPolicyDetails.organization_id}'`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
 					/**
 					 * If user external_mentor_visibility is associated
@@ -997,10 +997,10 @@ module.exports = class MentorsHelper {
 
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT')`
+						`AND ( ('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
-						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
+						filter += ` OR organization_id = '${userPolicyDetails.organization_id}' )`
 					else filter += `)`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
 					/**
@@ -1009,7 +1009,7 @@ module.exports = class MentorsHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT' ) OR "mentor_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND (('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT' ) OR "mentor_visibility" = 'ALL' OR "organization_id" = '${userPolicyDetails.organization_id}')`
 				}
 			}
 
