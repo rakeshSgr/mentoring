@@ -50,11 +50,11 @@ module.exports = async function (req, res, next) {
 		if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 
 		req.decodedToken = {
-			id: decodedToken.data.id,
+			id: decodedToken.data.id.toString(),
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
-			organization_id: decodedToken.data.organization_id,
+			organization_id: decodedToken.data.organization_id.toString(),
 			externalId: decodedToken.data.externalId,
 		}
 		console.log('DECODED TOKEN: ', req.decodedToken)
