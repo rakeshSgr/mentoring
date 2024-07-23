@@ -1,4 +1,6 @@
 'use strict'
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op
 module.exports = (sequelize, DataTypes) => {
 	const MentorExtension = sequelize.define(
 		'MentorExtension',
@@ -6,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 			user_id: {
 				allowNull: false,
 				primaryKey: true,
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			designation: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
@@ -51,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 			},
 			organization_id: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			external_mentee_visibility: {
