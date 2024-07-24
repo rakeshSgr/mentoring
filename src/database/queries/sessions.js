@@ -768,13 +768,23 @@ exports.findAllByIds = async (ids) => {
 	}
 }
 
-exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter = '') => {
+exports.getMentorsUpcomingSessionsFromView = async (
+	page,
+	limit,
+	search,
+	mentorId,
+	filter,
+	saasFilter = '',
+	defaultFilter = ''
+) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
 		const filterClause = filter?.query.length > 0 ? `AND ${filter.query}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
+
+		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
 
 		const query = `
 		SELECT
@@ -801,6 +811,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			)
 			${filterClause}
 			${saasFilterClause}
+			${defaultFilterClause}
 		ORDER BY
 			start_date ASC
 		OFFSET
@@ -835,7 +846,8 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 				LOWER(title) LIKE :search
 			)
 			${filterClause}
-			${saasFilterClause};
+			${saasFilterClause}
+			${defaultFilterClause};
 	`
 		const count = await Sequelize.query(countQuery, {
 			type: QueryTypes.SELECT,
