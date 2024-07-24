@@ -1432,7 +1432,7 @@ module.exports = class MenteesHelper {
 			}
 
 			// check the accessibility conditions
-			const accessibleUsers = userData.map((mentor) => {
+			const accessibleUsers = userData.map((mentee) => {
 				let isAccessible = false
 
 				if (userPolicyDetails.external_mentee_visibility && userPolicyDetails.organization_id) {
@@ -1444,7 +1444,7 @@ module.exports = class MenteesHelper {
 						 * so we will check mentee's organization_id and user organization_id are matching
 						 */
 						case common.CURRENT:
-							isAccessible = mentor.organization_id === organization_id
+							isAccessible = mentee.organization_id === organization_id
 							break
 						/**
 						 * If user external_mentee_visibility is associated
@@ -1452,26 +1452,26 @@ module.exports = class MenteesHelper {
 						 */
 						case common.ASSOCIATED:
 							isAccessible =
-								(mentor.visible_to_organizations.includes(organization_id) &&
-									mentor.mentor_visibility != common.CURRENT) ||
-								mentor.organization_id === organization_id
+								(mentee.visible_to_organizations.includes(organization_id) &&
+									mentee.mentee_visibility != common.CURRENT) ||
+								mentee.organization_id === organization_id
 							break
 						/**
 						 * We need to check if mentee's visible_to_organizations contain the user organization_id and verify mentee's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
-						 * OR if mentee visibility is ALL that mentor is also accessible
+						 * OR if mentee visibility is ALL that mentee is also accessible
 						 */
 						case common.ALL:
 							isAccessible =
-								(mentor.visible_to_organizations.includes(organization_id) &&
-									mentor.mentor_visibility != common.CURRENT) ||
-								mentor.mentor_visibility === common.ALL ||
-								mentor.organization_id === organization_id
+								(mentee.visible_to_organizations.includes(organization_id) &&
+									mentee.mentee_visibility != common.CURRENT) ||
+								mentee.mentee_visibility === common.ALL ||
+								mentee.organization_id === organization_id
 							break
 						default:
 							break
 					}
 				}
-				return { mentor, isAccessible }
+				return { mentee, isAccessible }
 			})
 			const isAccessible = accessibleUsers.some((user) => user.isAccessible)
 			return isAccessible
@@ -1480,6 +1480,7 @@ module.exports = class MenteesHelper {
 		}
 	}
 }
+
 function convertEntitiesForFilter(entityTypes) {
 	const result = {}
 
