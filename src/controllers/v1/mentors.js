@@ -30,7 +30,9 @@ module.exports = class Mentors {
 				req.searchText,
 				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id,
 				req.query,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 		} catch (error) {
 			return error
