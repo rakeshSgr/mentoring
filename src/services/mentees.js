@@ -725,9 +725,9 @@ module.exports = class MenteesHelper {
 	 */
 	static async updateMenteeExtension(data, userId, orgId) {
 		try {
-			if (data.email) {
-				data.email = emailEncryption.encrypt(data.email.toLowerCase())
-			}
+			if (data.email) data.email = emailEncryption.encrypt(data.email.toLowerCase())
+
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
@@ -764,7 +764,7 @@ module.exports = class MenteesHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, userExtensionsModelName)
+			let res = utils.validateInput(data, validationData, userExtensionsModelName, skipValidation)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'PROFILE_UPDATE_FAILED',
@@ -778,6 +778,28 @@ module.exports = class MenteesHelper {
 
 			data = utils.restructureBody(data, validationData, userExtensionModel)
 
+			if (data.organization.id) {
+				//Do a org policy update for the user only if the data object explicitly includes an
+				//organization.id. This is added for the users/update workflow where
+				//both both user data and organisation can change at the same time.
+				let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: data.organization.id })
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					data.organization.id
+				)
+				if (!orgPolicies?.organization_id) {
+					return responses.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				data.organization_id = data.organization.id
+				const newPolicy = await orgAdminService.constructOrgPolicyObject(orgPolicies, true)
+				data = _.merge({}, data, newPolicy)
+				data.visible_to_organizations = Array.from(
+					new Set([...userOrgDetails.data.result.related_orgs, data.organization.id])
+				)
+			}
 			const [updateCount, updatedUser] = await menteeQueries.updateMenteeExtension(userId, data, {
 				returning: true,
 				raw: true,
