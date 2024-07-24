@@ -37,17 +37,19 @@ module.exports = class MentorsHelper {
 	 * @param {String} search - Search text.
 	 * @returns {JSON} - mentors upcoming session details
 	 */
-	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
+	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor, roles, orgId) {
 		try {
-			const mentorsDetails = await mentorQueries.getMentorExtension(id)
-			if (!mentorsDetails) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.bad_request,
-					message: 'MENTORS_NOT_FOUND',
-					responseCode: 'CLIENT_ERROR',
-				})
+			let requestedMentorExtension = false
+			if (id !== '' && isAMentor !== '' && roles !== '') {
+				requestedMentorExtension = await mentorQueries.getMentorExtension(id)
+				if (!requestedMentorExtension) {
+					return responses.failureResponse({
+						statusCode: httpStatusCode.bad_request,
+						message: 'MENTORS_NOT_FOUND',
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
-
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const sessionModelName = await sessionQueries.getModelName()
 
@@ -56,6 +58,21 @@ module.exports = class MentorsHelper {
 				allow_filtering: true,
 				model_names: { [Op.contains]: [sessionModelName] },
 			})
+
+			const defaultRuleFilter = await defaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: menteeUserId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+			})
+
+			if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
 			const filteredQuery = utils.validateAndBuildFilters(query, validationData, sessionModelName)
 
@@ -68,7 +85,8 @@ module.exports = class MentorsHelper {
 				search,
 				id,
 				filteredQuery,
-				saasFilter
+				saasFilter,
+				defaultRuleFilter
 			)
 
 			if (!upcomingSessions.data.length) {
@@ -77,7 +95,7 @@ module.exports = class MentorsHelper {
 					message: 'UPCOMING_SESSION_FETCHED',
 					result: {
 						data: [],
-						count: 0,
+						count: upcomingSessions.count,
 					},
 				})
 			}
