@@ -17,6 +17,20 @@ module.exports = class OrganizationService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+			const requiredFields = ['mentee_feedback_question_set', 'mentor_feedback_question_set']
+			const missingFields = requiredFields.filter((field) => !(field in bodyData))
+
+			if (missingFields.length > 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					message: {
+						key: 'QUESTION_NOT_UPDATED',
+						interpolation: { requiredFields: missingFields.join(', ') },
+					},
+				})
+			}
+
 			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
