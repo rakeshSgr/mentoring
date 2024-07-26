@@ -184,6 +184,5 @@
 	"DEFAULT_RULE_FETCHED_SUCCESSFULLY": "The default rule has been fetched successfully.",
 	"DEFAULT_RULE_DELETED_SUCCESSFULLY": "The default rule has been deleted successfully.",
 	"VALIDATION_FAILED": "Validation failed, Entered data is incorrect!",
-	"PROFILE_NOT_UPDATED": "Please update your profile with all the mandatory fields",
-	"QUESTION_NOT_UPDATED": "Please fill the missing data : {{requiredFields}}"
+	"PROFILE_NOT_UPDATED": "Please update your profile with all the mandatory fields"
 }
