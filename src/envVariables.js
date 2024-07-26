@@ -24,6 +24,16 @@ let enviromentVariables = {
 		message: 'Required access token secret',
 		optional: false,
 	},
+	AUTH_TOKEN_HEADER_NAME: {
+		message: 'Required auth token header name',
+		optional: true,
+		default: 'x-auth-token',
+	},
+	IS_AUTH_TOKEN_BEARER: {
+		message: 'Required specification: If auth token is bearer or not',
+		optional: true,
+		default: true,
+	},
 	KAFKA_URL: {
 		message: 'Required kafka connectivity url',
 		optional: false,

@@ -8,7 +8,7 @@ var get = function (url, token = '', internal_access_token = false) {
 				'content-type': 'application/json',
 			}
 			if (internal_access_token) headers['internal_access_token'] = process.env.INTERNAL_ACCESS_TOKEN
-			if (token) headers['x-auth-token'] = token
+			if (token) headers[process.env.AUTH_TOKEN_HEADER_NAME] = token
 
 			const options = {
 				headers: headers,
@@ -48,7 +48,7 @@ var post = function (url, body, token = '', internal_access_token = false) {
 			}
 
 			if (token) {
-				headers['x-auth-token'] = token
+				headers[process.env.AUTH_TOKEN_HEADER_NAME] = token
 			}
 
 			const options = {

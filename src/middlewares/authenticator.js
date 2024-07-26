@@ -13,7 +13,7 @@ const MenteeExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = async function (req, res, next) {
 	try {
-		const authHeader = req.get('X-auth-token')
+		const authHeader = req.get(process.env.AUTH_TOKEN_HEADER_NAME)
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
@@ -168,8 +168,13 @@ function isAdminRole(roles) {
 
 async function authenticateUser(authHeader, req) {
 	if (!authHeader) throw createUnauthorizedResponse()
-	const [authType, token] = authHeader.split(' ')
-	if (authType !== 'bearer') throw createUnauthorizedResponse()
+
+	let token
+	if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+		const [authType, extractedToken] = authHeader.split(' ')
+		if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+		token = extractedToken.trim()
+	} else token = authHeader.trim()
 
 	let decodedToken = null
 	if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) decodedToken = await verifyToken(token)
