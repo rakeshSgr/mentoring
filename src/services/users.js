@@ -217,12 +217,14 @@ module.exports = class UserHelper {
 	}
 	static async #checkUserExistence(userId) {
 		try {
-			const userExtensionData = await Promise.any([
+			const [menteeExtension, mentorExtension] = await Promise.all([
 				menteeQueries.getMenteeExtension(userId, ['organization_id']),
 				mentorQueries.getMentorExtension(userId, ['organization_id']),
 			])
 
-			return !userExtensionData
+			const userExists = menteeExtension !== null || mentorExtension !== null
+
+			return !userExists
 		} catch (error) {
 			console.error(error)
 			throw error
