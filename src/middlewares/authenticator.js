@@ -50,13 +50,16 @@ module.exports = async function (req, res, next) {
 		if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 
 		req.decodedToken = {
-			id: decodedToken.data.id.toString(),
+			id: typeof decodedToken.data.id === 'number' ? decodedToken.data.id.toString() : decodedToken.data.id,
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
-			organization_id: decodedToken.data.organization_id.toString(),
-			externalId: decodedToken.data.externalId,
+			organization_id:
+				typeof decodedToken.data.organization_id === 'number'
+					? decodedToken.data.organization_id.toString()
+					: decodedToken.data.organization_id,
 		}
+
 		console.log('DECODED TOKEN: ', req.decodedToken)
 		next()
 	} catch (err) {
@@ -208,28 +211,28 @@ async function keycloakPublicKeyAuthentication(token) {
 
 		const verifiedClaims = await verifyKeycloakToken(token, cert)
 		const externalUserId = verifiedClaims.sub.split(':').pop()
-		const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
+		//const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
 		let userExtensionData
 		let roles = [{ title: 'mentee' }]
-		if (mentoringUserId) {
-			userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, ['organization_id'])
-			if (userExtensionData) roles = [{ title: 'mentee' }]
-			else {
-				userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, [
-					'organization_id',
-				])
-				if (userExtensionData) roles = [{ title: 'mentor' }]
-				else throw new Error('USER_NOT_FOUND')
+
+		//if (mentoringUserId) {
+		userExtensionData = await MenteeExtensionQueries.getMenteeExtension(externalUserId, ['organization_id'])
+		if (userExtensionData) {
+			roles = [{ title: 'mentee' }]
+		} else {
+			userExtensionData = await MentorExtensionQueries.getMentorExtension(externalUserId, ['organization_id'])
+			if (userExtensionData) {
+				roles = [{ title: 'mentor' }]
 			}
 		}
+		//}
 
 		return {
 			data: {
-				id: mentoringUserId,
+				id: externalUserId,
 				roles: roles,
 				name: verifiedClaims.name,
 				organization_id: userExtensionData?.organization_id || null,
-				externalId: externalUserId,
 			},
 		}
 	} catch (err) {
