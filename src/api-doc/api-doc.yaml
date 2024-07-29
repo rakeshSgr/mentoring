@@ -216,7 +216,7 @@ paths:
                       deleted_at:
                         type: 'null'
                       organization_id:
-                        type: number
+                        type: string
                   meta:
                     type: object
                     properties:
@@ -278,7 +278,7 @@ paths:
                       updated_at: '2023-07-18T20:48:10.492Z'
                       created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
-                      organization_id: 1
+                      organization_id: '1'
                     meta:
                       formsVersion:
                         - id: 16
@@ -592,7 +592,7 @@ paths:
                       deleted_at:
                         type: 'null'
                       organization_id:
-                        type: number
+                        type: string
                   meta:
                     type: object
                     properties:
@@ -654,7 +654,7 @@ paths:
                       updated_at: '2023-07-18T20:48:10.492Z'
                       created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
-                      organization_id: 1
+                      organization_id: '1'
                     meta:
                       formsVersion:
                         - id: 16
@@ -734,9 +734,9 @@ paths:
                       entity_type_id:
                         type: number
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       updated_at:
                         type: string
                       created_at:
@@ -766,8 +766,8 @@ paths:
                       status: ACTIVE
                       type: SYSTEM
                       entity_type_id: 1
-                      created_by: 0
-                      updated_by: 0
+                      created_by: '0'
+                      updated_by: '0'
                       updated_at: '2023-07-21T21:46:41.392Z'
                       created_at: '2023-07-21T21:46:41.392Z'
                       deleted_at: null
@@ -863,9 +863,9 @@ paths:
                       entity_type_id:
                         type: number
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       updated_at:
                         type: string
                       created_at:
@@ -898,8 +898,8 @@ paths:
                         status: ACTIVE
                         type: SYSTEM
                         entity_type_id: 1
-                        created_by: 0
-                        updated_by: 0
+                        created_by: '0'
+                        updated_by: '0'
                         updated_at: '2023-07-21T21:46:41.392Z'
                         created_at: '2023-07-21T21:46:41.392Z'
                         deleted_at: null
@@ -970,9 +970,9 @@ paths:
                       type:
                         type: string
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       created_at:
                         type: string
                       updated_at:
@@ -1002,8 +1002,8 @@ paths:
                         label: English
                         status: ACTIVE
                         type: SYSTEM
-                        created_by: 0
-                        updated_by: 1
+                        created_by: '0'
+                        updated_by: '1'
                         created_at: '2023-07-21T21:46:41.392Z'
                         updated_at: '2023-07-21T21:47:50.202Z'
                         deleted_at: null
@@ -1086,7 +1086,7 @@ paths:
                       type:
                         type: string
                       created_by:
-                        type: number
+                        type: string
                       created_at:
                         type: string
               examples:
@@ -1102,7 +1102,7 @@ paths:
                           label: English
                           status: ACTIVE
                           type: SYSTEM
-                          created_by: 0
+                          created_by: '0'
                           created_at: '2023-07-21T21:46:41.392Z'
                       count: 1
                     meta:
@@ -1268,7 +1268,7 @@ paths:
                             title:
                               type: string
                             mentor_id:
-                              type: number
+                              type: string
                             description:
                               type: string
                             status:
@@ -1290,7 +1290,7 @@ paths:
                             mentor_name:
                               type: string
                             organization_id:
-                              type: number
+                              type: string
               examples:
                 example1:
                   value:
@@ -1301,7 +1301,7 @@ paths:
                       data:
                         - id: 1
                           title: Leadership session by Adam
-                          mentor_id: 21
+                          mentor_id: '21'
                           description: Leadership session desc
                           status: PUBLISHED
                           start_date: '1695210731'
@@ -1313,7 +1313,7 @@ paths:
                           meeting_info.value: BBB
                           meeting_info.platform: BigBlueButton (Default)
                           mentor_name: Newell
-                          organization_id: 1
+                          organization_id: '1'
         '400':
           description: Bad Request. Session Not Found
           content:
@@ -1373,7 +1373,7 @@ paths:
                       title:
                         type: string
                       mentor_id:
-                        type: number
+                        type: string
                       description:
                         type: string
                       status:
@@ -1417,7 +1417,7 @@ paths:
                       organization_ids:
                         type: string
                       mentor_organization_id:
-                        type: number
+                        type: string
                       seats_remaining:
                         type: number
                       seats_limit:
@@ -1445,7 +1445,7 @@ paths:
                     result:
                       id: 1
                       title: Leadership session by Adam
-                      mentor_id: 21
+                      mentor_id: '21'
                       description: Leadership session desc
                       status: PUBLISHED
                       start_date: '1695210731'
@@ -1467,7 +1467,7 @@ paths:
                       meta: {}
                       visibility: string
                       organization_ids: string
-                      mentor_organization_id: 1
+                      mentor_organization_id: '1'
                       seats_remaining: 25
                       seats_limit: 25
                       updated_at: '2023-09-20T11:56:42.412Z'
@@ -1825,7 +1825,7 @@ paths:
                         items:
                           type: string
                       mentor_id:
-                        type: number
+                        type: string
                       mentor_name:
                         type: string
                       status:
@@ -1865,7 +1865,7 @@ paths:
                           label: English
                       image:
                         - users/1232s2133sdd1-12e2dasd3123.png
-                      mentor_id: 21
+                      mentor_id: '21'
                       mentor_name: John
                       status: PUBLISHED
                       deleted_at: null
@@ -2074,7 +2074,7 @@ paths:
                         items:
                           type: string
                       mentor_id:
-                        type: number
+                        type: string
                       mentor_name:
                         type: string
                       status:
@@ -2114,7 +2114,7 @@ paths:
                           label: English
                       image:
                         - users/1232s2133sdd1-12e2dasd3123.png
-                      mentor_id: 21
+                      mentor_id: '21'
                       mentor_name: John
                       status: PUBLISHED
                       deleted_at: null
@@ -2328,7 +2328,7 @@ paths:
                               items:
                                 type: string
                             user_id:
-                              type: number
+                              type: string
                             status:
                               type: string
                             start_date:
@@ -2349,7 +2349,7 @@ paths:
                             mentor_name:
                               type: string
                             organization_id:
-                              type: number
+                              type: string
                           required:
                             - id
                             - title
@@ -2392,7 +2392,7 @@ paths:
                           image:
                             - >-
                               https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/62a73ffb12c0c4fe9b4c0f61-1695201766113-images_jpeg
-                          user_id: 23
+                          user_id: '23'
                           status: published
                           start_date: '1697215860'
                           end_date: '1697219460'
@@ -2402,7 +2402,7 @@ paths:
                           created_at: '2023-09-13T16:51:46.377Z'
                           is_enrolled: false
                           mentor_name: Nevil M
-                          organization_id: 5
+                          organization_id: '5'
                         - id: 2
                           title: >-
                             Digital Revolution in Indian Classrooms: EdTech
@@ -2414,7 +2414,7 @@ paths:
                             they're reshaping the teaching and learning
                             experience.
                           image: []
-                          user_id: 12
+                          user_id: '12'
                           status: published
                           start_date: '1695656520'
                           end_date: '1695660120'
@@ -2424,7 +2424,7 @@ paths:
                           created_at: '2023-08-25T10:42:43.708Z'
                           is_enrolled: false
                           mentor_name: Aanya Sharma
-                          organization_id: 5
+                          organization_id: '5'
                       count: 2
                     meta:
                       correlation: ecf6f2b6-6e21-445a-9242-303dc0ccd0b7
@@ -2617,7 +2617,7 @@ paths:
                               items:
                                 type: string
                             user_id:
-                              type: number
+                              type: string
                             status:
                               type: string
                             start_date:
@@ -2702,7 +2702,7 @@ paths:
                                   label:
                                     type: string
                             organization_id:
-                              type: number
+                              type: string
                       correlation:
                         type: string
                       meeting_platform:
@@ -2720,7 +2720,7 @@ paths:
                           image:
                             - >-
                               https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/62a73ffb12c0c4fe9b4c0f61-1695201766113-images_jpeg
-                          user_id: 2
+                          user_id: '2'
                           status: published
                           start_date: 1697215860
                           end_date: 1697219460
@@ -2764,7 +2764,7 @@ paths:
                               label: >-
                                 How would you rate the engagement in the
                                 session?
-                          organization_id: 22
+                          organization_id: '22'
                       correlation: 87a59ed4-483d-4d02-a6ae-9aad8b218f45
                       meeting_platform: BBB
   /mentoring/v1/mentors/details/{mentorId}:
@@ -3150,7 +3150,7 @@ paths:
                           items:
                             type: string
                         user_id:
-                          type: number
+                          type: string
                         status:
                           type: string
                         start_date:
@@ -3165,7 +3165,7 @@ paths:
                         mentor_name:
                           type: string
                         organization_id:
-                          type: number
+                          type: string
                   meta:
                     type: object
                     properties:
@@ -3187,14 +3187,14 @@ paths:
                           development strategies for empowering teachers and
                           enhancing their impact on students.
                         image: []
-                        user_id: 112
+                        user_id: '112'
                         status: published
                         start_date: '1695377520'
                         end_date: '1695384720'
                         meeting_info:
                           platform: BigBlueButton (Default)
                         mentor_name: Nevil M
-                        organization_id: 22
+                        organization_id: '22'
                     meta:
                       correlation: 1c9b58a1-4d30-46df-8eba-e6954ee9d70e
         '400':
@@ -4851,7 +4851,7 @@ paths:
                       external_mentor_visibility:
                         type: string
                       user_id:
-                        type: number
+                        type: string
                       updated_at:
                         type: string
                       created_at:
@@ -4920,7 +4920,7 @@ paths:
                         - 2
                       external_session_visibility: limited
                       external_mentor_visibility: hidden
-                      user_id: 1
+                      user_id: '1'
                       updated_at: '2023-08-08T19:04:04.607Z'
                       created_at: '2023-08-08T19:04:04.607Z'
                       deleted_at: null
@@ -5132,7 +5132,7 @@ paths:
                       external_mentor_visibility:
                         type: string
                       user_id:
-                        type: number
+                        type: string
                       updated_at:
                         type: string
                       created_at:
@@ -5201,7 +5201,7 @@ paths:
                         - 2
                       external_session_visibility: limited
                       external_mentor_visibility: hidden
-                      user_id: 1
+                      user_id: '1'
                       updated_at: '2023-08-08T19:04:04.607Z'
                       created_at: '2023-08-08T19:04:04.607Z'
                       deleted_at: null
@@ -5414,9 +5414,9 @@ paths:
                       data_type:
                         type: string
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       updated_at:
                         type: string
                       created_at:
@@ -5446,8 +5446,8 @@ paths:
                       status: ACTIVE
                       allow_filtering: true
                       data_type: STRING
-                      created_by: 1
-                      updated_by: 1
+                      created_by: '1'
+                      updated_by: '1'
                       updated_at: '2023-09-22T12:40:19.817Z'
                       created_at: '2023-09-22T12:40:19.817Z'
                       has_entities: true
@@ -5536,9 +5536,9 @@ paths:
                         status:
                           type: string
                         created_by:
-                          type: number
+                          type: string
                         updated_by:
-                          type: number
+                          type: string
                         allow_filtering:
                           type: boolean
                         data_type:
@@ -5565,9 +5565,9 @@ paths:
                               type:
                                 type: string
                               created_by:
-                                type: number
+                                type: string
                               updated_by:
-                                type: number
+                                type: string
                               created_at:
                                 type: string
                               updated_at:
@@ -5591,8 +5591,8 @@ paths:
                         value: ln
                         label: Languages
                         status: ACTIVE
-                        created_by: 0
-                        updated_by: 0
+                        created_by: '0'
+                        updated_by: '0'
                         allow_filtering: true
                         data_type: STRING
                         created_at: '2023-09-21T10:16:19.270Z'
@@ -5605,8 +5605,8 @@ paths:
                             label: Malayalam
                             status: ACTIVE
                             type: SYSTEM
-                            created_by: 1
-                            updated_by: 1
+                            created_by: '1'
+                            updated_by: '1'
                             created_at: '2023-09-21T10:16:33.583Z'
                             updated_at: '2023-09-21T10:16:33.583Z'
                     meta:
@@ -5697,9 +5697,9 @@ paths:
                       status:
                         type: string
                       created_by:
-                        type: 'null'
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       allow_filtering:
                         type: boolean
                       data_type:
@@ -5711,7 +5711,7 @@ paths:
                       deleted_at:
                         type: 'null'
                       organization_id:
-                        type: number
+                        type: string
                       has_entities:
                         type: boolean
                   meta:
@@ -5731,14 +5731,14 @@ paths:
                       value: roles
                       label: Roles
                       status: ACTIVE
-                      created_by: null
-                      updated_by: 1
+                      created_by: '0'
+                      updated_by: '1'
                       allow_filtering: true
                       data_type: string
                       created_at: '2023-09-06T12:01:09.025Z'
                       updated_at: '2023-09-22T12:47:42.510Z'
                       deleted_at: null
-                      organization_id: 1
+                      organization_id: '1'
                       has_entities: true
                     meta:
                       correlation: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
@@ -5843,7 +5843,7 @@ paths:
               type: object
               properties:
                 user_id:
-                  type: number
+                  type: string
                 current_roles:
                   type: array
                   items:
@@ -5855,7 +5855,7 @@ paths:
             examples:
               example1:
                 value:
-                  user_id: 2
+                  user_id: '2'
                   current_roles:
                     - mentor
                   new_roles:
@@ -5877,7 +5877,7 @@ paths:
                     type: object
                     properties:
                       user_id:
-                        type: number
+                        type: string
                       roles:
                         type: array
                         items:
@@ -5895,7 +5895,7 @@ paths:
                     responseCode: OK
                     message: User role was updated, please login again.
                     result:
-                      user_id: 2
+                      user_id: '2'
                       roles:
                         - mentee
                     meta:
@@ -5961,15 +5961,15 @@ paths:
                       status:
                         type: string
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       allow_filtering:
                         type: boolean
                       data_type:
                         type: string
                       organization_id:
-                        type: number
+                        type: string
                       parent_id:
                         type: number
                       allow_custom_entities:
@@ -6003,11 +6003,11 @@ paths:
                       value: categories
                       label: training
                       status: ACTIVE
-                      created_by: 2
-                      updated_by: 2
+                      created_by: '2'
+                      updated_by: '2'
                       allow_filtering: true
                       data_type: ARRAY[STRING]
-                      organization_id: 3
+                      organization_id: '3'
                       parent_id: 3
                       allow_custom_entities: true
                       has_entities: true
@@ -6057,7 +6057,7 @@ paths:
                     type: object
                     properties:
                       organization_id:
-                        type: number
+                        type: string
                       session_visibility_policy:
                         type: string
                       mentor_visibility_policy:
@@ -6073,9 +6073,9 @@ paths:
                       allow_mentor_override:
                         type: boolean
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       mentee_feedback_question_set:
                         type: string
                       mentor_feedback_question_set:
@@ -6097,15 +6097,15 @@ paths:
                     responseCode: OK
                     message: ORG_POLICIES_FETCHED_SUCCESSFULLY
                     result:
-                      organization_id: 3
+                      organization_id: '3'
                       session_visibility_policy: ALL
                       mentor_visibility_policy: ALL
                       external_session_visibility_policy: ALL
                       external_mentor_visibility_policy: ALL
                       approval_required_for: []
                       allow_mentor_override: false
-                      created_by: 2
-                      updated_by: 2
+                      created_by: '2'
+                      updated_by: '2'
                       mentee_feedback_question_set: MENTEE_QS1
                       mentor_feedback_question_set: MENTOR_QS2
                       created_at: '2023-12-01T12:20:50.758Z'
@@ -6180,7 +6180,7 @@ paths:
                     type: object
                     properties:
                       organization_id:
-                        type: number
+                        type: string
                       session_visibility_policy:
                         type: string
                       mentor_visibility_policy:
@@ -6196,9 +6196,9 @@ paths:
                       allow_mentor_override:
                         type: boolean
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       mentee_feedback_question_set:
                         type: string
                       mentor_feedback_question_set:
@@ -6220,15 +6220,15 @@ paths:
                     responseCode: OK
                     message: ORG_POLICIES_FETCHED_SUCCESSFULLY
                     result:
-                      organization_id: 3
+                      organization_id: '3'
                       session_visibility_policy: ALL
                       mentor_visibility_policy: ALL
                       external_session_visibility_policy: ALL
                       external_mentor_visibility_policy: ALL
                       approval_required_for: []
                       allow_mentor_override: false
-                      created_by: 2
-                      updated_by: 2
+                      created_by: '2'
+                      updated_by: '2'
                       mentee_feedback_question_set: MENTEE_QS1
                       mentor_feedback_question_set: MENTOR_QS2
                       created_at: '2023-12-01T12:20:50.758Z'
@@ -6301,7 +6301,7 @@ paths:
                       mentor_feedback_question_set:
                         type: string
                       organization_id:
-                        type: number
+                        type: string
                       session_visibility_policy:
                         type: string
                       mentor_visibility_policy:
@@ -6313,9 +6313,9 @@ paths:
                       allow_mentor_override:
                         type: boolean
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       approval_required_for:
                         type: array
                         items:
@@ -6339,14 +6339,14 @@ paths:
                     result:
                       mentee_feedback_question_set: MENTEE_QS1
                       mentor_feedback_question_set: MENTOR_QS2
-                      organization_id: 3
+                      organization_id: '3'
                       session_visibility_policy: ALL
                       mentor_visibility_policy: ALL
                       external_session_visibility_policy: ALL
                       external_mentor_visibility_policy: ALL
                       allow_mentor_override: false
-                      created_by: 2
-                      updated_by: 2
+                      created_by: '2'
+                      updated_by: '2'
                       approval_required_for: []
                       created_at: '2023-12-01T12:20:50.758Z'
                       updated_at: '2023-12-05T15:06:06.117Z'
@@ -6955,7 +6955,7 @@ paths:
                             title:
                               type: string
                             mentor_id:
-                              type: number
+                              type: string
                             description:
                               type: string
                             status:
@@ -7005,7 +7005,7 @@ paths:
                       data:
                         - id: 162
                           title: Introduction to Python
-                          mentor_id: 10
+                          mentor_id: '10'
                           description: >-
                             Python is a widely used general-purpose, high level
                             programming language. It was created by Guido van
@@ -8261,9 +8261,9 @@ paths:
                   status: PROCESSED
                   type: text/csv
                   output_path: 15/output-session-creation2024_05_16_00_33.csv
-                  organization_id: 15
-                  created_by: 33
-                  updated_by: 33
+                  organization_id: '15'
+                  created_by: '33'
+                  updated_by: '33'
                   created_at: '2024-05-15T17:35:48.506Z'
                   updated_at: '2024-05-15T19:03:52.540Z'
                   deleted_at: null
@@ -8314,9 +8314,9 @@ paths:
                       status: PROCESSED
                       type: text/csv
                       output_path: 15/output-session-creation2024_05_16_00_33.csv
-                      organization_id: 15
-                      created_by: 33
-                      updated_by: 33
+                      organization_id: '15'
+                      created_by: '33'
+                      updated_by: '33'
                       created_at: '2024-05-15T17:35:48.506Z'
                       updated_at: '2024-05-15T19:03:52.540Z'
                       deleted_at: null
@@ -8498,11 +8498,11 @@ paths:
                           exclude:
                             type: string
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       organization_id:
-                        type: number
+                        type: string
                       field_configs:
                         type: 'null'
                       deleted_at:
@@ -8547,9 +8547,9 @@ paths:
                         - session_manager
                       requester_roles_config:
                         exclude: 'true'
-                      created_by: 15
-                      updated_by: 15
-                      organization_id: 1
+                      created_by: '15'
+                      updated_by: '15'
+                      organization_id: '1'
                       field_configs: null
                       deleted_at: null
                     meta:
@@ -8650,11 +8650,11 @@ paths:
                           exclude:
                             type: boolean
                       organization_id:
-                        type: number
+                        type: string
                       created_by:
-                        type: number
+                        type: string
                       updated_by:
-                        type: number
+                        type: string
                       created_at:
                         type: string
                       updated_at:
@@ -8700,9 +8700,9 @@ paths:
                         - session_manager
                       role_config:
                         exclude: true
-                      organization_id: 1
-                      created_by: 15
-                      updated_by: 15
+                      organization_id: '1'
+                      created_by: '15'
+                      updated_by: '15'
                       created_at: '2024-06-26T07:09:10.916Z'
                       updated_at: '2024-06-26T07:09:10.917Z'
                       deleted_at: null
@@ -8781,11 +8781,11 @@ paths:
                                 exclude:
                                   type: boolean
                             organization_id:
-                              type: number
+                              type: string
                             created_by:
-                              type: number
+                              type: string
                             updated_by:
-                              type: number
+                              type: string
                             created_at:
                               type: string
                             updated_at:
@@ -8834,9 +8834,9 @@ paths:
                             - session_manager
                           role_config:
                             exclude: true
-                          organization_id: 1
-                          created_by: 15
-                          updated_by: 15
+                          organization_id: '1'
+                          created_by: '15'
+                          updated_by: '15'
                           created_at: '2024-06-26T07:09:10.916Z'
                           updated_at: '2024-06-26T07:09:10.917Z'
                           deleted_at: null
@@ -9038,11 +9038,11 @@ paths:
                             exclude:
                               type: string
                         organization_id:
-                          type: number
+                          type: string
                         created_by:
-                          type: number
+                          type: string
                         updated_by:
-                          type: number
+                          type: string
                         created_at:
                           type: string
                         updated_at:
@@ -9088,9 +9088,9 @@ paths:
                           - session_manager
                         requester_roles_config:
                           exclude: 'true'
-                        organization_id: 1
-                        created_by: 15
-                        updated_by: 15
+                        organization_id: '1'
+                        created_by: '15'
+                        updated_by: '15'
                         created_at: '2024-07-03T07:18:19.916Z'
                         updated_at: '2024-07-03T07:20:40.850Z'
                         deleted_at: null
@@ -9709,7 +9709,7 @@ components:
                       type: string
                       example: Leadership session by Adam
                     mentor_id:
-                      type: integer
+                      type: string
                       example: 21
                     description:
                       type: string
@@ -9775,7 +9775,7 @@ components:
                 type: string
                 example: Leadership session by Adam
               mentor_id:
-                type: integer
+                type: string
                 example: 21
               description:
                 type: string
@@ -9837,7 +9837,7 @@ components:
                 type: string
                 format: nullable
               mentor_organization_id:
-                type: integer
+                type: string
                 example: 1
               seats_remaining:
                 type: integer
@@ -10109,7 +10109,7 @@ components:
                   type: string
                   example: users/1232s2133sdd1-12e2dasd3123.png
               mentor_id:
-                type: integer
+                type: string
                 example: 21
               mentor_name:
                 type: string
@@ -11637,7 +11637,7 @@ components:
             type: integer
             nullable: true
           organization_id:
-            type: integer
+            type: string
             example: 1
           entities:
             type: array
@@ -11663,10 +11663,10 @@ components:
                   type: string
                   example: SYSTEM
                 created_by:
-                  type: integer
+                  type: string
                   example: 0
                 updated_by:
-                  type: integer
+                  type: string
                   nullable: true
                 created_at:
                   type: string
