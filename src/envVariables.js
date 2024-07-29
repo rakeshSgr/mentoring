@@ -190,7 +190,7 @@ let enviromentVariables = {
 	},
 	SAMPLE_CSV_FILE_PATH: {
 		message: 'Required sample csv file path',
-		optional: false,
+		optional: true,
 		default: 'sample/bulk_session_creation.csv',
 	},
 	AUTH_METHOD: {
@@ -200,12 +200,12 @@ let enviromentVariables = {
 	},
 	CSV_MAX_ROW: {
 		message: 'Required Csv length',
-		optional: false,
+		optional: true,
 		default: 20,
 	},
 	SESSION_CREATION_MENTOR_LIMIT: {
 		message: 'Required mentor limit for session creation',
-		optional: false,
+		optional: true,
 		default: 20,
 	},
 	MINIMUM_DURATION_FOR_AVAILABILITY: {
@@ -270,7 +270,7 @@ let enviromentVariables = {
 	},
 	EMAIL_ID_ENCRYPTION_ALGORITHM: {
 		message: 'Required Email ID Encryption Algorithm',
-		optional: false,
+		optional: true,
 		default: 'aes-256-cbc',
 	},
 	KEYCLOAK_PUBLIC_KEY_PATH: {
@@ -280,13 +280,18 @@ let enviromentVariables = {
 	},
 	IS_EXTERNAL_USER_SERVICE: {
 		message: 'Required Flag For External User Service',
-		optional: false,
+		optional: true,
 		default: 'false',
 	},
 	SESSION_VERIFICATION_METHOD: {
 		message: 'Required Session Verification Method',
-		optional: false,
+		optional: true,
 		default: 'user_service_authenticated',
+	},
+	SEESION_MANAGER_AND_MENTEE_LIMIT: {
+		message: 'Required Mentees Limit for Session',
+		optional: true,
+		default: '6',
 	},
 }
 
