@@ -49,17 +49,12 @@ function transformIdsToString(json) {
 const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 	try {
 		let orgReadUrl
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
-			//const externalOrgId = await IdMappingQueries.getUuidById(organizationId || organizationCode)
-			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?external_org_id=${
-				organizationId || organizationCode
-			}`
-		} else {
-			if (organizationId)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
-			else if (organizationCode)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
-		}
+
+		if (organizationId)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
+		else if (organizationCode)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
+
 		const internalToken = true
 		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
 		/* 		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
