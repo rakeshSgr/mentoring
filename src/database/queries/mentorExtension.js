@@ -22,11 +22,19 @@ module.exports = class MentorExtensionQueries {
 			return error
 		}
 	}
+	static async getTableName() {
+		try {
+			return await MentorExtension.tableName
+		} catch (error) {
+			return error
+		}
+	}
 
 	static async createMentorExtension(data) {
 		try {
 			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -42,6 +50,7 @@ module.exports = class MentorExtensionQueries {
 				...options,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -89,7 +98,7 @@ module.exports = class MentorExtensionQueries {
 					stats: null,
 					tags: [],
 					configs: null,
-					visibility: null,
+					mentor_visibility: null,
 					visible_to_organizations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
@@ -144,38 +153,42 @@ module.exports = class MentorExtensionQueries {
 		filter,
 		saasFilter = '',
 		additionalProjectionclause = '',
-		returnOnlyUserId
+		returnOnlyUserId,
+		searchFilter = '',
+		searchText,
+		defaultFilter = ''
 	) {
 		try {
-			const filterConditions = []
-
-			if (filter && typeof filter === 'object') {
-				for (const key in filter) {
-					if (Array.isArray(filter[key])) {
-						filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-					}
-				}
+			const excludeUserIds = ids.length === 0
+			let userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+			let additionalFilter = ''
+			if (searchText) {
+				additionalFilter = `AND name ILIKE :search`
+			}
+			if (Array.isArray(searchText)) {
+				additionalFilter = `AND email IN ('${searchText.join("','")}')`
+			}
+			if (searchFilter.whereClause && searchFilter.whereClause != '') {
+				additionalFilter = `${searchFilter.whereClause}`
 			}
 
-			const excludeUserIds = ids.length === 0
-			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
-
-			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
+			const filterClause = filter?.query.length > 0 ? `${filter.query}` : ''
 
 			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
-			if (excludeUserIds && Object.keys(filter).length === 0) {
+			const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
+
+			if (excludeUserIds && filter.query.length === 0) {
 				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
+				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'
 			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}
-
 			if (userFilterClause && filterClause.length > 0) {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
 			}
@@ -183,25 +196,37 @@ module.exports = class MentorExtensionQueries {
 			let query = `
 				SELECT ${projectionClause}
 				FROM
-				${common.materializedViewsPrefix + MentorExtension.tableName}
+					${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
 					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
+					${additionalFilter}
+					${defaultFilterClause}
 			`
 
 			const replacements = {
-				...filter, // Add filter parameters to replacements
+				...filter.replacements, // Add filter parameters to replacements
+				search: `%${searchText}%`,
+			}
+
+			if (searchFilter && searchFilter?.sortQuery !== '') {
+				query += `
+				ORDER BY
+					${searchFilter.sortQuery}`
+			} else {
+				query += `
+				ORDER BY
+					LOWER(name) ASC`
 			}
 
 			if (page !== null && limit !== null) {
 				query += `
-					OFFSET
-						:offset
-					LIMIT
-						:limit;
+				OFFSET
+					:offset
+				LIMIT
+					:limit;
 				`
-
 				replacements.offset = limit * (page - 1)
 				replacements.limit = limit
 			}
@@ -211,11 +236,29 @@ module.exports = class MentorExtensionQueries {
 				replacements: replacements,
 			})
 
+			const countQuery = `
+			SELECT count(*) AS "count"
+			FROM
+				${common.materializedViewsPrefix + MentorExtension.tableName}
+			WHERE
+				${userFilterClause}
+				${filterClause}
+				${saasFilterClause}
+				${additionalFilter}
+				${defaultFilterClause}
+			;
+		`
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
 			return {
 				data: mentors,
-				count: mentors.length,
+				count: Number(count[0].count),
 			}
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}
@@ -309,5 +352,81 @@ module.exports = class MentorExtensionQueries {
 			replacements: { elementsToRemove },
 			type: Sequelize.QueryTypes.UPDATE,
 		})
+	}
+	static async getMentorExtensions(userIds, attributes = []) {
+		try {
+			const queryOptions = { where: { user_id: { [Op.in]: userIds } }, raw: true }
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes
+			}
+			const mentors = await MentorExtension.findAll(queryOptions)
+			return mentors
+		} catch (error) {
+			throw error
+		}
+	}
+	static async getMentorsFromView(
+		whereClause = '',
+		projection = 'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text',
+		saasFilterClause = ''
+	) {
+		try {
+			// Remove leading "AND" from saasFilterClause if necessary
+			if (saasFilterClause.startsWith('AND')) {
+				saasFilterClause = saasFilterClause.replace('AND', '')
+			}
+
+			// Construct the query with the provided whereClause, projection, and saasFilterClause
+			let query = `
+				SELECT ${projection}
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE ${whereClause}
+				${saasFilterClause}
+			`
+
+			// Execute the query
+			const mentors = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+			})
+
+			// Count query
+			const countQuery = `
+				SELECT count(*) AS "count"
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE ${whereClause}
+				${saasFilterClause}
+			`
+
+			// Execute the count query
+			const count = await Sequelize.query(countQuery, {
+				type: QueryTypes.SELECT,
+			})
+
+			return {
+				data: mentors,
+				count: Number(count[0].count),
+			}
+		} catch (error) {
+			return error
+		}
+	}
+	static async findOneFromView(userId) {
+		try {
+			let query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE user_id = :userId
+				LIMIT 1
+			`
+
+			const user = await Sequelize.query(query, {
+				replacements: { userId },
+				type: QueryTypes.SELECT,
+			})
+
+			return user.length > 0 ? user[0] : null
+		} catch (error) {
+			return error
+		}
 	}
 }

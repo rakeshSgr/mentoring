@@ -74,7 +74,6 @@ exports.updateOne = async (filter, update, options = {}) => {
 			...options,
 			individualHooks: true,
 		})
-
 		const [rowsAffected, updatedRows] = result
 
 		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
@@ -561,7 +560,7 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 					[Op.gt]: currentEpochTime,
 				},
 				status: {
-					[Op.in]: ['PUBLISHED', 'LIVE'],
+					[Op.in]: [common.PUBLISHED_STATUS, common.LIVE_STATUS],
 				},
 			},
 			// order: [['created_at', 'DESC']],
@@ -629,50 +628,76 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 exports.getUpcomingSessionsFromView = async (
 	page,
 	limit,
-	search,
+	searchFilter,
 	userId,
 	filter,
 	saasFilter = '',
-	additionalProjectionclause = ''
+	additionalProjectionclause = '',
+	searchText,
+	defaultFilter = ''
 ) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
-		let filterConditions = []
 
-		if (filter && typeof filter === 'object') {
-			for (const key in filter) {
-				if (Array.isArray(filter[key])) {
-					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-				}
-			}
-		}
-		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		const filterClause = filter?.query.length > 0 ? `AND (${filter.query})` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
-
+		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
 		let publicSessionFilter = " AND type = '" + common.SESSION_TYPE.PUBLIC + "'"
 
 		// Create selection clause
-		let projectionClause = `
-			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
-			(meeting_info - 'link' ) AS meeting_info
-		`
+		let projectionClause = [
+			'id',
+			'title',
+			'description',
+			'start_date',
+			'end_date',
+			'meta',
+			'recommended_for',
+			'medium',
+			'categories',
+			'status',
+			'image',
+			'mentor_id',
+			'visibility',
+			'mentor_organization_id',
+			'created_at',
+			'mentor_name',
+			"(meeting_info - 'link') AS meeting_info",
+		]
+
 		if (additionalProjectionclause !== '') {
-			projectionClause += `,${additionalProjectionclause}`
+			projectionClause.push(additionalProjectionclause)
 		}
 
+		//if (searchFilter.positionQuery !== '') {
+		//projectionClause.push(searchFilter.positionQuery)
+		//}
+
+		projectionClause = projectionClause.join(',')
+
+		let orderClause = []
+		if (searchFilter.sortQuery !== '') {
+			orderClause.push(searchFilter.sortQuery)
+		}
+		orderClause.push('start_date ASC')
+		orderClause = orderClause.join(',')
+
 		const query = `
-		SELECT ${projectionClause}
+		SELECT 
+			${projectionClause}
 		FROM
-				m_${Session.tableName}
+			${common.materializedViewsPrefix + Session.tableName}
 		WHERE
-			title ILIKE :search
-			AND mentor_id != :userId
-			AND end_date > :currentEpochTime
-			AND status IN ('PUBLISHED', 'LIVE')
-			${filterClause}
+			mentor_id != :userId
 			${saasFilterClause}
+			${filterClause}
+			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
 			${publicSessionFilter}
+			${searchFilter.whereClause}
+			${defaultFilterClause}
+		ORDER BY
+			${orderClause}
 		OFFSET
 			:offset
 		LIMIT
@@ -680,11 +705,12 @@ exports.getUpcomingSessionsFromView = async (
 	`
 
 		const replacements = {
-			search: `%${search}%`,
+			search: `%${searchText}%`,
 			userId: userId,
 			currentEpochTime: currentEpochTime,
 			offset: limit * (page - 1),
 			limit: limit,
+			...filter.replacements,
 		}
 
 		if (filter && typeof filter === 'object') {
@@ -699,10 +725,28 @@ exports.getUpcomingSessionsFromView = async (
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
+		const countQuery = `
+		SELECT count(*) AS "count"
+		FROM
+			${common.materializedViewsPrefix + Session.tableName}
+		WHERE
+			mentor_id != :userId
+			${saasFilterClause}
+			${filterClause}
+			AND status IN ('${common.PUBLISHED_STATUS}', '${common.LIVE_STATUS}')
+			${publicSessionFilter}
+			${searchFilter.whereClause}
+			${defaultFilterClause}
+		;
+	`
+		const count = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 
 		return {
 			rows: sessionIds,
-			count: sessionIds.length,
+			count: Number(count[0].count),
 		}
 	} catch (error) {
 		console.error(error)
@@ -724,22 +768,23 @@ exports.findAllByIds = async (ids) => {
 	}
 }
 
-exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter = '') => {
+exports.getMentorsUpcomingSessionsFromView = async (
+	page,
+	limit,
+	search,
+	mentorId,
+	filter,
+	saasFilter = '',
+	defaultFilter = ''
+) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
-		const filterConditions = []
-
-		if (filter && typeof filter === 'object') {
-			for (const key in filter) {
-				if (Array.isArray(filter[key])) {
-					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
-				}
-			}
-		}
-		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		const filterClause = filter?.query.length > 0 ? `AND ${filter.query}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
+
+		const defaultFilterClause = defaultFilter != '' ? 'AND ' + defaultFilter : ''
 
 		const query = `
 		SELECT
@@ -766,6 +811,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			)
 			${filterClause}
 			${saasFilterClause}
+			${defaultFilterClause}
 		ORDER BY
 			start_date ASC
 		OFFSET
@@ -780,20 +826,39 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			search: `%${search.toLowerCase()}%`,
 			offset: limit * (page - 1),
 			limit: limit,
-			...filter, // Add filter parameters to replacements
+			...filter.replacements, // Add filter parameters to replacements
 		}
 
 		const sessionAttendeesData = await Sequelize.query(query, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
-
+		const countQuery = `
+		SELECT count(*) AS "count"
+		FROM
+		${common.materializedViewsPrefix + Session.tableName}
+		WHERE
+			mentor_id = :mentorId
+			AND status = 'PUBLISHED'
+			AND start_date > :currentEpochTime
+			AND started_at IS NULL
+			AND (
+				LOWER(title) LIKE :search
+			)
+			${filterClause}
+			${saasFilterClause}
+			${defaultFilterClause};
+	`
+		const count = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 		return {
 			data: sessionAttendeesData,
-			count: sessionAttendeesData.length,
+			count: Number(count[0].count),
 		}
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 

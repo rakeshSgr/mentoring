@@ -30,7 +30,9 @@ module.exports = class Mentors {
 				req.searchText,
 				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id,
 				req.query,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 		} catch (error) {
 			return error
@@ -49,7 +51,13 @@ module.exports = class Mentors {
 	 */
 	async details(req) {
 		try {
-			return await mentorsService.read(req.params.id, '', req.decodedToken.id, isAMentor(req.decodedToken.roles))
+			return await mentorsService.read(
+				req.params.id,
+				req.decodedToken.organization_id,
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles
+			)
 		} catch (error) {
 			return error
 		}
@@ -116,9 +124,12 @@ module.exports = class Mentors {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
+				req.searchOn,
 				req.query,
 				req.decodedToken.id,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 		} catch (error) {
 			return error

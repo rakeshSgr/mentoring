@@ -78,7 +78,9 @@ module.exports = class Sessions {
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : '',
 				req.decodedToken ? isAMentor(req.decodedToken.roles) : '',
-				req.query
+				req.query,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {
@@ -105,8 +107,11 @@ module.exports = class Sessions {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
+				req.searchOn,
 				req.query,
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return sessionDetails
 		} catch (error) {
@@ -145,11 +150,17 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
+			const isSelfEnrolled = true
+			const session = {}
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
 				req.headers['timezone'],
-				isAMentor(req.decodedToken.roles)
+				isAMentor(req.decodedToken.roles),
+				isSelfEnrolled,
+				session,
+				req.decodedToken.roles,
+				req.decodedToken.organization_id
 			)
 			return enrolledSession
 		} catch (error) {
@@ -349,6 +360,38 @@ module.exports = class Sessions {
 				req.body.mentees // Array of mentee ids
 			)
 			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Bulk session upload
+	 * @method
+	 * @name BulkSessionCreation
+	 * @param {String} req.body.file_path -Uploaded filr path .
+	 * @returns {Object} - uploaded file response.
+	 */
+	async bulkSessionCreate(req) {
+		try {
+			const sessionUploadRes = await sessionService.bulkSessionCreate(req.body.file_path, req.decodedToken)
+			return sessionUploadRes
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get sample bulk upload csv downloadable Url
+	 * @method
+	 * @name getSampleCSV
+	 * @param {JSON} req  request body.
+	 * @returns {JSON} Response with status message and result.
+	 */
+	async getSampleCSV(req) {
+		try {
+			const downloadUrlResponse = await sessionService.getSampleCSV(req.decodedToken.organization_id)
+			return downloadUrlResponse
 		} catch (error) {
 			return error
 		}

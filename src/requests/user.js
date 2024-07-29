@@ -12,6 +12,7 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
+const IdMappingQueries = require('@database/queries/idMapping')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -19,29 +20,27 @@ const responses = require('@helpers/responses')
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchDefaultOrgDetails = function (organisationIdentifier) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			let orgReadUrl
-			if (!isNaN(organisationIdentifier)) {
-				orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_id=' + organisationIdentifier
-			} else {
-				orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_code=' + organisationIdentifier
-			}
-
-			let internalToken = true
-
-			const orgDetails = await requests.get(
-				orgReadUrl,
-				'', // X-auth-token not required for internal call
-				internalToken
-			)
-
-			return resolve(orgDetails)
-		} catch (error) {
-			return reject(error)
+const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
+	try {
+		let orgReadUrl
+		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
+			const externalOrgId = await IdMappingQueries.getUuidById(organizationId || organizationCode)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?external_org_id=${externalOrgId}`
+		} else {
+			if (organizationId)
+				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
+			else if (organizationCode)
+				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
 		}
-	})
+		const internalToken = true
+		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
+		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
+			orgDetails.data.result.id = await IdMappingQueries.getIdByUuid(orgDetails.data.result.id)
+		return orgDetails
+	} catch (error) {
+		console.error('Error fetching organization details:', error)
+		throw error
+	}
 }
 
 /**
@@ -53,17 +52,69 @@ const fetchDefaultOrgDetails = function (organisationIdentifier) {
  * @returns {JSON} - User profile details.
  */
 
-const details = function (token = '', userId = '') {
-	return new Promise(async (resolve, reject) => {
-		try {
-			let profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS
-			let internalToken = true // All internal api calls require internal access token
+const fetchUserDetails = async ({ token, userId }) => {
+	try {
+		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
 
-			if (userId != '') {
-				profileUrl = profileUrl + '/' + userId
+		if (process.env.IS_EXTERNAL_USER_SERVICE === 'true' && userId)
+			userId = await IdMappingQueries.getUuidById(userId)
+
+		if (userId) profileUrl += `/${userId}`
+
+		const isInternalTokenRequired = true
+		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
+
+		if (!userDetails.data?.result?.user_roles) {
+			userDetails.data = userDetails.data || {}
+			userDetails.data.result = userDetails.data.result || {}
+			userDetails.data.result.user_roles = [{ title: 'mentee' }]
+		}
+		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
+			userDetails.data.result.uuid = userDetails.data.result.id
+			userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
+		}
+		return userDetails
+	} catch (error) {
+		console.error(error)
+		throw error
+	}
+}
+
+/**
+ * Get Accounts details.
+ * @method
+ * @name getAllAccountsDetail
+ * @param {Array} userIds
+ * @param {Array} paranoid : if true, discards deleted users.
+ * @returns
+ */
+
+const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				userIds,
+			},
+		}
+
+		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
+		try {
+			request.get(apiUrl, options, callback)
+			function callback(err, data) {
+				if (err) {
+					reject({
+						message: 'USER_SERVICE_DOWN',
+					})
+				} else {
+					data.body = JSON.parse(data.body)
+					return resolve(data.body)
+				}
 			}
-			const profileDetails = await requests.get(profileUrl, token, internalToken)
-			return resolve(profileDetails)
 		} catch (error) {
 			return reject(error)
 		}
@@ -78,7 +129,7 @@ const details = function (token = '', userId = '') {
  * @returns
  */
 
-const getListOfUserDetails = function (userIds) {
+const getListOfUserDetailsByEmail = function (emailIds) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
@@ -86,13 +137,13 @@ const getListOfUserDetails = function (userIds) {
 				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 			},
 			form: {
-				userIds,
+				emailIds,
 			},
 		}
 
-		const apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
 		try {
-			request.get(apiUrl, options, callback)
+			await request.post(apiUrl, options, callback)
 			function callback(err, data) {
 				if (err) {
 					reject({
@@ -334,8 +385,8 @@ const listOrganization = function (organizationIds = []) {
 }
 
 module.exports = {
-	fetchDefaultOrgDetails,
-	details,
+	fetchOrgDetails,
+	fetchUserDetails,
 	getListOfUserDetails,
 	list,
 	share,
@@ -343,4 +394,5 @@ module.exports = {
 	search,
 	getListOfUserRoles,
 	listOrganization,
+	getListOfUserDetailsByEmail,
 }

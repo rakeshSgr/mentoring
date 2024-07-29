@@ -1,4 +1,5 @@
 const orgAdminService = require('@services/org-admin')
+const common = require('@constants/common')
 
 module.exports = class OrgAdmin {
 	/**
@@ -11,6 +12,8 @@ module.exports = class OrgAdmin {
 	 * @param {String} req.body.mentor_visibility_policy - Mentor visibility policy.
 	 * @param {String} req.body.external_session_visibility_policy - External session visibility policy.
 	 * @param {String} req.body.external_mentor_visibility_policy - External mentor visibility policy.
+	 * @param {String} req.body.external_mentee_visibility_policy - External mentee visibility policy.
+	 * @param {String} req.body.mentee_visibility_policy - mentee visibility policy.
 	 * @param {Array} req.body.is_approval_required - List of approvals required (Irrelevant for now).
 	 * @param {Boolean} req.body.allow_mentor_override - Allow mentor override flag.
 	 * @returns {JSON} - Success Response.
@@ -138,6 +141,26 @@ module.exports = class OrgAdmin {
 	async setDefaultQuestionSets(req) {
 		try {
 			return await orgAdminService.setDefaultQuestionSets(req.body, req.decodedToken)
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Upload sample csv based on org id
+	 * @method
+	 * @name UploadSampleCsv
+	 * @param {String} req.body.file_path -Uploaded filr path .
+	 * @returns {Object} - uploaded file response.
+	 */
+
+	async uploadSampleCSV(req) {
+		try {
+			const updatePath = await orgAdminService.uploadSampleCSV(
+				req.body.file_path,
+				req.decodedToken.organization_id
+			)
+			return updatePath
 		} catch (error) {
 			return error
 		}

@@ -8,7 +8,13 @@
 function getPaginationOffset(page, limit) {
 	return (page - 1) * limit
 }
-
+const ENTITY_TYPE_DATA_TYPES = {
+	ARRAY_TYPES: ['ARRAY[STRING]', 'ARRAY[INTEGER]', 'ARRAY[TEXT]'],
+	STRING_TYPES: ['STRING', 'TEXT'],
+	NUMERIC_TYPES: ['INTEGER', 'BIGINT'],
+	BOOLEAN: ['BOOLEAN'],
+	JSON: ['JSON', 'JSONB'],
+}
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -98,8 +104,10 @@ module.exports = {
 	DEFAULT_ORGANISATION_POLICY: {
 		session_visibility_policy: 'CURRENT',
 		mentor_visibility_policy: 'CURRENT',
+		mentee_visibility_policy: 'CURRENT',
 		external_session_visibility_policy: 'CURRENT',
 		external_mentor_visibility_policy: 'CURRENT',
+		external_mentee_visibility_policy: 'CURRENT',
 		allow_mentor_override: false,
 		approval_required_for: [],
 	},
@@ -121,6 +129,42 @@ module.exports = {
 	INVITED: 'INVITED',
 	ENROLLED: 'ENROLLED',
 	UNIT_OF_TIME: 'minutes',
+	FILE_TYPE_CSV: 'text/csv',
+	NO_OF_ATTEMPTS: 3,
+	BACK_OFF_RETRY_QUEUE: 600000,
+	tempFolderForBulkUpload: 'public/invites',
+	sessionOutputFile: 'output-session-creation',
+	csvExtension: '.csv',
+	responseType: 'stream',
+	azureBlobType: 'BlockBlob',
+	STATUS: { FAILED: 'FAILED', PROCESSED: 'PROCESSED', UPLOADED: 'UPLOADED' },
+	notificationEmailType: 'email',
+	IST_TIMEZONE: 'Asia/Calcutta',
+	UTC_TIMEZONE: '+00:00',
+	TIMEZONE: 'IST',
+	TIMEZONE_UTC: 'UTC',
+	VALID_STATUS: 'Valid',
+	MEETING_VALUES: {
+		GOOGLE_LABEL: 'Google meet',
+		ZOOM_LABEL: 'Zoom',
+		BBB_LABEL: 'BigBlueButton (Default)',
+		WHATSAPP_LABEL: 'WhatsApp',
+		GOOGLE_VALUE: 'Gmeet',
+		WHATSAPP_VALUE: 'whatsapp',
+		ZOOM_VALUE: 'zoom',
+		GOOGLE_PLATFORM: 'google',
+		BBB_PLATFORM_VALUES: ['bigbluebutton', 'bbb'],
+		GOOGLE_MEET_VALUES: ['googlemeet', 'gmeet'],
+	},
+	SESSION: 'session',
+	PLATFORMS_REGEX: /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/,
+	ZOOM_REGEX: /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/,
+	EMAIL_REGEX:
+		/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+	STRING_NUMERIC_REGEX: /^[a-zA-Z0-9\-.,:\s]+$/,
+	NUMERIC_REGEX: /^\d+$/,
+	ACTIONS: { CREATE: 'create', EDIT: 'edit', DELETE: 'delete' },
+	CSV_DATE_FORMAT: 'DD-MM-YYYY HH:mm',
 	SESSION_TYPE: {
 		PUBLIC: 'PUBLIC',
 		PRIVATE: 'PRIVATE',
@@ -132,7 +176,32 @@ module.exports = {
 	PUSH: 'PUSH',
 	POP: 'POP',
 	AUTH_METHOD: {
-		JWT_ONLY: 'jwt_only',
+		NATIVE: 'native',
+		KEYCLOAK_PUBLIC_KEY: 'keycloak_public_key',
+	},
+	SESSION_VERIFICATION_METHOD: {
 		USER_SERVICE: 'user_service_authenticated',
 	},
+	WRITE_ACCESS: 'w',
+	READ_ACCESS: 'r',
+	azureBlobType: 'BlockBlob',
+	ENTITY_TYPE_DATA_TYPES,
+	DEFAULT_RULES: {
+		SESSION_TYPE: 'session',
+		MENTOR_TYPE: 'mentor',
+		ARRAY_TYPES: ENTITY_TYPE_DATA_TYPES.ARRAY_TYPES,
+		VALID_ARRAY_OPERATORS: ['contains', 'containedBy', 'overlap'],
+		STRING_TYPES: ENTITY_TYPE_DATA_TYPES.STRING_TYPES,
+		VALID_STRING_OPERATORS: ['equals', 'notEquals'],
+		NUMERIC_TYPES: ENTITY_TYPE_DATA_TYPES.NUMERIC_TYPES,
+		VALID_NUMERIC_OPERATORS: [
+			'equals',
+			'notEquals',
+			'greaterThan',
+			'lessThanOrEqual',
+			'lessThan',
+			'greaterThanOrEqual',
+		],
+	},
+	FALSE: 'false',
 }

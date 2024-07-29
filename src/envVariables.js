@@ -36,54 +36,6 @@ let enviromentVariables = {
 		message: 'Required kafka topic',
 		optional: false,
 	},
-	CLOUD_STORAGE: {
-		message: 'Required cloud storage type ex: AWS/GCP/AZURE',
-		optional: false,
-	},
-	GCP_PATH: {
-		message: 'Required gcp file path ex: gcp.json',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	DEFAULT_GCP_BUCKET_NAME: {
-		message: 'Required gcp bucket name',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	GCP_PROJECT_ID: {
-		message: 'Required gcp project id',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	AWS_ACCESS_KEY_ID: {
-		message: 'Required aws access key id',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_SECRET_ACCESS_KEY: {
-		message: 'Required aws secret access key',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_BUCKET_REGION: {
-		message: 'Required aws bucket region',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_BUCKET_ENDPOINT: {
-		message: 'Required aws bucket endpoint',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	DEFAULT_AWS_BUCKET_NAME: {
-		message: 'Required aws bucket name',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AZURE_ACCOUNT_NAME: {
-		message: 'Required azure account name',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
-	AZURE_ACCOUNT_KEY: {
-		message: 'Required azure account key',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
-	DEFAULT_AZURE_CONTAINER_NAME: {
-		message: 'Required azure container name',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
 	USER_SERVICE_HOST: {
 		message: 'Required user service host',
 		optional: false,
@@ -139,26 +91,6 @@ let enviromentVariables = {
 	BIG_BLUE_BUTTON_SESSION_END_URL: {
 		message: 'Big blue button session end url.',
 		optional: false,
-	},
-	OCI_ACCESS_KEY_ID: {
-		message: 'Required oci access key id',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_SECRET_ACCESS_KEY: {
-		message: 'Required oci secret access key',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_BUCKET_REGION: {
-		message: 'Required oci bucket region',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_BUCKET_ENDPOINT: {
-		message: 'Required oci bucket endpoint',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	DEFAULT_OCI_BUCKET_NAME: {
-		message: 'Required oci bucket name',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
 	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
@@ -247,15 +179,114 @@ let enviromentVariables = {
 		optional: true,
 		default: 3600000,
 	},
-	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
-		message: 'Required signed url expiration time in milliseconds',
+	SESSION_UPLOAD_EMAIL_TEMPLATE_CODE: {
+		message: 'Required email template name for bulk session upload by session manager',
 		optional: true,
-		default: 3600000,
+		default: 'bulk_upload_session',
+	},
+	DEFAULT_QUEUE: {
+		message: 'Required default queue',
+		optional: false,
+	},
+	SAMPLE_CSV_FILE_PATH: {
+		message: 'Required sample csv file path',
+		optional: false,
+		default: 'sample/bulk_session_creation.csv',
 	},
 	AUTH_METHOD: {
 		message: 'Required authentication method',
 		optional: true,
-		default: common.AUTH_METHOD.JWT_ONLY,
+		default: common.AUTH_METHOD.NATIVE,
+	},
+	CSV_MAX_ROW: {
+		message: 'Required Csv length',
+		optional: false,
+		default: 20,
+	},
+	SESSION_CREATION_MENTOR_LIMIT: {
+		message: 'Required mentor limit for session creation',
+		optional: false,
+		default: 20,
+	},
+	MINIMUM_DURATION_FOR_AVAILABILITY: {
+		message: 'Required minimum duration for availability',
+		optional: true,
+		default: 30,
+	},
+	MULTIPLE_BOOKING: {
+		message: 'Required value for multiple booking',
+		optional: true,
+		default: true,
+	},
+	DOWNLOAD_URL_EXPIRATION_DURATION: {
+		message: 'Required downloadable url expiration time',
+		optional: true,
+		default: 300,
+	},
+	SIGNED_URL_EXPIRY_IN_SECONDS: {
+		message: 'Required signed url expiration time in seconds',
+		optional: true,
+		default: 900,
+	},
+	CLOUD_STORAGE_PROVIDER: {
+		message: 'Require cloud storage provider, in azure,aws, gcloud,oci and s3',
+		optional: false,
+	},
+	CLOUD_STORAGE_SECRET: {
+		message: 'Require client storage provider identity',
+		optional: false,
+	},
+	CLOUD_STORAGE_BUCKETNAME: {
+		message: 'Require client storage bucket name',
+		optional: false,
+	},
+	CLOUD_STORAGE_BUCKET_TYPE: {
+		message: 'Require storage bucket type',
+		optional: false,
+	},
+	PUBLIC_ASSET_BUCKETNAME: {
+		message: 'Require asset storage bucket name',
+		optional: false,
+	},
+	CLOUD_STORAGE_REGION: {
+		message: 'Require storage region',
+		optional: true,
+	},
+	CLOUD_ENDPOINT: {
+		message: 'Require asset storage endpoint',
+		optional: true,
+	},
+	CLOUD_STORAGE_ACCOUNTNAME: {
+		message: 'Require account name',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_KEY: {
+		message: 'Required Email ID Encryption Key',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_IV: {
+		message: 'Required Email ID Encryption IV',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_ALGORITHM: {
+		message: 'Required Email ID Encryption Algorithm',
+		optional: false,
+		default: 'aes-256-cbc',
+	},
+	KEYCLOAK_PUBLIC_KEY_PATH: {
+		message: 'Required Keycloak Public Key Path',
+		optional: true,
+		default: './constants/keycloakPublicKeys',
+	},
+	IS_EXTERNAL_USER_SERVICE: {
+		message: 'Required Flag For External User Service',
+		optional: false,
+		default: 'false',
+	},
+	SESSION_VERIFICATION_METHOD: {
+		message: 'Required Session Verification Method',
+		optional: false,
+		default: 'user_service_authenticated',
 	},
 }
 

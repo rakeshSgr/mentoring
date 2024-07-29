@@ -4,7 +4,7 @@ const entity = {
 }
 
 const entityType = {
-	create: ['id', 'allow_filtering', 'created_at', 'updated_at', 'created_by', 'updated_by'],
+	create: ['id', 'created_at', 'updated_at', 'created_by', 'updated_by', 'organization_id'],
 }
 
 const feedback = {
@@ -24,10 +24,12 @@ const profile = {
 	create: [
 		'user_id',
 		'rating',
-		'visibility',
+		'mentor_visibility',
+		'mentee_visibility',
 		'visible_to_organizations',
 		'external_session_visibility',
 		'external_mentor_visibility',
+		'external_mentee_visibility',
 		'stats',
 		'created_at',
 		'updated_at',
@@ -37,10 +39,12 @@ const profile = {
 	update: [
 		'user_id',
 		'rating',
-		'visibility',
+		'mentor_visibility',
+		'mentee_visibility',
 		'visible_to_organizations',
 		'external_session_visibility',
 		'external_mentor_visibility',
+		'external_mentee_visibility',
 		'stats',
 		'created_at',
 		'updated_at',

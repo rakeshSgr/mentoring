@@ -1,0 +1,6 @@
+Action,id,title,description,type,Mentor(Email),Mentees(Email),Date(DD-MM-YYYY),Time Zone(IST/UTC),Time (24 hrs),Duration(Min),recommended_for,categories,medium,Meeting Platform,Meeting Link,Meeting Passcode (if needed)
+Create,,School Improvement,Session on school improvement ideas,Private,menteeoneprod@grr.la,"suman.v@pacewisd.com, user1@sharklasers.com",05-02-2024,IST,13:00 Hrs,60,"Headmasters","Infrastucture","English",Big Blue Button,,
+Create,,Session Math,Session on Pedogogy,Public,gaganviratgagan88@gmail.com,"",05-02-2024,UTC,09:00 Hrs,90,"Teachers","Pedagogy","Hindi",Google Meet,https://meet.google.com/jgx-ydjs-ptv?authuser=0,
+Edit,123345,Communication Skills,Basics of Communcation Skills,Public,shivani@sharklasers.com,"alokshah@gmail.com, Amey1234@org1.com, afnan.lj@org2.in",05-02-2024,IST,11:30 Hrs,30,"Teachers","Infrastucture","English",Zoom,5551112222,123456
+Edit,234555,Mahakavi Kuvempu,Life History of Mahakavi Kuvempu,Public,shivani@sharklasers.com,"suman.v@pacewisd.com, user1@sharklasers.com",05-02-2024,IST,11:30 Hrs,120,"Teachers","Pedagogy","Kannada",WhatsApp,https://call.whatsapp.com/video/tK0CUX6h4AjDsWoQNStz1g,
+Delete,196745,,,,,"",,,,,"","","",,,													

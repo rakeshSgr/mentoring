@@ -13,8 +13,8 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const questionSetQueries = require('../database/queries/question-set')
 const { Op } = require('sequelize')
-const user = require('@health-checks/user')
 const responses = require('@helpers/responses')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
 module.exports = class OrgAdminService {
 	/**
@@ -67,7 +67,9 @@ module.exports = class OrgAdminService {
 
 			if (bodyData.organization_id) {
 				mentorDetails.organization_id = bodyData.organization_id
-				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				const organizationDetails = await userRequests.fetchOrgDetails({
+					organizationId: bodyData.organization_id,
+				})
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return responses.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -139,7 +141,7 @@ module.exports = class OrgAdminService {
 	static async changeRoleToMentor(bodyData) {
 		try {
 			// Get mentee_extension data
-			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
+			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id, '', true)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return responses.failureResponse({
@@ -149,7 +151,9 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
-				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				let organizationDetails = await userRequests.fetchOrgDetails({
+					organizationId: bodyData.organization_id,
+				})
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return responses.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -210,6 +214,7 @@ module.exports = class OrgAdminService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
 			const orgPolicies = await organisationExtensionQueries.upsert({
 				organization_id: decodedToken.organization_id,
 				...policies,
@@ -227,9 +232,13 @@ module.exports = class OrgAdminService {
 
 				if (
 					policyData?.external_mentor_visibility == common.ASSOCIATED ||
-					policyData?.mentor_visibility_policy == common.ASSOCIATED
+					policyData?.mentor_visibility_policy == common.ASSOCIATED ||
+					policyData?.external_mentee_visibility == common.ASSOCIATED ||
+					policyData?.mentee_visibility_policy == common.ASSOCIATED
 				) {
-					const organizationDetails = await userRequests.fetchDefaultOrgDetails(decodedToken.organization_id)
+					const organizationDetails = await userRequests.fetchOrgDetails({
+						organizationId: decodedToken.organization_id,
+					})
 					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
 				}
 
@@ -315,7 +324,9 @@ module.exports = class OrgAdminService {
 				})
 			}
 			// Get default organisation details
-			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+			let defaultOrgDetails = await userRequests.fetchOrgDetails({
+				organizationCode: process.env.DEFAULT_ORGANISATION_CODE,
+			})
 
 			let defaultOrgId
 			if (defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
@@ -386,7 +397,7 @@ module.exports = class OrgAdminService {
 			const orgId = bodyData.organization_id
 			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
-			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
@@ -410,7 +421,9 @@ module.exports = class OrgAdminService {
 				organization_id: orgId,
 				external_session_visibility: orgPolicies.external_session_visibility_policy,
 				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
-				visibility: orgPolicies.mentor_visibility_policy,
+				mentor_visibility: orgPolicies.mentor_visibility_policy,
+				mentee_visibility: orgPolicies.mentee_visibility_policy,
+				external_mentee_visibility: orgPolicies.external_mentee_visibility_policy,
 				visible_to_organizations: organizationDetails.data.result.related_orgs,
 			}
 			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE))
@@ -486,12 +499,16 @@ module.exports = class OrgAdminService {
 			external_session_visibility_policy,
 			external_mentor_visibility_policy,
 			organization_id,
+			external_mentee_visibility_policy,
+			mentee_visibility_policy,
 		} = organisationPolicy
 		// create policy object
 		let policyData = {
-			visibility: mentor_visibility_policy,
+			mentee_visibility: mentee_visibility_policy,
+			mentor_visibility: mentor_visibility_policy,
 			external_session_visibility: external_session_visibility_policy,
 			external_mentor_visibility: external_mentor_visibility_policy,
+			external_mentee_visibility: external_mentee_visibility_policy,
 		}
 		// add org_ id value if requested
 		if (addOrgId) {
@@ -579,5 +596,37 @@ module.exports = class OrgAdminService {
 		} catch (error) {
 			console.log(error)
 		}
+	}
+
+	static async uploadSampleCSV(filepath, orgId) {
+		const defaultOrgId = await getDefaultOrgId()
+		if (!defaultOrgId) {
+			return responses.failureResponse({
+				message: 'DEFAULT_ORG_ID_NOT_SET',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		const newData = { uploads: { session_csv_path: filepath } }
+		if (orgId != defaultOrgId) {
+			let result = await organisationExtensionQueries.update(newData, orgId)
+			if (!result) {
+				return responses.failureResponse({
+					message: 'CSV_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'CSV_UPLOADED_SUCCESSFULLY',
+			})
+		}
+		return responses.failureResponse({
+			message: 'CSV_UPDATE_FAILED',
+			statusCode: httpStatusCode.bad_request,
+			responseCode: 'CLIENT_ERROR',
+		})
 	}
 }

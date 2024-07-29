@@ -214,4 +214,8 @@ module.exports = {
 			.isString()
 			.withMessage('mentor_name must be a string')
 	},
+
+	bulkSessionCreate: (req) => {
+		req.checkBody('file_path').notEmpty().withMessage('file_path field is empty')
+	},
 }

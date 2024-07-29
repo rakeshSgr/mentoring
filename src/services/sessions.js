@@ -4,7 +4,6 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -20,7 +19,7 @@ const { Op } = require('sequelize')
 const notificationQueries = require('@database/queries/notificationTemplate')
 
 const schedulerRequest = require('@requests/scheduler')
-
+const fileService = require('@services/files')
 const bigBlueButtonRequests = require('@requests/bigBlueButton')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
@@ -35,6 +34,17 @@ const entityTypeService = require('@services/entity-type')
 const mentorsService = require('./mentors')
 const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 const responses = require('@helpers/responses')
+const path = require('path')
+const ProjectRootDir = path.join(__dirname, '../')
+const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
+const fileUploadQueries = require('@database/queries/fileUpload')
+const { Queue } = require('bullmq')
+const fs = require('fs')
+const csv = require('csvtojson')
+const csvParser = require('csv-parser')
+const axios = require('axios')
+const messages = require('../locales/en.json')
+const { validateDefaultRulesFilter } = require('@helpers/defaultRules')
 
 module.exports = class SessionsHelper {
 	/**
@@ -76,6 +86,14 @@ module.exports = class SessionsHelper {
 			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
 			const isSessionCreatedByManager = !!bodyData.mentor_id
 
+			if (bodyData.type == common.SESSION_TYPE.PRIVATE && menteeIdsToEnroll.length === 0) {
+				return responses.failureResponse({
+					message: 'MENTEES_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return responses.failureResponse({
@@ -100,13 +118,45 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			const validMenteeIds = menteeIdsToEnroll.filter((id) => typeof id === 'number')
+			if (menteeIdsToEnroll.length != 0 && validMenteeIds.length != 0) {
+				const menteesDetailsInMentor = await this.validateMentorExtensions(menteeIdsToEnroll)
+				const invalidMentorId =
+					menteesDetailsInMentor.invalidMentors.length === 0 ? [] : menteesDetailsInMentor.invalidMentors
+				const menteesDetailsInMentee = await this.validateMenteeExtensions(invalidMentorId)
+				if (
+					(menteesDetailsInMentor.validMentors.length === 0) &
+					(menteesDetailsInMentee.validMentees.length === 0)
+				) {
+					return responses.failureResponse({
+						message: 'MENTEES_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				const allValidMenteesDetails = menteesDetailsInMentor.validMentors.concat(
+					menteesDetailsInMentee.validMentees
+				)
+				const isMenteeAccessible = await menteeService.checkIfMenteeIsAccessible(
+					allValidMenteesDetails,
+					loggedInUserId,
+					isAMentor
+				)
+				if (!isMenteeAccessible && bodyData.type === common.SESSION_TYPE.PRIVATE) {
+					return responses.failureResponse({
+						message: 'USER_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 			// Check if mentor is available for this session's time slot
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
 
 			// If time slot not available return corresponding error
 			if (timeSlot.isTimeSlotAvailable === false) {
 				const errorMessage = isSessionCreatedByManager
-					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
+					? 'SESSION_CREATION_LIMIT_EXCEDED_FOR_GIVEN_MENTOR'
 					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
 
 				return responses.failureResponse({
@@ -123,7 +173,7 @@ module.exports = class SessionsHelper {
 			// Based on session duration check recommended conditions
 			if (elapsedMinutes < 30) {
 				return responses.failureResponse({
-					message: 'SESSION__MINIMUM_DURATION_TIME',
+					message: 'BELOW_MINIMUM_SESSION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -131,14 +181,14 @@ module.exports = class SessionsHelper {
 
 			if (elapsedMinutes > 1440) {
 				return responses.failureResponse({
-					message: 'SESSION_DURATION_TIME',
+					message: 'EXCEEDED_MAXIMUM_SESSION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
 			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
-			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: mentorIdToCheck })).data.result
 			if (userDetails && userDetails.name) {
 				bodyData.mentor_name = userDetails.name
 			}
@@ -163,7 +213,7 @@ module.exports = class SessionsHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
+			bodyData.status = common.PUBLISHED_STATUS
 			let res = utils.validateInput(bodyData, validationData, sessionModelName)
 			if (!res.success) {
 				return responses.failureResponse({
@@ -176,21 +226,23 @@ module.exports = class SessionsHelper {
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 
-			bodyData.meeting_info = {
-				platform: process.env.DEFAULT_MEETING_SERVICE,
-				value: process.env.DEFAULT_MEETING_SERVICE,
-			}
-			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
+			if (!bodyData.meeting_info) {
 				bodyData.meeting_info = {
-					platform: common.BBB_PLATFORM,
-					value: common.BBB_VALUE,
+					platform: process.env.DEFAULT_MEETING_SERVICE,
+					value: process.env.DEFAULT_MEETING_SERVICE,
+				}
+				if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
+					bodyData.meeting_info = {
+						platform: common.BBB_PLATFORM,
+						value: common.BBB_VALUE,
+					}
 				}
 			}
 
 			bodyData['mentor_organization_id'] = orgId
 			// SAAS changes; Include visibility and visible organisation
 			// Call user service to fetch organisation details --SAAS related changes
-			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
@@ -329,6 +381,7 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method, orgId, notifyUser) {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
+		let skipValidation = true
 		try {
 			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
@@ -342,6 +395,20 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			if (bodyData.mentor_id && bodyData.type) {
+				if (
+					sessionDetail.dataValues.mentor_id != bodyData.mentor_id ||
+					sessionDetail.dataValues.type != bodyData.type
+				) {
+					return responses.failureResponse({
+						message: 'CANNOT_EDIT_MENTOR_AND_TYPE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
+			//	if(sessionDetail)
 			// check if session mentor is added in the mentee list
 			if (bodyData?.mentees?.includes(bodyData?.mentor_id)) {
 				return responses.failureResponse({
@@ -353,7 +420,7 @@ module.exports = class SessionsHelper {
 			sessionDetail = sessionDetail.dataValues
 			if (sessionDetail.created_by !== userId) {
 				return responses.failureResponse({
-					message: 'CANNOT_EDIT_DELETE_SESSION',
+					message: 'CANNOT_EDIT_DELETE_LIVE_SESSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -387,7 +454,6 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
 			const currentDate = moment.utc()
@@ -408,7 +474,10 @@ module.exports = class SessionsHelper {
 			const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return responses.failureResponse({
-					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
+					message: {
+						key: 'INVALID_TIME_SELECTION',
+						interpolation: { sessionName: timeSlot.sessionName },
+					},
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -434,20 +503,24 @@ module.exports = class SessionsHelper {
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			if (bodyData.status == common.VALID_STATUS) {
+				bodyData.status = sessionDetail.status
+			}
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
-			let res = utils.validateInput(bodyData, validationData, sessionModelName)
-
-			if (!res.success) {
-				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
-				})
+			if (!method === common.DELETE_METHOD) {
+				let res = utils.validateInput(bodyData, validationData, sessionModelName, skipValidation)
+				if (!res.success) {
+					return responses.failureResponse({
+						message: 'SESSION_CREATION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+						result: res.errors,
+					})
+				}
 			}
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
+
 			let isSessionDataChanged = false
 			let updatedSessionData = {}
 
@@ -456,7 +529,7 @@ module.exports = class SessionsHelper {
 				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return responses.failureResponse({
-						message: 'SESSION__MINIMUM_DURATION_TIME',
+						message: 'BELOW_MINIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -464,7 +537,7 @@ module.exports = class SessionsHelper {
 
 				if (elapsedMinutes > 1440) {
 					return responses.failureResponse({
-						message: 'SESSION_DURATION_TIME',
+						message: 'EXCEEDED_MAXIMUM_SESSION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -524,7 +597,6 @@ module.exports = class SessionsHelper {
 				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
 					returning: true,
 				})
-
 				if (rowsAffected == 0) {
 					return responses.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
@@ -809,7 +881,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '', queryParams) {
+	static async details(id, userId = '', isAMentor = '', queryParams, roles, orgId) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -823,7 +895,6 @@ module.exports = class SessionsHelper {
 					exclude: ['share_link', 'mentee_password', 'mentor_password'],
 				},
 			})
-
 			if (!sessionDetails) {
 				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -831,6 +902,39 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			let sessionAttendee = await sessionAttendeesQueries.findOne({
+				session_id: sessionDetails.id,
+				mentee_id: userId,
+			})
+			if (!sessionAttendee) {
+				let validateDefaultRules
+				if (userId != sessionDetails.mentor_id) {
+					validateDefaultRules = await validateDefaultRulesFilter({
+						ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+						requesterId: userId,
+						roles: roles,
+						requesterOrganizationId: orgId,
+						data: sessionDetails,
+					})
+				}
+				if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
+					return responses.failureResponse({
+						message: 'PROFILE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				if (!validateDefaultRules && userId != sessionDetails.mentor_id) {
+					return responses.failureResponse({
+						message: 'SESSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
 			sessionDetails.is_enrolled = false
 			let isInvited = false
 			if (userId) {
@@ -866,7 +970,7 @@ module.exports = class SessionsHelper {
 			}
 
 			if (isInvited || sessionDetails.is_assigned) {
-				const managerDetails = await userRequests.details('', sessionDetails.created_by)
+				const managerDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.created_by })
 				sessionDetails.manager_name = managerDetails.data.result.name
 			}
 
@@ -886,7 +990,7 @@ module.exports = class SessionsHelper {
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
 
-			const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
+			const mentorDetails = await userRequests.fetchUserDetails({ userId: sessionDetails.mentor_id })
 			sessionDetails.mentor_name = mentorDetails.data.result.name
 			sessionDetails.organization = mentorDetails.data.result.organization
 			sessionDetails.mentor_designation = []
@@ -1043,7 +1147,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, queryParams, isAMentor) {
+	static async list(loggedInUserId, page, limit, search, searchOn, queryParams, isAMentor, roles, orgId) {
 		try {
 			let allSessions = await menteeService.getAllSessions(
 				page,
@@ -1051,9 +1155,19 @@ module.exports = class SessionsHelper {
 				search,
 				loggedInUserId,
 				queryParams,
-				isAMentor
+				isAMentor,
+				searchOn,
+				roles,
+				orgId
 			)
 
+			if (allSessions.error && allSessions.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			// add index number to the response
 			allSessions.rows = allSessions.rows.map((data, index) => ({
 				...data,
@@ -1071,7 +1185,6 @@ module.exports = class SessionsHelper {
 				result,
 			})
 		} catch (error) {
-			console.log
 			throw error
 		}
 	}
@@ -1090,7 +1203,16 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isAMentor, isSelfEnrolled = true, session = {}) {
+	static async enroll(
+		sessionId,
+		userTokenData,
+		timeZone,
+		isAMentor,
+		isSelfEnrolled = true,
+		session = {},
+		roles,
+		orgId
+	) {
 		try {
 			let email
 			let name
@@ -1100,7 +1222,7 @@ module.exports = class SessionsHelper {
 			// If enrolled by the mentee get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfEnrolled) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1123,6 +1245,33 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			let validateDefaultRules
+			if (isSelfEnrolled) {
+				validateDefaultRules = await validateDefaultRulesFilter({
+					ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+					requesterId: userId,
+					roles: roles,
+					requesterOrganizationId: orgId,
+					data: session,
+				})
+			}
+			if (validateDefaultRules?.error && validateDefaultRules?.error?.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!validateDefaultRules && isSelfEnrolled) {
+				return responses.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			// Restrict self enrollment to a private session
 			if (isSelfEnrolled && session.type == common.SESSION_TYPE.PRIVATE && userId !== session.created_by) {
 				return responses.failureResponse({
@@ -1235,7 +1384,7 @@ module.exports = class SessionsHelper {
 			// If mentee request unenroll get email and name from user service via api call.
 			// Else it will be available in userTokenData
 			if (isSelfUnenrollment) {
-				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				const userDetails = (await userRequests.fetchUserDetails({ userId: userTokenData.id })).data.result
 				userId = userDetails.id
 				email = userDetails.email
 				name = userDetails.name
@@ -1257,7 +1406,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userRequests.details('', session.mentor_id)
+			const mentorName = await userRequests.fetchUserDetails({ userId: session.mentor_id })
 			session.mentor_name = mentorName.data.result.name
 
 			const deletedRows = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
@@ -1755,7 +1904,11 @@ module.exports = class SessionsHelper {
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
 			const sessions = await sessionQueries.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
-			if (!sessions) {
+			if (
+				!sessions ||
+				(sessions.startDateResponse.length < process.env.SESSION_CREATION_MENTOR_LIMIT &&
+					sessions.endDateResponse.length < process.env.SESSION_CREATION_MENTOR_LIMIT)
+			) {
 				return true
 			}
 
@@ -2219,7 +2372,7 @@ module.exports = class SessionsHelper {
 	 */
 	static async pushSessionRelatedMentorEmailToKafka(templateCode, orgId, sessionDetail, updatedSessionDetails) {
 		try {
-			const userDetails = (await userRequests.details('', sessionDetail.mentor_id)).data.result
+			const userDetails = (await userRequests.fetchUserDetails({ userId: sessionDetail.mentor_id })).data.result
 
 			// Fetch email template
 			let durationStartDate = updatedSessionDetails.start_date
@@ -2401,6 +2554,256 @@ module.exports = class SessionsHelper {
 		return {
 			menteesToRemove,
 			menteesToAdd,
+		}
+	}
+
+	/**
+	 * Bulk create users
+	 * @method
+	 * @name bulkUserCreate
+	 * @param {Array} users - user details.
+	 * @param {Object} tokenInformation - token details.
+	 * @returns {CSV} - created users.
+	 */
+
+	static async bulkSessionCreate(filePath, tokenInformation) {
+		try {
+			const { id, organization_id } = tokenInformation
+			const downloadCsv = await this.downloadCSV(filePath)
+			const csvData = await csv().fromFile(downloadCsv.result.downloadPath)
+
+			const getLocalizedMessage = (key) => {
+				return messages[key] || key
+			}
+
+			// Filter out empty rows
+			const nonEmptyCsvData = csvData.filter((row) => Object.values(row).some((value) => value !== ''))
+
+			if (nonEmptyCsvData.length === 0 || nonEmptyCsvData.length > process.env.CSV_MAX_ROW) {
+				const baseMessage = getLocalizedMessage('CSV_ROW_LIMIT_EXCEEDED')
+				const message =
+					nonEmptyCsvData.length === 0
+						? getLocalizedMessage('EMPTY_CSV')
+						: `${baseMessage}${process.env.CSV_MAX_ROW}`
+				return responses.failureResponse({
+					message: message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const expectedHeadings = [
+				'Action',
+				'id',
+				'title',
+				'description',
+				'type',
+				'Mentor(Email)',
+				'Mentees(Email)',
+				'Date(DD-MM-YYYY)',
+				'Time Zone(IST/UTC)',
+				'Time (24 hrs)',
+				'Duration(Min)',
+				'recommended_for',
+				'categories',
+				'medium',
+				'Meeting Platform',
+				'Meeting Link',
+				'Meeting Passcode (if needed)',
+			]
+
+			const validateCsvHeadings = async (filePath, expectedHeadings) => {
+				const csvStream = fs.createReadStream(filePath)
+				return new Promise((resolve, reject) => {
+					csv()
+						.fromStream(csvStream)
+						.preFileLine((line, index) => {
+							if (index === 0) {
+								const headers = line.split(',')
+								resolve(headers)
+							}
+							return line
+						})
+						.on('error', (error) => {
+							reject(error)
+						})
+				})
+			}
+
+			const headings = await validateCsvHeadings(downloadCsv.result.downloadPath, expectedHeadings)
+
+			// Compare the fetched headings with the expected ones
+			const areHeadingsValid =
+				expectedHeadings.every((heading) => headings.includes(heading)) &&
+				headings.every((heading) => expectedHeadings.includes(heading) || true)
+
+			if (!areHeadingsValid) {
+				return responses.failureResponse({
+					message: `Invalid CSV Headings.`,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const creationData = {
+				name: utils.extractFilename(filePath),
+				input_path: filePath,
+				type: common.FILE_TYPE_CSV,
+				organization_id,
+				created_by: id,
+			}
+			const result = await fileUploadQueries.create(creationData)
+			if (!result?.id) {
+				return responses.successResponse({
+					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					message: 'SESSION_CSV_UPLOADED_FAILED',
+				})
+			}
+
+			const userDetail = await userRequests.fetchUserDetails({ userId: id })
+			//push to queue
+			const redisConfiguration = utils.generateRedisConfigForQueue()
+			const sessionQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)
+			const session = await sessionQueue.add(
+				'upload_sessions',
+				{
+					fileDetails: result,
+					user: {
+						id,
+						name: userDetail.data.result.name,
+						email: userDetail.data.result.email,
+						organization_id,
+						org_name: userDetail.data.result.organization.name,
+					},
+				},
+				{
+					removeOnComplete: true,
+					attempts: common.NO_OF_ATTEMPTS,
+					backoff: {
+						type: 'fixed',
+						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
+					},
+				}
+			)
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_CSV_UPLOADED',
+				result: result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	static async getSampleCSV(orgId) {
+		try {
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId) {
+				return responses.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let path = process.env.SAMPLE_CSV_FILE_PATH
+			if (orgId != defaultOrgId) {
+				const result = await organisationExtensionQueries.findOne(
+					{ organization_id: orgId },
+					{ attributes: ['uploads'] }
+				)
+				if (result && result.uploads) {
+					path = result.uploads.session_csv_path
+				}
+			}
+
+			const response = await fileService.getDownloadableUrl(path)
+			return response
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async downloadCSV(filePath) {
+		try {
+			const downloadableUrl = await fileService.getDownloadableUrl(filePath)
+			let fileName = path.basename(downloadableUrl.result)
+
+			// Find the index of the first occurrence of '?'
+			const index = fileName.indexOf('?')
+			// Extract the portion of the string before the '?' if it exists, otherwise use the entire string
+			fileName = index !== -1 ? fileName.substring(0, index) : fileName
+			const downloadPath = path.join(inviteeFileDir, fileName)
+			const response = await axios.get(downloadableUrl.result, {
+				responseType: common.responseType,
+			})
+
+			const writeStream = fs.createWriteStream(downloadPath)
+			response.data.pipe(writeStream)
+
+			await new Promise((resolve, reject) => {
+				writeStream.on('finish', resolve)
+				writeStream.on('error', (err) => {
+					reject(new Error('FAILED_TO_DOWNLOAD_FILE'))
+				})
+			})
+
+			return {
+				success: true,
+				result: {
+					destPath: inviteeFileDir,
+					fileName,
+					downloadPath,
+				},
+			}
+		} catch (error) {
+			return {
+				success: false,
+				message: error.message,
+			}
+		}
+	}
+
+	static async validateMentorExtensions(userIds) {
+		try {
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentors = await mentorExtensionQueries.getMentorExtensions(filteredUserIds)
+			const mentorMap = new Map(mentors.map((mentor) => [mentor.user_id, mentor]))
+			const validMentors = []
+			const invalidMentors = []
+			userIds.forEach((userId) => {
+				const mentor = mentorMap.get(userId)
+				if (mentor) {
+					validMentors.push(mentor)
+				} else {
+					invalidMentors.push(userId)
+				}
+			})
+			return { validMentors, invalidMentors }
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async validateMenteeExtensions(userIds) {
+		try {
+			const filteredUserIds = userIds.filter((id) => typeof id === 'number')
+			const mentees = await menteeExtensionQueries.getMenteeExtensions(filteredUserIds)
+			const menteeMap = new Map(mentees.map((mentee) => [mentee.user_id, mentee]))
+			const validMentees = []
+			const invalidMentees = []
+			userIds.forEach((userId) => {
+				const mentee = menteeMap.get(userId)
+				if (mentee) {
+					validMentees.push(mentee)
+				} else {
+					invalidMentees.push(userId)
+				}
+			})
+			return { validMentees, invalidMentees }
+		} catch (error) {
+			throw error
 		}
 	}
 }

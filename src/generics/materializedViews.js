@@ -4,6 +4,8 @@ const { sequelize } = require('@database/models/index')
 const utils = require('@generics/utils')
 const common = require('@constants/common')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const searchConfig = require('@configs/search.json')
+const indexQueries = require('@generics/mViewsIndexQueries')
 
 let refreshInterval
 const groupByModelNames = async (entityTypes) => {
@@ -140,7 +142,7 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 							if (data.data_type == 'character varying[]') {
 								return `transform_jsonb_to_text_array(meta->'${data.value}')::${data.data_type} as ${data.value}`
 							} else {
-								return `(meta->>'${data.value}') as ${data.value}`
+								return `(meta->>'${data.value}')::${data.data_type} as ${data.value}`
 							}
 						})
 						.join(',\n')
@@ -160,22 +162,87 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 	}
 }
 
-const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes) => {
+const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fieldsWithDatatype) => {
 	try {
 		const uniqueEntityTypeValueList = [...new Set(modelEntityTypes.entityTypeValueList)]
 
 		await Promise.all(
 			uniqueEntityTypeValueList.map(async (attribute) => {
-				return await sequelize.query(
-					`CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} (${attribute});`
+				const item = fieldsWithDatatype.find(
+					(element) => element.key === attribute || element.value === attribute
 				)
+
+				// Retrieve the type
+				const type = item ? item.type || item.data_type : undefined
+
+				if (!type) return false
+				// Determine the query based on the type
+				let query
+				if (type === 'character varying' || type === 'character text') {
+					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute} gin_trgm_ops);`
+				} else {
+					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute});`
+				}
+
+				return await sequelize.query(query)
 			})
 		)
 	} catch (err) {
 		console.log(err)
 	}
 }
+const createViewGINIndexOnSearch = async (model, config, fields) => {
+	try {
+		const modelName = model.name
+		const searchType = modelName === 'Session' ? 'session' : modelName === 'MentorExtension' ? 'mentor' : null
 
+		if (!searchType) {
+			console.warn('Unknown model name')
+			return
+		}
+
+		const fieldsConfig = config.search[searchType].fields
+		const fieldsForIndex = fieldsConfig.filter((field) => !field.isAnEntityType).map((field) => field.name)
+
+		if (fieldsForIndex.length === 0) {
+			console.warn('No fields available for indexing')
+			return
+		}
+
+		for (const field of fieldsForIndex) {
+			try {
+				await sequelize.query(`
+                    CREATE INDEX ${common.materializedViewsPrefix}gin_index_${model.tableName}_${field}
+                    ON ${common.materializedViewsPrefix}${model.tableName}
+                    USING gin(${field} gin_trgm_ops);
+                `)
+			} catch (err) {
+				console.warn(`An error occurred while creating the index for field ${field}:`, err)
+			}
+		}
+	} catch (err) {
+		console.warn('An error occurred while creating the index:', err)
+	}
+}
+// Function to execute index queries for a specific model
+const executeIndexQueries = async (modelName) => {
+	// Find the index queries for the specified model
+	const modelQueries = indexQueries.find((item) => item.modelName === modelName)
+
+	if (modelQueries) {
+		console.log(`Executing index queries for ${modelName}`)
+		for (const query of modelQueries.queries) {
+			try {
+				await sequelize.query(query)
+				console.log(`Successfully executed query for ${modelName}: ${query}`)
+			} catch (error) {
+				console.error(`Error executing query for ${modelName}: ${query}`, error)
+			}
+		}
+	} else {
+		console.log(`No index queries found for model: ${modelName}`)
+	}
+}
 const deleteMaterializedView = async (viewName) => {
 	try {
 		await sequelize.query(`DROP MATERIALIZED VIEW ${viewName};`)
@@ -248,11 +315,13 @@ const generateMaterializedView = async (modelEntityTypes) => {
 		)
 
 		await sequelize.query(materializedViewGenerationQuery)
-
+		const allFields = [...modifiedMetaFields, ...concreteFields]
 		const randomViewName = await renameMaterializedView(temporaryMaterializedViewName, model.tableName)
 		if (randomViewName) await deleteMaterializedView(randomViewName)
-		await createIndexesOnAllowFilteringFields(model, modelEntityTypes)
+		await createIndexesOnAllowFilteringFields(model, modelEntityTypes, allFields)
 		await createViewUniqueIndexOnPK(model)
+		await createViewGINIndexOnSearch(model, searchConfig, allFields)
+		await executeIndexQueries(model.name)
 	} catch (err) {
 		console.log(err)
 	}
@@ -357,11 +426,39 @@ const triggerPeriodicViewRefresh = async () => {
 		console.log(err)
 	}
 }
+const checkAndCreateMaterializedViews = async () => {
+	const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
+	const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
+
+	await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', {
+		type: sequelize.QueryTypes.SELECT,
+	})
+
+	const query = 'select matviewname from pg_matviews;'
+	const [result, metadata] = await sequelize.query(query)
+
+	await Promise.all(
+		entityTypesGroupedByModel.map(async (modelEntityTypes) => {
+			const model = require('@database/models/index')[modelEntityTypes.modelName]
+
+			const mViewExits = result.some(
+				({ matviewname }) => matviewname === common.materializedViewsPrefix + model.tableName
+			)
+			if (!mViewExits) {
+				return generateMaterializedView(modelEntityTypes)
+			}
+			return true
+		})
+	)
+
+	return entityTypesGroupedByModel
+}
 
 const adminService = {
 	triggerViewBuild,
 	triggerPeriodicViewRefresh,
 	refreshMaterializedView,
+	checkAndCreateMaterializedViews,
 }
 
 module.exports = adminService

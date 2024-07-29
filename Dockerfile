@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:17
 
 #Set working directory
 WORKDIR /var/src/
@@ -7,7 +7,7 @@ WORKDIR /var/src/
 COPY ./src/package.json .
 
 #Install node packages
-RUN npm install && npm install -g nodemon@2.0.16
+RUN npm install 
 #Copy all files 
 COPY ./src .
 
