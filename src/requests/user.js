@@ -14,6 +14,32 @@ const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
 const IdMappingQueries = require('@database/queries/idMapping')
 
+function transformIdsToString(json) {
+	if (typeof json !== 'object' || json === null) {
+		return json
+	}
+
+	// If it's an array, recursively transform each element
+	if (Array.isArray(json)) {
+		return json.map((item) => transformIdsToString(item))
+	}
+
+	// If it's an object, recursively transform each property
+	const transformed = {}
+	for (const key in json) {
+		if (Object.prototype.hasOwnProperty.call(json, key)) {
+			if (key === 'id' || key === 'organization_id' || key === 'related_orgs') {
+				// Convert id and organization_id to string if they are integers
+				transformed[key] = typeof json[key] === 'number' ? json[key].toString() : json[key]
+			} else {
+				// Recursively transform nested objects or arrays
+				transformed[key] = transformIdsToString(json[key])
+			}
+		}
+	}
+	return transformed
+}
+
 /**
  * Fetches the default organization details for a given organization code/id.
  * @param {string} organisationIdentifier - The code/id of the organization.
@@ -24,8 +50,10 @@ const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 	try {
 		let orgReadUrl
 		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
-			const externalOrgId = await IdMappingQueries.getUuidById(organizationId || organizationCode)
-			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?external_org_id=${externalOrgId}`
+			//const externalOrgId = await IdMappingQueries.getUuidById(organizationId || organizationCode)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?external_org_id=${
+				organizationId || organizationCode
+			}`
 		} else {
 			if (organizationId)
 				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
@@ -34,9 +62,10 @@ const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 		}
 		const internalToken = true
 		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
-			orgDetails.data.result.id = await IdMappingQueries.getIdByUuid(orgDetails.data.result.id)
-		return orgDetails
+		/* 		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
+			orgDetails.data.result.id = await IdMappingQueries.getIdByUuid(orgDetails.data.result.id) */
+
+		return transformIdsToString(orgDetails)
 	} catch (error) {
 		console.error('Error fetching organization details:', error)
 		throw error
@@ -55,9 +84,9 @@ const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 const fetchUserDetails = async ({ token, userId }) => {
 	try {
 		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
-
+		/* 
 		if (process.env.IS_EXTERNAL_USER_SERVICE === 'true' && userId)
-			userId = await IdMappingQueries.getUuidById(userId)
+			userId = await IdMappingQueries.getUuidById(userId) */
 
 		if (userId) profileUrl += `/${userId}`
 
@@ -70,8 +99,8 @@ const fetchUserDetails = async ({ token, userId }) => {
 			userDetails.data.result.user_roles = [{ title: 'mentee' }]
 		}
 		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
-			userDetails.data.result.uuid = userDetails.data.result.id
-			userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
+			//userDetails.data.result.uuid = userDetails.data.result.id
+			//userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
 		}
 		return userDetails
 	} catch (error) {
@@ -112,7 +141,7 @@ const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
 					})
 				} else {
 					data.body = JSON.parse(data.body)
-					return resolve(data.body)
+					return resolve(transformIdsToString(data.body))
 				}
 			}
 		} catch (error) {
@@ -151,7 +180,8 @@ const getListOfUserDetailsByEmail = function (emailIds) {
 					})
 				} else {
 					data.body = JSON.parse(data.body)
-					return resolve(data.body)
+					data.body.result = data.body.result.map(String)
+					return resolve(transformIdsToString(data.body))
 				}
 			}
 		} catch (error) {
