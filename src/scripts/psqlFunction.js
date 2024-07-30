@@ -7,13 +7,13 @@ let databaseUrl
 
 switch (nodeEnv) {
 	case 'production':
-		databaseUrl = process.env.PROD_DATABASE_URL
+		databaseUrl = process.env.DEV_DATABASE_URL
 		break
 	case 'test':
 		databaseUrl = process.env.TEST_DATABASE_URL
 		break
 	default:
-		databaseUrl = process.env.DATABASE_URL
+		databaseUrl = process.env.DEV_DATABASE_URL
 }
 
 if (!databaseUrl) {
