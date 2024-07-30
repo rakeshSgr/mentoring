@@ -712,7 +712,7 @@ opt/backend$ git clone -b develop-2.5 --single-branch "https://github.com/ELEVAT
 
 ### Install Npm packages from src directory
 
-````bash
+```bash
 backend/mentoring/src$ sudo npm i
 
 BigBlueButton™ Service (Optional) can be setup using the following method:
@@ -759,10 +759,8 @@ BigBlueButton™ Service (Optional) can be setup using the following method:
 
 If you wish to generate a new secret key, use the following command:
 
-````
-
+```
 sudo bbb-conf --secret
-
 ```
 
 ## Deleting the Demo Meeting
@@ -770,10 +768,8 @@ sudo bbb-conf --secret
 If you want to delete the demo meeting, use the following command:
 
 ```
-
 sudo apt-get purge bbb-demo
-
-````
+```
 
 > **Tip**:
 >
@@ -788,7 +784,7 @@ sudo apt-get purge bbb-demo
 
 ```bash
 mentoring/src$ sudo nano .env
-````
+```
 
 Copy-paste the following env variables to the `.env` file:
 
