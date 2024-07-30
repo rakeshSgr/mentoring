@@ -13,7 +13,7 @@ switch (nodeEnv) {
 		databaseUrl = process.env.TEST_DATABASE_URL
 		break
 	default:
-		databaseUrl = process.env.DEV_DATABASE_URL
+		databaseUrl = process.env.DATABASE_URL
 }
 
 if (!databaseUrl) {
