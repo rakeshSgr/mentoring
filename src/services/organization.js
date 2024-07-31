@@ -17,6 +17,7 @@ module.exports = class OrganizationService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
 			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
