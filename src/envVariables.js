@@ -206,7 +206,7 @@ let enviromentVariables = {
 	SESSION_CREATION_MENTOR_LIMIT: {
 		message: 'Required mentor limit for session creation',
 		optional: true,
-		default: 20,
+		default: 1,
 	},
 	MINIMUM_DURATION_FOR_AVAILABILITY: {
 		message: 'Required minimum duration for availability',
