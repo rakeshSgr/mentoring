@@ -13,14 +13,7 @@ const MenteeExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = async function (req, res, next) {
 	try {
-		console.log('AUTH Request Path:', req.path)
-		console.log('AUTH Request Method:', req.method)
-		console.log('AUTH Request Headers:', req.headers)
-		console.log('AUTH Request Query:', req.query)
-		console.log('AUTH Request Body:', req.body)
-
 		const authHeader = req.get(process.env.AUTH_TOKEN_HEADER_NAME)
-		console.log('Auth Header:', authHeader)
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
@@ -29,19 +22,15 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
-		console.log('Is Internal Access:', isInternalAccess)
 
 		if (isInternalAccess && !authHeader) return next()
 		if (!authHeader) {
 			const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
-			console.log('Is Permission Valid for Public Role:', isPermissionValid)
 			if (isPermissionValid) return next()
 			else throw createUnauthorizedResponse('PERMISSION_DENIED')
 		}
 
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
-		console.log('Decoded Token:', decodedToken)
-		console.log('Skip Further Checks:', skipFurtherChecks)
 
 		if (skipFurtherChecks) return next()
 
@@ -49,7 +38,6 @@ module.exports = async function (req, res, next) {
 			await validateSession(authHeader)
 
 		const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
-		console.log('Role Validation Required:', roleValidation)
 
 		if (roleValidation) {
 			if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
@@ -62,7 +50,6 @@ module.exports = async function (req, res, next) {
 			req.path,
 			req.method
 		)
-		console.log('Is Permission Valid for Decoded Token Roles:', isPermissionValid)
 
 		if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 
