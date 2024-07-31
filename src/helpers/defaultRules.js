@@ -299,6 +299,8 @@ function getNestedValue(obj, fieldPath) {
 	for (const field of fields) {
 		if (value && value[field] !== undefined) {
 			value = value[field]
+		} else if (value && value.meta && value.meta[field] !== undefined) {
+			value = value.meta[field]
 		} else {
 			return undefined
 		}
