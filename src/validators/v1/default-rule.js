@@ -58,6 +58,10 @@ module.exports = {
 			.withMessage('The requester_roles field must have at least one role.')
 			.custom((roles) => roles.every((role) => typeof role === 'string'))
 			.withMessage('All elements in the requester_roles array must be strings.')
+			.custom((roles) => roles.every((role) => /^[a-z_]+$/.test(role)))
+			.withMessage(
+				'Requester roles must only contain alphabets characters and underscores, with no spaces or special characters.'
+			)
 
 		req.checkBody('requester_roles_config')
 			.custom((value) => {
@@ -142,6 +146,10 @@ module.exports = {
 				.withMessage('The requester_roles field is required and must be an array with at least one role.')
 				.custom((roles) => roles.every((role) => typeof role === 'string'))
 				.withMessage('All elements in the requester_roles array must be strings.')
+				.custom((roles) => roles.every((role) => /^[a-z_]+$/.test(role)))
+				.withMessage(
+					'Requester roles must only contain alphabets and underscores, with no spaces or special characters.'
+				)
 
 			req.checkBody('requester_roles_config')
 				.custom((value) => {
