@@ -916,6 +916,10 @@ module.exports = class UserInviteHelper {
 						data.time_zone == common.TIMEZONE
 							? (data.time_zone = common.IST_TIMEZONE)
 							: (data.time_zone = common.UTC_TIMEZONE)
+					const previousMeetingInfo = data.meeting_info
+					if (data.meeting_info.platform === '' && data.meeting_info.link === '') {
+						delete data.meeting_info
+					}
 					const { id, ...dataWithoutId } = data
 					const sessionCreation = await sessionService.create(
 						dataWithoutId,
@@ -930,6 +934,9 @@ module.exports = class UserInviteHelper {
 						data.recommended_for = sessionCreation.result.recommended_for.map((item) => item.label)
 						data.categories = sessionCreation.result.categories.map((item) => item.label)
 						data.medium = sessionCreation.result.medium.map((item) => item.label)
+						if (previousMeetingInfo.platform === '' && previousMeetingInfo.link === '') {
+							data.meeting_info = previousMeetingInfo
+						}
 						data.time_zone =
 							data.time_zone == common.IST_TIMEZONE
 								? (data.time_zone = common.TIMEZONE)
