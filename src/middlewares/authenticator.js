@@ -22,19 +22,23 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
+
 		if (isInternalAccess && !authHeader) return next()
 		if (!authHeader) {
 			const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
 			if (isPermissionValid) return next()
 			else throw createUnauthorizedResponse('PERMISSION_DENIED')
 		}
+
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
+
 		if (skipFurtherChecks) return next()
 
 		if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
 			await validateSession(authHeader)
 
 		const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
+
 		if (roleValidation) {
 			if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
 			else if (process.env.AUTH_METHOD === common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY)
@@ -57,7 +61,7 @@ module.exports = async function (req, res, next) {
 			organization_id: decodedToken.data.organization_id,
 			externalId: decodedToken.data.externalId,
 		}
-		console.log('DECODED TOKEN: ', req.decodedToken)
+		console.log('DECODED TOKEN:', req.decodedToken)
 		next()
 	} catch (err) {
 		if (err.message === 'USER_SERVICE_DOWN') {
