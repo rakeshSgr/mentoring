@@ -3698,14 +3698,14 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/questions/readQuestionResponse400'
-  /mentoring/v1/questionsSet/create:
+  /mentoring/v1/question-set/create:
     post:
       summary: Create question set
       tags:
         - Question Set
       description: |-
         This API is associated with creating questions set 
-         - The API Endpoint forcreate question set `/mentoring/v1/questionsSet/create` 
+         - The API Endpoint forcreate question set `/mentoring/v1/question-set/create` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
@@ -3806,14 +3806,14 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/questionset/createQuestionSetResponse400'
-  /mentoring/v1/questionsSet/update/{QuestionSetId}:
+  /mentoring/v1/question-set/update/{QuestionSetId}:
     patch:
       summary: Update question set
       tags:
         - Question Set
       description: |-
         This API is associated with updating questions set 
-         - The API Endpoint forupdating question set `/mentoring/v1/questionsSet/update` 
+         - The API Endpoint forupdating question set `/mentoring/v1/question-set/update` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
@@ -3920,14 +3920,14 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/questionset/updateQuestionSetResponse400'
-  /mentoring/v1/questionsSet/read/{QuestionSetId}:
-    get:
+  /mentoring/v1/question-set/read/{QuestionSetId}:
+    post:
       summary: Get question set
       tags:
         - Question Set
       description: |-
         This API is associated with getting questions set 
-         - The API Endpoint forget question set `/mentoring/v1/questionsSet/read` 
+         - The API Endpoint forget question set `/mentoring/v1/question-set/read` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
