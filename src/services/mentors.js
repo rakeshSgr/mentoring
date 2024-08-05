@@ -911,7 +911,7 @@ module.exports = class MentorsHelper {
 			// Map over extensionDetails.data to merge with the corresponding userDetail
 			extensionDetails.data = extensionDetails.data
 				.map((extensionDetail) => {
-					const user_id = extensionDetail.user_id
+					const user_id = `${extensionDetail.user_id}`
 					if (userDetailsMap.has(user_id)) {
 						let userDetail = userDetailsMap.get(user_id)
 						// Merge userDetail with extensionDetail, prioritize extensionDetail properties

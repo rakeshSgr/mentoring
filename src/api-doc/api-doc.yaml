@@ -38,10 +38,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This token is
+            To use this API, you require an x-auth-token. This token is
             available in the login API Response.
           required: true
           schema:
@@ -309,10 +309,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This token is
+            To use this API, you require an x-auth-token. This token is
             available in the login API Response.
           required: true
           schema:
@@ -487,10 +487,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This token is
+            To use this API, you require an x-auth-token. This token is
             available in the login API Response.
           required: true
           schema:
@@ -678,10 +678,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -798,10 +798,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token, which is available in
+            To use this API, you require an x-auth-token, which is available in
             the login API response.
           required: true
           schema:
@@ -928,10 +928,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token, which is available in
+            To use this API, you require an x-auth-token, which is available in
             the login API Response.
           required: true
           schema:
@@ -1024,10 +1024,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token, which is available in
+            To use this API, you require an x-auth-token, which is available in
             the login API Response.
           required: true
           schema:
@@ -1121,10 +1121,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This token is
+            To use this API, you require an x-auth-token. This token is
             available in the login API Response.
           required: true
           schema:
@@ -1198,11 +1198,11 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           schema:
             type: string
@@ -1337,10 +1337,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1501,10 +1501,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1568,10 +1568,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API., which is available in
+            You require an x-auth-token to use this API., which is available in
             the login API Response.
           required: true
           schema:
@@ -1613,10 +1613,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1658,10 +1658,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1709,10 +1709,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters: &ref_0
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1898,10 +1898,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1958,10 +1958,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2149,10 +2149,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2193,10 +2193,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2232,10 +2232,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2276,10 +2276,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2446,10 +2446,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2517,10 +2517,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2577,10 +2577,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -2783,10 +2783,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -3019,10 +3019,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3088,11 +3088,11 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           schema:
             type: string
@@ -3215,10 +3215,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3397,10 +3397,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3577,10 +3577,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3709,10 +3709,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3817,10 +3817,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -3931,10 +3931,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4022,10 +4022,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4145,10 +4145,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4215,10 +4215,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4274,10 +4274,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4333,10 +4333,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4367,10 +4367,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -4478,10 +4478,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -4542,10 +4542,10 @@ paths:
          - It is mandatory to provide values for parameter marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -4758,11 +4758,11 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           schema:
             type: string
@@ -5039,11 +5039,11 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           schema:
             type: string
@@ -5304,10 +5304,10 @@ paths:
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5348,10 +5348,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters: &ref_2
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5484,10 +5484,10 @@ paths:
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - &ref_4
-          name: X-auth-token
+          name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5636,10 +5636,10 @@ paths:
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - &ref_5
-          name: X-auth-token
+          name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5767,10 +5767,10 @@ paths:
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
         - &ref_6
-          name: X-auth-token
+          name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5827,10 +5827,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -5912,10 +5912,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6030,10 +6030,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6124,10 +6124,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6247,10 +6247,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6364,10 +6364,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6438,10 +6438,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6500,10 +6500,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6560,10 +6560,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6620,10 +6620,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -6686,10 +6686,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -6912,10 +6912,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -7050,10 +7050,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -7185,10 +7185,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -7288,10 +7288,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -7347,11 +7347,11 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           schema:
             type: string
@@ -7461,10 +7461,10 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -7572,10 +7572,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -7662,10 +7662,10 @@ paths:
 
         * This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -7727,11 +7727,11 @@ paths:
 
         * Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           required: true
           in: header
           description: >-
-            You require an X-auth-token to use this API. This token is available
+            You require an x-auth-token to use this API. This token is available
             in the login API Response.
           schema:
             type: string
@@ -7833,10 +7833,10 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To make use of the API, you require X-auth-token. This is Available
+            To make use of the API, you require x-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -7945,10 +7945,10 @@ paths:
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - name: x-auth-token
           in: header
           description: >-
-            To use this API, you require an X-auth-token. This is available in
+            To use this API, you require an x-auth-token. This is available in
             the login API Response.
           required: true
           schema:
@@ -11829,7 +11829,7 @@ components:
   securitySchemes:
     bearer:
       type: apiKey
-      name: X-auth-token
+      name: x-auth-token
       in: header
 tags:
   - name: Config

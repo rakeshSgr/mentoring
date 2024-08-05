@@ -121,6 +121,7 @@ module.exports = class UserHelper {
 			phone: userDetails.phone,
 			name: userDetails.name,
 			skipValidation: true,
+			competency: userDetails.competency,
 		}
 	}
 

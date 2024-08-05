@@ -12,7 +12,7 @@ const MenteeExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = async function (req, res, next) {
 	try {
-		const authHeader = req.get('X-auth-token')
+		const authHeader = req.get(process.env.AUTH_TOKEN_HEADER_NAME)
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
@@ -21,19 +21,23 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
+
 		if (isInternalAccess && !authHeader) return next()
 		if (!authHeader) {
 			const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
 			if (isPermissionValid) return next()
 			else throw createUnauthorizedResponse('PERMISSION_DENIED')
 		}
+
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
+
 		if (skipFurtherChecks) return next()
 
 		if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
 			await validateSession(authHeader)
 
 		const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
+
 		if (roleValidation) {
 			if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
 			else if (process.env.AUTH_METHOD === common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY)
@@ -58,8 +62,7 @@ module.exports = async function (req, res, next) {
 					? decodedToken.data.organization_id.toString()
 					: decodedToken.data.organization_id,
 		}
-
-		console.log('DECODED TOKEN: ', req.decodedToken)
+		console.log('DECODED TOKEN:', req.decodedToken)
 		next()
 	} catch (err) {
 		if (err.message === 'USER_SERVICE_DOWN') {
@@ -170,8 +173,13 @@ function isAdminRole(roles) {
 
 async function authenticateUser(authHeader, req) {
 	if (!authHeader) throw createUnauthorizedResponse()
-	const [authType, token] = authHeader.split(' ')
-	if (authType !== 'bearer') throw createUnauthorizedResponse()
+
+	let token
+	if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+		const [authType, extractedToken] = authHeader.split(' ')
+		if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+		token = extractedToken.trim()
+	} else token = authHeader.trim()
 
 	let decodedToken = null
 	if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) decodedToken = await verifyToken(token)
