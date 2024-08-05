@@ -183,7 +183,7 @@ services:
   #     - elevate_net
 
   citus:
-    image: citusdata/citus:11.2.0
+    image: citusdata/citus:12.1
     container_name: 'citus_master'
     ports:
       - 5432:5432

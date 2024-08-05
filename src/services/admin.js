@@ -9,9 +9,9 @@ const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
-const userRequests = require('@requests/user')
 const adminService = require('../generics/materializedViews')
 const responses = require('@helpers/responses')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class AdminHelper {
 	/**
@@ -84,26 +84,24 @@ module.exports = class AdminHelper {
 				})
 
 				const sessionAttendeesIds = sessionAttendees.map((attendee) => attendee.mentee_id)
-				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
-				sessionAttendees.forEach((attendee) => {
-					for (const element of attendeesAccounts.result) {
-						if (element.id == attendee.mentee_id) {
-							attendee.attendeeEmail = element.email
-							attendee.attendeeName = element.name
-							break
-						}
-					}
-				})
+				const mentees = await menteeQueries.getUsersByUserIds(sessionAttendeesIds, {}, true)
+				const enrolledMentors = await mentorQueries.getMentorsByUserIds(sessionAttendeesIds, {}, true)
 
-				const sendEmailPromises = sessionAttendees.map(async (attendee) => {
+				console.log('MENTEES: ', mentees)
+				console.log('MENTORS: ', enrolledMentors)
+
+				const attendeeProfiles = [...mentees, ...enrolledMentors]
+				console.log('ATTENDEE PROFILES: ', attendeeProfiles)
+
+				const sendEmailPromises = attendeeProfiles.map(async (attendee) => {
 					const payload = {
 						type: 'email',
 						email: {
-							to: attendee.attendeeEmail,
+							to: await emailEncryption.decrypt(attendee.email),
 							subject: templateData.subject,
 							body: utils.composeEmailBody(templateData.body, {
-								name: attendee.attendeeName,
+								name: attendee.name,
 								sessionTitle: session.title,
 							}),
 						},

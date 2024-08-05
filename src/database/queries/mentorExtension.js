@@ -55,7 +55,7 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorExtension(userId, attributes = []) {
+	static async getMentorExtension(userId, attributes = [], unScoped = false) {
 		try {
 			const queryOptions = {
 				where: { user_id: userId },
@@ -66,7 +66,14 @@ module.exports = class MentorExtensionQueries {
 			if (attributes.length > 0) {
 				queryOptions.attributes = attributes
 			}
-			const mentor = await MentorExtension.findOne(queryOptions)
+
+			let mentor
+			if (unScoped) {
+				mentor = await MentorExtension.unscoped().findOne(queryOptions)
+			} else {
+				mentor = await MentorExtension.findOne(queryOptions)
+			}
+
 			return mentor
 		} catch (error) {
 			throw error
@@ -115,19 +122,24 @@ module.exports = class MentorExtensionQueries {
 			throw error
 		}
 	}
-	static async getMentorsByUserIds(ids, options = {}) {
+	static async getMentorsByUserIds(ids, options = {}, unscoped = false) {
 		try {
-			const result = await MentorExtension.findAll({
+			const query = {
 				where: {
 					user_id: ids,
 				},
 				...options,
 				returning: true,
 				raw: true,
-			})
+			}
+
+			const result = unscoped
+				? await MentorExtension.unscoped().findAll(query)
+				: await MentorExtension.findAll(query)
 
 			return result
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -182,7 +194,7 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
+				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text,name'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'

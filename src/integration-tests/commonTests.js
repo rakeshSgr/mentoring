@@ -31,7 +31,7 @@ const logIn = async () => {
 		})
 		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
-				'X-auth-token': 'bearer ' + res.body.result.access_token,
+				'x-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',
 				'Content-Type': 'application/json',
 			}
@@ -87,7 +87,7 @@ const mentorLogIn = async () => {
 
 		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
-				'X-auth-token': 'bearer ' + res.body.result.access_token,
+				'x-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',
 				'Content-Type': 'application/json',
 			}

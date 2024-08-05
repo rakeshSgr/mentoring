@@ -7,13 +7,12 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
 const fs = require('fs')
-const IdMappingQueries = require('@database/queries/idMapping')
 const MentorExtensionQueries = require('@database/queries/mentorExtension')
 const MenteeExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = async function (req, res, next) {
 	try {
-		const authHeader = req.get('X-auth-token')
+		const authHeader = req.get(process.env.AUTH_TOKEN_HEADER_NAME)
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
@@ -22,19 +21,23 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
+
 		if (isInternalAccess && !authHeader) return next()
 		if (!authHeader) {
 			const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
 			if (isPermissionValid) return next()
 			else throw createUnauthorizedResponse('PERMISSION_DENIED')
 		}
+
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
+
 		if (skipFurtherChecks) return next()
 
 		if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
 			await validateSession(authHeader)
 
 		const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
+
 		if (roleValidation) {
 			if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
 			else if (process.env.AUTH_METHOD === common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY)
@@ -50,14 +53,16 @@ module.exports = async function (req, res, next) {
 		if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 
 		req.decodedToken = {
-			id: decodedToken.data.id,
+			id: typeof decodedToken.data.id === 'number' ? decodedToken.data.id.toString() : decodedToken.data.id,
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
-			organization_id: decodedToken.data.organization_id,
-			externalId: decodedToken.data.externalId,
+			organization_id:
+				typeof decodedToken.data.organization_id === 'number'
+					? decodedToken.data.organization_id.toString()
+					: decodedToken.data.organization_id,
 		}
-		console.log('DECODED TOKEN: ', req.decodedToken)
+		console.log('DECODED TOKEN:', req.decodedToken)
 		next()
 	} catch (err) {
 		if (err.message === 'USER_SERVICE_DOWN') {
@@ -168,8 +173,13 @@ function isAdminRole(roles) {
 
 async function authenticateUser(authHeader, req) {
 	if (!authHeader) throw createUnauthorizedResponse()
-	const [authType, token] = authHeader.split(' ')
-	if (authType !== 'bearer') throw createUnauthorizedResponse()
+
+	let token
+	if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+		const [authType, extractedToken] = authHeader.split(' ')
+		if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+		token = extractedToken.trim()
+	} else token = authHeader.trim()
 
 	let decodedToken = null
 	if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) decodedToken = await verifyToken(token)
@@ -195,6 +205,8 @@ const keycloakPublicKeyPath = `${process.env.KEYCLOAK_PUBLIC_KEY_PATH}/`
 const PEM_FILE_BEGIN_STRING = '-----BEGIN PUBLIC KEY-----'
 const PEM_FILE_END_STRING = '-----END PUBLIC KEY-----'
 
+const validRoles = new Set([common.MENTEE_ROLE, common.MENTOR_ROLE, common.ORG_ADMIN_ROLE, common.ADMIN_ROLE])
+
 async function keycloakPublicKeyAuthentication(token) {
 	try {
 		const tokenClaims = jwt.decode(token, { complete: true })
@@ -208,28 +220,28 @@ async function keycloakPublicKeyAuthentication(token) {
 
 		const verifiedClaims = await verifyKeycloakToken(token, cert)
 		const externalUserId = verifiedClaims.sub.split(':').pop()
-		const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
-		let userExtensionData
-		let roles = [{ title: 'mentee' }]
-		if (mentoringUserId) {
-			userExtensionData = await MenteeExtensionQueries.getMenteeExtension(mentoringUserId, ['organization_id'])
-			if (userExtensionData) roles = [{ title: 'mentee' }]
-			else {
-				userExtensionData = await MentorExtensionQueries.getMentorExtension(mentoringUserId, [
-					'organization_id',
-				])
-				if (userExtensionData) roles = [{ title: 'mentor' }]
-				else throw new Error('USER_NOT_FOUND')
+
+		let isMentor = false
+		let isMenteeRolePresent = false
+
+		let roles = verifiedClaims.user_roles.reduce((acc, role) => {
+			role = role.toLowerCase()
+			if (validRoles.has(role)) {
+				if (role === common.MENTOR_ROLE) isMentor = true
+				else if (role === common.MENTEE_ROLE) isMenteeRolePresent = true
+				acc.push({ title: role })
 			}
-		}
+			return acc
+		}, [])
+
+		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
 
 		return {
 			data: {
-				id: mentoringUserId,
+				id: externalUserId,
 				roles: roles,
 				name: verifiedClaims.name,
-				organization_id: userExtensionData?.organization_id || null,
-				externalId: externalUserId,
+				organization_id: verifiedClaims.org || null,
 			},
 		}
 	} catch (err) {
