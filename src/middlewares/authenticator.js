@@ -7,7 +7,6 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
 const fs = require('fs')
-const IdMappingQueries = require('@database/queries/idMapping')
 const MentorExtensionQueries = require('@database/queries/mentorExtension')
 const MenteeExtensionQueries = require('@database/queries/userExtension')
 
@@ -211,11 +210,10 @@ async function keycloakPublicKeyAuthentication(token) {
 
 		const verifiedClaims = await verifyKeycloakToken(token, cert)
 		const externalUserId = verifiedClaims.sub.split(':').pop()
-		//const mentoringUserId = await IdMappingQueries.getIdByUuid(externalUserId)
+
 		let userExtensionData
 		let roles = [{ title: 'mentee' }]
 
-		//if (mentoringUserId) {
 		userExtensionData = await MenteeExtensionQueries.getMenteeExtension(externalUserId, ['organization_id'])
 		if (userExtensionData) {
 			roles = [{ title: 'mentee' }]
@@ -225,7 +223,6 @@ async function keycloakPublicKeyAuthentication(token) {
 				roles = [{ title: 'mentor' }]
 			}
 		}
-		//}
 
 		return {
 			data: {

@@ -6,7 +6,6 @@ const menteeQueries = require('@database/queries/userExtension')
 const mentorQueries = require('@database/queries/mentorExtension')
 const responses = require('@helpers/responses')
 
-const IdMappingQueries = require('@database/queries/idMapping')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const mentorsService = require('@services/mentors')
 const menteesService = require('@services/mentees')
@@ -115,7 +114,6 @@ module.exports = class UserHelper {
 		return {
 			id: userDetails.id,
 			organization: {
-				/* uuid: userDetails.organization_id, */
 				id: orgExtension.organization_id,
 			},
 			roles: userDetails.user_roles,
@@ -127,9 +125,6 @@ module.exports = class UserHelper {
 	}
 
 	static async #createOrUpdateOrg(orgData) {
-		/* 		const [idMapping, isNew] = await IdMappingQueries.findOrCreate({
-			uuid: orgData.uuid,
-		}) */
 		let orgExtension = await organisationExtensionQueries.getById(orgData.id)
 		if (orgExtension) return orgExtension
 
@@ -145,10 +140,7 @@ module.exports = class UserHelper {
 
 	static async #createUser(userExtensionData) {
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
-		/* 		const [idMapping] = await IdMappingQueries.findOrCreate({
-			uuid: userExtensionData.uuid,
-		}) */
-		//userExtensionData.id = idMapping.id
+
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
 			? await mentorsService.createMentorExtension(userExtensionData, userExtensionData.id, orgId)
