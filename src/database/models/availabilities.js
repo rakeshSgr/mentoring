@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			user_id: {
 				allowNull: false,
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			event_name: { type: DataTypes.STRING, allowNull: false },
 			start_time: { type: DataTypes.BIGINT, allowNull: false },
@@ -37,9 +37,9 @@ module.exports = (sequelize, DataTypes) => {
 			occurrence_in_month: { type: DataTypes.INTEGER, allowNull: true },
 			repeat_increment: { type: DataTypes.INTEGER, allowNull: true },
 			session_id: { type: DataTypes.INTEGER, allowNull: true },
-			updated_by: { type: DataTypes.INTEGER, allowNull: true },
-			created_by: { type: DataTypes.INTEGER, allowNull: true },
-			organization_id: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, primaryKey: true },
+			updated_by: { type: DataTypes.STRING, allowNull: true },
+			created_by: { type: DataTypes.STRING, allowNull: true },
+			organization_id: { type: DataTypes.STRING, allowNull: false, defaultValue: 0, primaryKey: true },
 		},
 		{ sequelize, modelName: 'Availability', tableName: 'availabilities', freezeTableName: true, paranoid: true }
 	)

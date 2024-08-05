@@ -70,3 +70,5 @@ gcp.json
 /src/globalConfig.json
 
 dev-ops/report
+
+/src/public/invites/*

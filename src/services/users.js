@@ -6,7 +6,6 @@ const menteeQueries = require('@database/queries/userExtension')
 const mentorQueries = require('@database/queries/mentorExtension')
 const responses = require('@helpers/responses')
 
-const IdMappingQueries = require('@database/queries/idMapping')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const mentorsService = require('@services/mentors')
 const menteesService = require('@services/mentees')
@@ -71,13 +70,7 @@ module.exports = class UserHelper {
 
 	static async create(decodedToken) {
 		try {
-			let isNew = false
-			if (!decodedToken.id) {
-				const [idMapping] = await IdMappingQueries.findOrCreate({ uuid: decodedToken.externalId })
-				decodedToken.id = idMapping.id
-				isNew = true
-			}
-			const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNew)
+			const result = await this.#createOrUpdateUserAndOrg(decodedToken.id)
 			return result
 		} catch (error) {
 			console.log(error)
@@ -88,8 +81,7 @@ module.exports = class UserHelper {
 	static async update(updateData) {
 		try {
 			const userId = updateData.userId
-			const [idMapping, isNew] = await IdMappingQueries.findOrCreate({ uuid: userId })
-			const result = await this.#createOrUpdateUserAndOrg(idMapping.id, isNew, updateData)
+			const result = await this.#createOrUpdateUserAndOrg(userId, updateData)
 			return result
 		} catch (error) {
 			console.log(error)
@@ -97,7 +89,8 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async #createOrUpdateUserAndOrg(userId, isNew, updateData = null) {
+	static async #createOrUpdateUserAndOrg(userId, updateData = null) {
+		const isNew = await this.#checkUserExistence(userId)
 		const userDetails = await userRequests.fetchUserDetails({ userId })
 		if (!userDetails?.data?.result) {
 			return responses.failureResponse({
@@ -106,7 +99,7 @@ module.exports = class UserHelper {
 				responseCode: 'UNAUTHORIZED',
 			})
 		}
-		const orgExtension = await this.#createOrUpdateOrg({ uuid: userDetails.data.result.organization_id })
+		const orgExtension = await this.#createOrUpdateOrg({ id: userDetails.data.result.organization_id })
 		const userExtensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
 		const result = isNew ? await this.#createUser(userExtensionData) : await this.#updateUser(userExtensionData)
 
@@ -119,10 +112,8 @@ module.exports = class UserHelper {
 
 	static #getExtensionData(userDetails, orgExtension) {
 		return {
-			uuid: userDetails.uuid,
 			id: userDetails.id,
 			organization: {
-				uuid: userDetails.organization_id,
 				id: orgExtension.organization_id,
 			},
 			roles: userDetails.user_roles,
@@ -135,33 +126,26 @@ module.exports = class UserHelper {
 	}
 
 	static async #createOrUpdateOrg(orgData) {
-		const [idMapping, isNew] = await IdMappingQueries.findOrCreate({
-			uuid: orgData.uuid,
-		})
-		if (isNew) {
-			const orgExtensionData = {
-				...common.DEFAULT_ORGANISATION_POLICY,
-				organization_id: idMapping.id,
-				created_by: 1,
-				updated_by: 1,
-			}
-			const orgExtension = await organisationExtensionQueries.upsert(orgExtensionData)
-			return orgExtension.toJSON()
-		} else {
-			return await organisationExtensionQueries.getById(idMapping.id)
+		let orgExtension = await organisationExtensionQueries.getById(orgData.id)
+		if (orgExtension) return orgExtension
+
+		const orgExtensionData = {
+			...common.DEFAULT_ORGANISATION_POLICY,
+			organization_id: orgData.id,
+			created_by: 1,
+			updated_by: 1,
 		}
+		orgExtension = await organisationExtensionQueries.upsert(orgExtensionData)
+		return orgExtension.toJSON()
 	}
 
 	static async #createUser(userExtensionData) {
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
-		const [idMapping] = await IdMappingQueries.findOrCreate({
-			uuid: userExtensionData.uuid,
-		})
-		userExtensionData.id = idMapping.id
+
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
-			? await mentorsService.createMentorExtension(userExtensionData, idMapping.id, orgId)
-			: await menteesService.createMenteeExtension(userExtensionData, idMapping.id, orgId)
+			? await mentorsService.createMentorExtension(userExtensionData, userExtensionData.id, orgId)
+			: await menteesService.createMenteeExtension(userExtensionData, userExtensionData.id, orgId)
 		return user.result
 	}
 
@@ -222,6 +206,21 @@ module.exports = class UserHelper {
 						userExtensionData.organization.id
 				  )
 			return user.result
+		}
+	}
+	static async #checkUserExistence(userId) {
+		try {
+			const [menteeExtension, mentorExtension] = await Promise.all([
+				menteeQueries.getMenteeExtension(userId, ['organization_id']),
+				mentorQueries.getMentorExtension(userId, ['organization_id']),
+			])
+
+			const userExists = menteeExtension !== null || mentorExtension !== null
+
+			return !userExists
+		} catch (error) {
+			console.error(error)
+			throw error
 		}
 	}
 }

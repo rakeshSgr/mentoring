@@ -31,15 +31,15 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			organization_id: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
 			created_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			updated_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 		},
 		{ sequelize, modelName: 'FileUpload', tableName: 'file_uploads', freezeTableName: true, paranoid: true }

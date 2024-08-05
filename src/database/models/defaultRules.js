@@ -41,14 +41,14 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: { exclude: false },
 			},
 			organization_id: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			created_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			updated_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			created_at: {
 				allowNull: false,

@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
 			organization_id: {
 				allowNull: false,
 				primaryKey: true,
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			session_visibility_policy: { type: DataTypes.STRING },
 			mentor_visibility_policy: { type: DataTypes.STRING },
@@ -17,11 +17,11 @@ module.exports = (sequelize, DataTypes) => {
 			allow_mentor_override: DataTypes.BOOLEAN,
 			created_by: {
 				allowNull: true,
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			updated_by: {
 				allowNull: true,
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 			},
 			mentee_feedback_question_set: {
 				allowNull: true,

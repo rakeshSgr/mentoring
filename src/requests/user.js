@@ -12,7 +12,6 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
-const IdMappingQueries = require('@database/queries/idMapping')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -23,19 +22,14 @@ const IdMappingQueries = require('@database/queries/idMapping')
 const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 	try {
 		let orgReadUrl
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
-			const externalOrgId = await IdMappingQueries.getUuidById(organizationId || organizationCode)
-			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?external_org_id=${externalOrgId}`
-		} else {
-			if (organizationId)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
-			else if (organizationCode)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
-		}
+
+		if (organizationId)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
+		else if (organizationCode)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
+
 		const internalToken = true
 		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true')
-			orgDetails.data.result.id = await IdMappingQueries.getIdByUuid(orgDetails.data.result.id)
 		return orgDetails
 	} catch (error) {
 		console.error('Error fetching organization details:', error)
@@ -56,9 +50,6 @@ const fetchUserDetails = async ({ token, userId }) => {
 	try {
 		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
 
-		if (process.env.IS_EXTERNAL_USER_SERVICE === 'true' && userId)
-			userId = await IdMappingQueries.getUuidById(userId)
-
 		if (userId) profileUrl += `/${userId}`
 
 		const isInternalTokenRequired = true
@@ -69,10 +60,7 @@ const fetchUserDetails = async ({ token, userId }) => {
 			userDetails.data.result = userDetails.data.result || {}
 			userDetails.data.result.user_roles = [{ title: 'mentee' }]
 		}
-		if (process.env.IS_EXTERNAL_USER_SERVICE == 'true') {
-			userDetails.data.result.uuid = userDetails.data.result.id
-			userDetails.data.result.id = await IdMappingQueries.getIdByUuid(userDetails.data.result.id)
-		}
+
 		return userDetails
 	} catch (error) {
 		console.error(error)

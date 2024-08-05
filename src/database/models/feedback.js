@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
 			meta: {
 				type: DataTypes.JSON,
 			},
-			user_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
+			user_id: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
 		},
 		{ sequelize, modelName: 'Feedback', tableName: 'feedbacks', freezeTableName: true, paranoid: true }
 	)
