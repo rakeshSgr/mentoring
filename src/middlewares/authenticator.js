@@ -205,6 +205,8 @@ const keycloakPublicKeyPath = `${process.env.KEYCLOAK_PUBLIC_KEY_PATH}/`
 const PEM_FILE_BEGIN_STRING = '-----BEGIN PUBLIC KEY-----'
 const PEM_FILE_END_STRING = '-----END PUBLIC KEY-----'
 
+const validRoles = new Set([common.MENTEE_ROLE, common.MENTOR_ROLE, common.ORG_ADMIN_ROLE, common.ADMIN_ROLE])
+
 async function keycloakPublicKeyAuthentication(token) {
 	try {
 		const tokenClaims = jwt.decode(token, { complete: true })
@@ -219,25 +221,27 @@ async function keycloakPublicKeyAuthentication(token) {
 		const verifiedClaims = await verifyKeycloakToken(token, cert)
 		const externalUserId = verifiedClaims.sub.split(':').pop()
 
-		let userExtensionData
-		let roles = [{ title: 'mentee' }]
+		let isMentor = false
+		let isMenteeRolePresent = false
 
-		userExtensionData = await MenteeExtensionQueries.getMenteeExtension(externalUserId, ['organization_id'])
-		if (userExtensionData) {
-			roles = [{ title: 'mentee' }]
-		} else {
-			userExtensionData = await MentorExtensionQueries.getMentorExtension(externalUserId, ['organization_id'])
-			if (userExtensionData) {
-				roles = [{ title: 'mentor' }]
+		let roles = verifiedClaims.user_roles.reduce((acc, role) => {
+			role = role.toLowerCase()
+			if (validRoles.has(role)) {
+				if (role === common.MENTOR_ROLE) isMentor = true
+				else if (role === common.MENTEE_ROLE) isMenteeRolePresent = true
+				acc.push({ title: role })
 			}
-		}
+			return acc
+		}, [])
+
+		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
 
 		return {
 			data: {
 				id: externalUserId,
 				roles: roles,
 				name: verifiedClaims.name,
-				organization_id: userExtensionData?.organization_id || null,
+				organization_id: verifiedClaims.org || null,
 			},
 		}
 	} catch (err) {

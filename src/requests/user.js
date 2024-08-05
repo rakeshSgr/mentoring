@@ -12,6 +12,7 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
+const common = require('@constants/common')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -46,6 +47,8 @@ const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
  * @returns {JSON} - User profile details.
  */
 
+const validRoles = new Set([common.MENTEE_ROLE, common.MENTOR_ROLE, common.ORG_ADMIN_ROLE, common.ADMIN_ROLE])
+
 const fetchUserDetails = async ({ token, userId }) => {
 	try {
 		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
@@ -54,12 +57,29 @@ const fetchUserDetails = async ({ token, userId }) => {
 
 		const isInternalTokenRequired = true
 		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
+		userDetails.data = userDetails.data || {}
+		userDetails.data.result = userDetails.data.result || {}
+		userDetails.data.result.user_roles = userDetails.data.result.user_roles || [{ title: common.MENTEE_ROLE }]
 
-		if (!userDetails.data?.result?.user_roles) {
-			userDetails.data = userDetails.data || {}
-			userDetails.data.result = userDetails.data.result || {}
-			userDetails.data.result.user_roles = [{ title: 'mentee' }]
-		}
+		if (
+			userDetails.data.result.user_roles.length === 1 &&
+			userDetails.data.result.user_roles[0].title === common.MENTEE_ROLE
+		)
+			return userDetails
+
+		let isMentor = false
+		let isMenteeRolePresent = false
+		const roles = userDetails.data.result.user_roles.reduce((acc, role) => {
+			if (validRoles.has(role.title)) {
+				if (role.title === common.MENTOR_ROLE) isMentor = true
+				else if (role.title === common.MENTEE_ROLE) isMenteeRolePresent = true
+				acc.push(role)
+			}
+			return acc
+		}, [])
+
+		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
+		userDetails.data.result.user_roles = roles
 
 		return userDetails
 	} catch (error) {

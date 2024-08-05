@@ -141,7 +141,6 @@ module.exports = class UserHelper {
 
 	static async #createUser(userExtensionData) {
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
-
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
 			? await mentorsService.createMentorExtension(userExtensionData, userExtensionData.id, orgId)
@@ -219,7 +218,7 @@ module.exports = class UserHelper {
 
 			return !userExists
 		} catch (error) {
-			console.error(error)
+			console.error('HERE: ', error)
 			throw error
 		}
 	}
