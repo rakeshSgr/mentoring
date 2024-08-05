@@ -36,11 +36,10 @@ module.exports = {
 					await queryInterface.sequelize.query(`SELECT undistribute_table('${table}');`)
 				}
 			}
-
-			await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_sessions;')
-			await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_user_extensions;')
-			await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_mentor_extensions;')
 		}
+		await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_sessions;')
+		await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_user_extensions;')
+		await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_mentor_extensions;')
 	},
 
 	async down(queryInterface, Sequelize) {
