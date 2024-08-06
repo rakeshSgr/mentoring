@@ -101,13 +101,16 @@ module.exports = class UserHelper {
 		}
 		const orgExtension = await this.#createOrUpdateOrg({ id: userDetails.data.result.organization_id })
 		const userExtensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
-		const result = isNew ? await this.#createUser(userExtensionData) : await this.#updateUser(userExtensionData)
-
-		return responses.successResponse({
-			statusCode: httpStatusCode.ok,
-			message: 'PROFILE_CREATED_SUCCESSFULLY',
-			result: result,
-		})
+		const createOrUpdateResult = isNew
+			? await this.#createUser(userExtensionData)
+			: await this.#updateUser(userExtensionData)
+		if (createOrUpdateResult.statusCode != httpStatusCode.ok) return createOrUpdateResult
+		else
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_CREATED_SUCCESSFULLY',
+				result: createOrUpdateResult.result,
+			})
 	}
 
 	static #getExtensionData(userDetails, orgExtension) {
@@ -145,7 +148,7 @@ module.exports = class UserHelper {
 		const user = isAMentor
 			? await mentorsService.createMentorExtension(userExtensionData, userExtensionData.id, orgId)
 			: await menteesService.createMenteeExtension(userExtensionData, userExtensionData.id, orgId)
-		return user.result
+		return user
 	}
 
 	static #checkOrgChange = (existingOrgId, newOrgId) => existingOrgId !== newOrgId
@@ -189,7 +192,7 @@ module.exports = class UserHelper {
 			//If role is changed, the role change, org policy changes for that user
 			//and additional data update of the user is done by orgAdmin's roleChange workflow
 			const roleChangeResult = await orgAdminService.roleChange(roleChangePayload, userExtensionData)
-			return roleChangeResult.result
+			return roleChangeResult
 		} else {
 			//If role is not changed, org policy changes along with other user data updation is done
 			//using the updateMentee or updateMentor workflows
@@ -204,7 +207,7 @@ module.exports = class UserHelper {
 						userExtensionData.id,
 						userExtensionData.organization.id
 				  )
-			return user.result
+			return user
 		}
 	}
 	static async #checkUserExistence(userId) {
