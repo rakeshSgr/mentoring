@@ -108,7 +108,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			visible_to_organizations: {
-				type: DataTypes.ARRAY(DataTypes.INTEGER),
+				type: DataTypes.ARRAY(DataTypes.STRING),
 				allowNull: true,
 			},
 			mentor_organization_id: {
