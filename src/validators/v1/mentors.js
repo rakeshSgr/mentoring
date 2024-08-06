@@ -31,10 +31,8 @@ module.exports = {
 	},
 
 	details: (req) => {
-		req.checkParams('id')
-			.notEmpty()
-			.withMessage('id param is empty')
-			.isNumeric()
-			.withMessage('id param is invalid, must be an integer')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		/* .isNumeric()
+			.withMessage('id param is invalid, must be an integer') */
 	},
 }
