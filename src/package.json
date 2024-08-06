@@ -28,7 +28,7 @@
 		"body-parser": "^1.19.0",
 		"bullmq": "^4.12.3",
 		"cli-table": "^0.3.11",
-		"client-cloud-services": "^8.0.0",
+		"client-cloud-services": "^3.0.7",
 		"cors": "^2.8.5",
 		"crypto": "^1.0.1",
 		"csv-parser": "^3.0.0",
