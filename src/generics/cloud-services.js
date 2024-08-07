@@ -1,13 +1,15 @@
 const common = require('@constants/common')
+const utils = require('@generics/utils')
 const { cloudClient } = require('@configs/cloud-service')
 
 module.exports = class FilesHelper {
 	static async getSignedUrl(bucketName, destFilePath, actionType = common.WRITE_ACCESS, expiryTime = '') {
 		try {
+			let updatedExpiryTime = await utils.convertExpiryTimeToSeconds(expiryTime)
 			const signedUrl = await cloudClient.getSignedUrl(
 				bucketName, //BucketName
 				destFilePath, //FilePath
-				expiryTime, //Expiry
+				updatedExpiryTime, //Expiry
 				actionType //Read[r] or Write[w]
 			)
 
