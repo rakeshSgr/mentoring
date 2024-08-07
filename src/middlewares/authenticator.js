@@ -205,7 +205,13 @@ const keycloakPublicKeyPath = `${process.env.KEYCLOAK_PUBLIC_KEY_PATH}/`
 const PEM_FILE_BEGIN_STRING = '-----BEGIN PUBLIC KEY-----'
 const PEM_FILE_END_STRING = '-----END PUBLIC KEY-----'
 
-const validRoles = new Set([common.MENTEE_ROLE, common.MENTOR_ROLE, common.ORG_ADMIN_ROLE, common.ADMIN_ROLE])
+const validRoles = new Set([
+	common.MENTEE_ROLE,
+	common.MENTOR_ROLE,
+	common.ORG_ADMIN_ROLE,
+	common.ADMIN_ROLE,
+	common.SESSION_MANAGER_ROLE,
+])
 
 async function keycloakPublicKeyAuthentication(token) {
 	try {
