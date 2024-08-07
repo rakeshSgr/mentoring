@@ -87,7 +87,7 @@ const getDownloadableUrl = async (filePath) => {
 	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
 
 	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	return response
+	return Array.isArray(response) ? response[0] : response
 }
 
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
