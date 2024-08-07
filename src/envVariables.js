@@ -303,6 +303,36 @@ let enviromentVariables = {
 		optional: true,
 		default: '6',
 	},
+	DEFAULT_SESSION_VISIBILITY_POLICY: {
+		message: 'Required Default Session Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_MENTOR_VISIBILITY_POLICY: {
+		message: 'Required Default Mentor Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_MENTEE_VISIBILITY_POLICY: {
+		message: 'Required Default Mentee Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_SESSION_VISIBILITY_POLICY: {
+		message: 'Required Default External Session Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_MENTOR_VISIBILITY_POLICY: {
+		message: 'Required Default External Mentor Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_MENTEE_VISIBILITY_POLICY: {
+		message: 'Required Default External Mentee Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
 }
 
 let success = true
