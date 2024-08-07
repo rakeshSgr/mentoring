@@ -88,7 +88,7 @@ def create_entity_type(entity_type_data):
             f"{MENTORING_DOMAIN}/mentoring/v1/entity-type/create",
             json=entity_type_data,
             headers={
-                'X-auth-token': f"bearer {access_token}",
+                'x-auth-token': f"bearer {access_token}",
                 'Content-Type': 'application/json'
             }
         )
@@ -123,7 +123,7 @@ def create_entity(identifier, entity, retries=3):
                 'entity_type_id': entity_type_id
             },
             headers={
-                'X-auth-token': f"bearer {access_token}",
+                'x-auth-token': f"bearer {access_token}",
                 'Content-Type': 'application/json'
             }
         )

@@ -74,11 +74,13 @@ module.exports = (app) => {
 		const controllerName = (req.params.controller.match(/^[a-zA-Z0-9_-]+$/) || [])[0] // Allow only alphanumeric characters, underscore, and hyphen
 		const file = req.params.file ? (req.params.file.match(/^[a-zA-Z0-9_-]+$/) || [])[0] : null // Same validation as controller, or null if file is not provided
 		const method = (req.params.method.match(/^[a-zA-Z0-9]+$/) || [])[0] // Allow only alphanumeric characters
+
 		try {
 			if (!version || !controllerName || !method || (req.params.file && !file)) {
 				// Invalid input, return an error response
 				const error = new Error('Invalid Path')
 				error.statusCode = 400
+				console.error('Error:', error)
 				throw error
 			}
 
@@ -90,26 +92,29 @@ module.exports = (app) => {
 			if (!allowedVersions.includes(version)) {
 				const error = new Error('Invalid version.')
 				error.statusCode = 400
+				console.error('Error:', error)
 				throw error
 			}
 			// Validate controller
 			if (!allowedControllers.includes(controllerName)) {
 				const error = new Error('Invalid controller.')
 				error.statusCode = 400
+				console.error('Error:', error)
 				throw error
 			}
 		} catch (error) {
+			console.error('Catch Error:', error)
 			return next(error)
 		}
-
-		console.log('ROUTER REQUEST BODY: ', req.body)
 
 		/* Check for input validation error */
 		try {
 			validationError = req.validationErrors()
+			console.log('Validation Errors:', validationError)
 		} catch (error) {
 			error.statusCode = 422
 			error.responseCode = 'CLIENT_ERROR'
+			console.error('Validation Catch Error:', error)
 			return next(error)
 		}
 
@@ -118,6 +123,7 @@ module.exports = (app) => {
 			error.statusCode = 422
 			error.responseCode = 'CLIENT_ERROR'
 			error.data = validationError
+			console.error('Validation Error:', error)
 			return next(error)
 		}
 
@@ -129,9 +135,12 @@ module.exports = (app) => {
 			} else {
 				controller = require(`@controllers/${version}/${controllerName}`)
 			}
+
 			controllerResponse = new controller()[method] ? await new controller()[method](req) : next()
+			console.log('Controller Response:', controllerResponse)
 		} catch (error) {
 			// If controller or service throws some random error
+			console.error('Controller Error:', error)
 			return next(error)
 		}
 
@@ -142,6 +151,7 @@ module.exports = (app) => {
 			controllerResponse.statusCode !== 202
 		) {
 			/* If error obtained then global error handler gets executed */
+			console.error('Controller Response Error:', controllerResponse)
 			return next(controllerResponse)
 		}
 

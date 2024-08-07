@@ -474,19 +474,19 @@ module.exports = class MenteesHelper {
 					 *  -created by his/her organization mentors.
 					 * So will check if mentor_organization_id equals user's  organization_id
 					 */
-					filter = `AND "mentor_organization_id" = ${userPolicyDetails.organization_id}`
+					filter = `AND "mentor_organization_id" = '${userPolicyDetails.organization_id}'`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
 					/**
 					 * user external_session_visibility is ASSOCIATED
 					 * user can see sessions where session's visible_to_organizations contain user's organization_id and -
 					 *  - session's visibility not CURRENT (In case of same organization session has to be fetched for that we added OR condition {"mentor_organization_id" = ${userPolicyDetails.organization_id}})
 					 */
-					filter = `AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_organization_id" = ${userPolicyDetails.organization_id})`
+					filter = `AND (('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_organization_id" = '${userPolicyDetails.organization_id}')`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
 					/**
 					 * user's external_session_visibility === ALL (ASSOCIATED sessions + sessions whose visibility is ALL)
 					 */
-					filter = `AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = ${userPolicyDetails.organization_id})`
+					filter = `AND (('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = '${userPolicyDetails.organization_id}')`
 				}
 			}
 			return filter
@@ -725,9 +725,9 @@ module.exports = class MenteesHelper {
 	 */
 	static async updateMenteeExtension(data, userId, orgId) {
 		try {
-			if (data.email) {
-				data.email = emailEncryption.encrypt(data.email.toLowerCase())
-			}
+			if (data.email) data.email = emailEncryption.encrypt(data.email.toLowerCase())
+
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
@@ -764,7 +764,7 @@ module.exports = class MenteesHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, userExtensionsModelName)
+			let res = utils.validateInput(data, validationData, userExtensionsModelName, skipValidation)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'PROFILE_UPDATE_FAILED',
@@ -778,6 +778,28 @@ module.exports = class MenteesHelper {
 
 			data = utils.restructureBody(data, validationData, userExtensionModel)
 
+			if (data?.organization?.id) {
+				//Do a org policy update for the user only if the data object explicitly includes an
+				//organization.id. This is added for the users/update workflow where
+				//both both user data and organisation can change at the same time.
+				let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: data.organization.id })
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					data.organization.id
+				)
+				if (!orgPolicies?.organization_id) {
+					return responses.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				data.organization_id = data.organization.id
+				const newPolicy = await orgAdminService.constructOrgPolicyObject(orgPolicies, true)
+				data = _.merge({}, data, newPolicy)
+				data.visible_to_organizations = Array.from(
+					new Set([...userOrgDetails.data.result.related_orgs, data.organization.id])
+				)
+			}
 			const [updateCount, updatedUser] = await menteeQueries.updateMenteeExtension(userId, data, {
 				returning: true,
 				raw: true,
@@ -1363,7 +1385,7 @@ module.exports = class MenteesHelper {
 			// searching for specific organization
 			let additionalFilter = ``
 			if (organization_ids.length !== 0) {
-				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')})`
+				additionalFilter = `AND "organization_id" in (${organization_ids.map((id) => `'${id}'`).join(',')}) `
 			}
 			if (getOrgPolicy.external_mentee_visibility_policy && userPolicyDetails.organization_id) {
 				const visibilityPolicy = getOrgPolicy.external_mentee_visibility_policy
@@ -1375,7 +1397,7 @@ module.exports = class MenteesHelper {
 					 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
 					 * so we will check mentor's organization_id and user organization_id are matching
 					 */
-					filter = `AND "organization_id" = ${userPolicyDetails.organization_id}`
+					filter = `AND "organization_id" = '${userPolicyDetails.organization_id}'`
 				} else if (visibilityPolicy === common.ASSOCIATED) {
 					/**
 					 * If user external_mentor_visibility is associated
@@ -1383,10 +1405,10 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT')`
+						`AND ( ('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
-						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
+						filter += ` OR organization_id = '${userPolicyDetails.organization_id}' )`
 					else filter += `)`
 				} else if (visibilityPolicy === common.ALL) {
 					/**
@@ -1395,7 +1417,7 @@ module.exports = class MenteesHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT' ) OR "mentee_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND (('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentee_visibility" != 'CURRENT' ) OR "mentee_visibility" = 'ALL' OR "organization_id" = '${userPolicyDetails.organization_id}')`
 				}
 			}
 

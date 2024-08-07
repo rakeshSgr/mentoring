@@ -38,6 +38,8 @@ module.exports = {
 		'/org-admin/updateRelatedOrgs',
 		'/sessions/bulkUpdateMentorNames',
 		'/organization/eventListener',
+		'/users/update',
+		'/sessions/removeAllSessions',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',
