@@ -47,7 +47,13 @@ const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
  * @returns {JSON} - User profile details.
  */
 
-const validRoles = new Set([common.MENTEE_ROLE, common.MENTOR_ROLE, common.ORG_ADMIN_ROLE, common.ADMIN_ROLE])
+const validRoles = new Set([
+	common.MENTEE_ROLE,
+	common.MENTOR_ROLE,
+	common.ORG_ADMIN_ROLE,
+	common.ADMIN_ROLE,
+	common.SESSION_MANAGER_ROLE,
+])
 
 const fetchUserDetails = async ({ token, userId }) => {
 	try {
