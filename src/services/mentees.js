@@ -778,7 +778,7 @@ module.exports = class MenteesHelper {
 
 			data = utils.restructureBody(data, validationData, userExtensionModel)
 
-			if (data.organization.id) {
+			if (data?.organization?.id) {
 				//Do a org policy update for the user only if the data object explicitly includes an
 				//organization.id. This is added for the users/update workflow where
 				//both both user data and organisation can change at the same time.
