@@ -233,7 +233,7 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
-	SIGNED_URL_EXPIRY_IN_SECONDS: {
+	SIGNED_URL_EXPIRY_DURATION: {
 		message: 'Required signed url expiration time in seconds',
 		optional: true,
 		default: 900,
