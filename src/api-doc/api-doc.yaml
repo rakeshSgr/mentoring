@@ -5367,24 +5367,33 @@ paths:
                   type: string
                 label:
                   type: string
-                type:
-                  type: string
                 allow_filtering:
-                  type: boolean
+                  type: string
                 data_type:
                   type: string
-                has_entities:
+                model_names:
+                  type: array
+                  items:
+                    type: string
+                required:
                   type: boolean
-              required: []
+                status:
+                  type: string
+                type:
+                  type: string
             examples:
               example1:
                 value:
-                  value: ln
-                  label: Languages
+                  value: pgender
+                  label: gender
+                  allow_filtering: 'true'
+                  data_type: ARRAY[STRING]
+                  model_names:
+                    - MentorExtension
+                    - UserExtension
+                  required: true
+                  status: ACTIVE
                   type: SYSTEM
-                  allow_filtering: true
-                  data_type: STRING
-                  has_entities: true
       responses:
         '201':
           description: Created
