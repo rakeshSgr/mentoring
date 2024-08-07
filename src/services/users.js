@@ -133,7 +133,7 @@ module.exports = class UserHelper {
 		if (orgExtension) return orgExtension
 
 		const orgExtensionData = {
-			...common.DEFAULT_ORGANISATION_POLICY,
+			...common.getDefaultOrgPolicies(),
 			organization_id: orgData.id,
 			created_by: 1,
 			updated_by: 1,
