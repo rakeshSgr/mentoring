@@ -746,6 +746,7 @@ function validateProfileData(profileData, validationData) {
 }
 
 function convertExpiryTimeToSeconds(expiryTime) {
+	expiryTime = String(expiryTime)
 	const match = expiryTime.match(/^(\d+)([m]?)$/)
 	if (match) {
 		const value = parseInt(match[1], 10) // Numeric value
