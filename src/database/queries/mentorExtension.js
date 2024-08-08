@@ -1,8 +1,6 @@
 const UserExtension = require('@database/models/index').UserExtension
 const MentorExtension = UserExtension.scope('mentors')
 
-//const MentorExtension = require('@database/models/index').MentorExtension
-
 const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
@@ -44,18 +42,26 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async updateMentorExtension(userId, data, options = {}, customFilter = {}) {
+	static async updateMentorExtension(userId, data, options = {}, customFilter = {}, unscoped = false) {
 		try {
 			data = { ...data, is_mentor: true }
 
 			if (data.user_id) {
 				delete data['user_id']
 			}
+
 			const whereClause = _.isEmpty(customFilter) ? { user_id: userId } : customFilter
-			return await MentorExtension.update(data, {
-				where: whereClause,
-				...options,
-			})
+
+			const result = unscoped
+				? await MentorExtension.unscoped().update(data, {
+						where: whereClause,
+						...options,
+				  })
+				: await MentorExtension.update(data, {
+						where: whereClause,
+						...options,
+				  })
+			return result
 		} catch (error) {
 			console.log(error)
 			throw error
