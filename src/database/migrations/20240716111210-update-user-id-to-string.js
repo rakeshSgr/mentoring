@@ -54,18 +54,23 @@ module.exports = {
 		// Revert changes back to INTEGER
 		await queryInterface.changeColumn('availabilities', 'user_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('feedbacks', 'user_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('issues', 'user_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('mentor_extensions', 'user_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('session_ownerships', 'user_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('user_extensions', 'user_id', {
 			type: Sequelize.INTEGER,
@@ -73,13 +78,16 @@ module.exports = {
 
 		await queryInterface.changeColumn('sessions', 'mentor_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 
 		await queryInterface.changeColumn('session_attendees', 'mentee_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 		await queryInterface.changeColumn('session_enrollments', 'mentee_id', {
 			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 	},
 }
