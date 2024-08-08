@@ -84,16 +84,14 @@ const extractEmailTemplate = (input, conditions) => {
 
 const getDownloadableUrl = async (filePath) => {
 	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
-	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
-
-	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	return response[0]
+	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
+	let updatedExpiryTime = convertExpiryTimeToSeconds(expiryInSeconds)
+	let response = await cloudClient.getSignedUrl(bucketName, filePath, updatedExpiryTime, common.READ_ACCESS)
+	return Array.isArray(response) ? response[0] : response
 }
+
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
 	let downloadableUrl = await cloudClient.getDownloadableUrl(bucketName, filePath)
-	if (process.env.CLOUD_STORAGE_PROVIDER == 'azure') {
-		downloadableUrl = downloadableUrl.toString().split('?')[0]
-	}
 	return downloadableUrl
 }
 
@@ -747,6 +745,20 @@ function validateProfileData(profileData, validationData) {
 	return profileMandatoryFields
 }
 
+function convertExpiryTimeToSeconds(expiryTime) {
+	expiryTime = String(expiryTime)
+	const match = expiryTime.match(/^(\d+)([m]?)$/)
+	if (match) {
+		const value = parseInt(match[1], 10) // Numeric value
+		const unit = match[2]
+		if (unit === 'm') {
+			return Math.floor(value / 60)
+		} else {
+			return value
+		}
+	}
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -793,4 +805,5 @@ module.exports = {
 	transformCustomFields,
 	validateProfileData,
 	validateAndBuildFilters,
+	convertExpiryTimeToSeconds,
 }

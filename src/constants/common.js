@@ -15,6 +15,19 @@ const ENTITY_TYPE_DATA_TYPES = {
 	BOOLEAN: ['BOOLEAN'],
 	JSON: ['JSON', 'JSONB'],
 }
+const defaultOrgPolicies = () => {
+	return {
+		session_visibility_policy: process.env.DEFAULT_SESSION_VISIBILITY_POLICY,
+		mentor_visibility_policy: process.env.DEFAULT_MENTOR_VISIBILITY_POLICY,
+		mentee_visibility_policy: process.env.DEFAULT_MENTEE_VISIBILITY_POLICY,
+		external_session_visibility_policy: process.env.DEFAULT_EXTERNAL_SESSION_VISIBILITY_POLICY,
+		external_mentor_visibility_policy: process.env.DEFAULT_EXTERNAL_MENTOR_VISIBILITY_POLICY,
+		external_mentee_visibility_policy: process.env.DEFAULT_EXTERNAL_MENTEE_VISIBILITY_POLICY,
+		allow_mentor_override: false,
+		approval_required_for: [],
+	}
+}
+
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -38,6 +51,8 @@ module.exports = {
 		'/org-admin/updateRelatedOrgs',
 		'/sessions/bulkUpdateMentorNames',
 		'/organization/eventListener',
+		'/users/update',
+		'/sessions/removeAllSessions',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',
@@ -101,16 +116,7 @@ module.exports = {
 	ORG_ADMIN_ROLE: 'org_admin',
 
 	// Default organization policies
-	DEFAULT_ORGANISATION_POLICY: {
-		session_visibility_policy: 'CURRENT',
-		mentor_visibility_policy: 'CURRENT',
-		mentee_visibility_policy: 'CURRENT',
-		external_session_visibility_policy: 'CURRENT',
-		external_mentor_visibility_policy: 'CURRENT',
-		external_mentee_visibility_policy: 'CURRENT',
-		allow_mentor_override: false,
-		approval_required_for: [],
-	},
+	getDefaultOrgPolicies: defaultOrgPolicies,
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
 	ASSOCIATED: 'ASSOCIATED',
@@ -184,7 +190,6 @@ module.exports = {
 	},
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
-	azureBlobType: 'BlockBlob',
 	ENTITY_TYPE_DATA_TYPES,
 	DEFAULT_RULES: {
 		SESSION_TYPE: 'session',

@@ -106,7 +106,7 @@ async function createEntityType(entityTypeData) {
 			`${MENTORING_DOMAIN}/mentoring/v1/entity-type/create`,
 			JSON.stringify(entityTypeData),
 			{
-				headers: { 'X-auth-token': `bearer ${accessToken}`, 'Content-Type': 'application/json' },
+				headers: { 'x-auth-token': `bearer ${accessToken}`, 'Content-Type': 'application/json' },
 			}
 		)
 		entityTypeId = response.data.result.id
@@ -149,7 +149,7 @@ async function createEntity(identifier, entity, retries = 3) {
 				entity_type_id: entityTypeId,
 			}),
 			{
-				headers: { 'X-auth-token': `bearer ${accessToken}`, 'Content-Type': 'application/json' },
+				headers: { 'x-auth-token': `bearer ${accessToken}`, 'Content-Type': 'application/json' },
 			}
 		)
 		console.log(`Entity created successfully: ${identifier} - ${entity}`)

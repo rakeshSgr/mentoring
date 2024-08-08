@@ -19,24 +19,11 @@ module.exports = {
 	},
 
 	upcomingSessions: (req) => {
-		req.checkParams('id')
-			.notEmpty()
-			.withMessage('id param is empty')
-			.isNumeric()
-			.withMessage('id param is invalid, must be an integer')
-		req.checkParams('menteeId')
-			.notEmpty()
-			.optional()
-			.withMessage('menteeId param is empty')
-			.isNumeric()
-			.withMessage('menteeId param is invalid, must be an integer')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		req.checkParams('menteeId').notEmpty().optional().withMessage('menteeId param is empty')
 	},
 
 	details: (req) => {
-		req.checkParams('id')
-			.notEmpty()
-			.withMessage('id param is empty')
-			.isNumeric()
-			.withMessage('id param is invalid, must be an integer')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 }

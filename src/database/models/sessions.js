@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: [],
 			},
 			mentor_id: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			session_reschedule: {
@@ -108,11 +108,11 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			visible_to_organizations: {
-				type: DataTypes.ARRAY(DataTypes.INTEGER),
+				type: DataTypes.ARRAY(DataTypes.STRING),
 				allowNull: true,
 			},
 			mentor_organization_id: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			seats_remaining: {
@@ -136,11 +136,11 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			created_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: true,
 			},
 			updated_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: true,
 			},
 		},

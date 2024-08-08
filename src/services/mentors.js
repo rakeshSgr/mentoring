@@ -37,17 +37,19 @@ module.exports = class MentorsHelper {
 	 * @param {String} search - Search text.
 	 * @returns {JSON} - mentors upcoming session details
 	 */
-	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
+	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor, roles, orgId) {
 		try {
-			const mentorsDetails = await mentorQueries.getMentorExtension(id)
-			if (!mentorsDetails) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.bad_request,
-					message: 'MENTORS_NOT_FOUND',
-					responseCode: 'CLIENT_ERROR',
-				})
+			let requestedMentorExtension = false
+			if (id !== '' && isAMentor !== '' && roles !== '') {
+				requestedMentorExtension = await mentorQueries.getMentorExtension(id)
+				if (!requestedMentorExtension) {
+					return responses.failureResponse({
+						statusCode: httpStatusCode.bad_request,
+						message: 'MENTORS_NOT_FOUND',
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
-
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const sessionModelName = await sessionQueries.getModelName()
 
@@ -56,6 +58,21 @@ module.exports = class MentorsHelper {
 				allow_filtering: true,
 				model_names: { [Op.contains]: [sessionModelName] },
 			})
+
+			const defaultRuleFilter = await defaultRulesFilter({
+				ruleType: common.DEFAULT_RULES.SESSION_TYPE,
+				requesterId: menteeUserId,
+				roles: roles,
+				requesterOrganizationId: orgId,
+			})
+
+			if (defaultRuleFilter.error && defaultRuleFilter.error.missingField) {
+				return responses.failureResponse({
+					message: 'PROFILE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
 			const filteredQuery = utils.validateAndBuildFilters(query, validationData, sessionModelName)
 
@@ -68,7 +85,8 @@ module.exports = class MentorsHelper {
 				search,
 				id,
 				filteredQuery,
-				saasFilter
+				saasFilter,
+				defaultRuleFilter
 			)
 
 			if (!upcomingSessions.data.length) {
@@ -77,7 +95,7 @@ module.exports = class MentorsHelper {
 					message: 'UPCOMING_SESSION_FETCHED',
 					result: {
 						data: [],
-						count: 0,
+						count: upcomingSessions.count,
 					},
 				})
 			}
@@ -316,7 +334,6 @@ module.exports = class MentorsHelper {
 			}
 			// Call user service to fetch organisation details --SAAS related changes
 			let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
-			console.log('USER ORG DETAILS: ', userOrgDetails)
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
 				return responses.failureResponse({
@@ -405,9 +422,8 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
-			if (data.email) {
-				data.email = emailEncryption.encrypt(data.email.toLowerCase())
-			}
+			if (data.email) data.email = emailEncryption.encrypt(data.email.toLowerCase())
+			let skipValidation = data.skipValidation ? data.skipValidation : false
 			// Remove certain data in case it is getting passed
 			const dataToRemove = [
 				'user_id',
@@ -444,7 +460,7 @@ module.exports = class MentorsHelper {
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
-			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
+			let res = utils.validateInput(data, validationData, mentorExtensionsModelName, skipValidation)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'PROFILE_UPDATE_FAILED',
@@ -456,6 +472,29 @@ module.exports = class MentorsHelper {
 
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
 
+			if (data?.organization?.id) {
+				//Do a org policy update for the user only if the data object explicitly includes an
+				//organization.id. This is added for the users/update workflow where
+				//both both user data and organisation can change at the same time.
+				let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: data.organization.id })
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					data.organization.id
+				)
+				if (!orgPolicies?.organization_id) {
+					return responses.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				data.organization_id = data.organization.id
+				const newPolicy = await orgAdminService.constructOrgPolicyObject(orgPolicies, true)
+				data = _.merge({}, data, newPolicy)
+				data.visible_to_organizations = Array.from(
+					new Set([...userOrgDetails.data.result.related_orgs, data.organization.id])
+				)
+			}
+			console.log('UPDATED MENTOR EXTENSIONS: ', data)
 			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
 				returning: true,
 				raw: true,
@@ -890,7 +929,7 @@ module.exports = class MentorsHelper {
 			// Map over extensionDetails.data to merge with the corresponding userDetail
 			extensionDetails.data = extensionDetails.data
 				.map((extensionDetail) => {
-					const user_id = extensionDetail.user_id
+					const user_id = `${extensionDetail.user_id}`
 					if (userDetailsMap.has(user_id)) {
 						let userDetail = userDetailsMap.get(user_id)
 						// Merge userDetail with extensionDetail, prioritize extensionDetail properties
@@ -977,7 +1016,7 @@ module.exports = class MentorsHelper {
 			// searching for specific organization
 			let additionalFilter = ``
 			if (organization_ids.length !== 0) {
-				additionalFilter = `AND "organization_id" in (${organization_ids.join(',')}) `
+				additionalFilter = `AND "organization_id" in (${organization_ids.map((id) => `'${id}'`).join(',')}) `
 			}
 
 			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
@@ -988,7 +1027,7 @@ module.exports = class MentorsHelper {
 					 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
 					 * so we will check mentor's organization_id and user organization_id are matching
 					 */
-					filter = `AND "organization_id" = ${userPolicyDetails.organization_id}`
+					filter = `AND "organization_id" = '${userPolicyDetails.organization_id}'`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
 					/**
 					 * If user external_mentor_visibility is associated
@@ -997,10 +1036,10 @@ module.exports = class MentorsHelper {
 
 					filter =
 						additionalFilter +
-						`AND ( (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT')`
+						`AND ( ('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT')`
 
 					if (additionalFilter.length === 0)
-						filter += ` OR organization_id = ${userPolicyDetails.organization_id} )`
+						filter += ` OR organization_id = '${userPolicyDetails.organization_id}' )`
 					else filter += `)`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
 					/**
@@ -1009,7 +1048,7 @@ module.exports = class MentorsHelper {
 					 */
 					filter =
 						additionalFilter +
-						`AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT' ) OR "mentor_visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+						`AND (('${userPolicyDetails.organization_id}' = ANY("visible_to_organizations") AND "mentor_visibility" != 'CURRENT' ) OR "mentor_visibility" = 'ALL' OR "organization_id" = '${userPolicyDetails.organization_id}')`
 				}
 			}
 

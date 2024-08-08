@@ -8,7 +8,11 @@ const { filterRequestBody } = require('../common')
 const { questionSet } = require('@constants/blacklistConfig')
 module.exports = {
 	read: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		req.checkParams('id')
+			.notEmpty()
+			.withMessage('id param is empty')
+			.isInt()
+			.withMessage('id param should be number')
 	},
 	update: (req) => {
 		req.body = filterRequestBody(req.body, questionSet.update)

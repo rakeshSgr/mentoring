@@ -204,19 +204,25 @@ module.exports = class MenteeExtensionQueries {
 			throw error
 		}
 	}
-	static async getUsersByUserIds(ids, options = {}) {
+
+	static async getUsersByUserIds(ids, options = {}, unscoped = false) {
 		try {
-			const result = await MenteeExtension.findAll({
+			const query = {
 				where: {
-					user_id: ids, // Assuming "user_id" is the field you want to match
+					user_id: ids,
 				},
 				...options,
 				returning: true,
 				raw: true,
-			})
+			}
+
+			const result = unscoped
+				? await MenteeExtension.unscoped().findAll(query)
+				: await MenteeExtension.findAll(query)
 
 			return result
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

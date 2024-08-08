@@ -100,7 +100,7 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 }) {
 	try {
 		const [userDetails, defaultRules] = await Promise.all([
-			getUserDetailsFromView(requesterId, isAMentor(roles)),
+			getUserDetails(requesterId, isAMentor(roles)),
 			defaultRuleQueries.findAll({ type: ruleType, organization_id: requesterOrganizationId }),
 		])
 
@@ -299,6 +299,8 @@ function getNestedValue(obj, fieldPath) {
 	for (const field of fields) {
 		if (value && value[field] !== undefined) {
 			value = value[field]
+		} else if (value && value.meta && value.meta[field] !== undefined) {
+			value = value.meta[field]
 		} else {
 			return undefined
 		}
