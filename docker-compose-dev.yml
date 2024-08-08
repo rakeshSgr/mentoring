@@ -52,7 +52,7 @@ services:
     command: ['nodemon', '--trace-warnings', 'app.js']
     environment:
       - KAFKA_URL=kafka:9092
-      - USER_SERVICE_HOST=http://user:3001
+      - USER_SERVICE_HOST=http://interface:3569
       - REDIS_HOST=redis://redis:6379
       - SCHEDULER_SERVICE_HOST=http://scheduler:4000
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/mentoring-local
@@ -183,7 +183,7 @@ services:
   #     - elevate_net
 
   citus:
-    image: citusdata/citus:11.2.0
+    image: citusdata/citus:12.1
     container_name: 'citus_master'
     ports:
       - 5432:5432
@@ -195,7 +195,8 @@ services:
       #POSTGRES_DB: 'user-local'
       POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
       POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
-
+    volumes:
+      - db-data:/var/lib/postgresql/data
     networks:
       - elevate_net
   pgadmin:
@@ -217,5 +218,6 @@ networks:
 volumes:
   zookeeper-data:
   kafka-data:
+  db-data:
   redis_data:
   healthcheck-volume:

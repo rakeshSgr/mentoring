@@ -1,5 +1,4 @@
 const MenteeExtension = require('@database/models/index').UserExtension
-const MentorExtension = require('@database/models/index').MentorExtension
 const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
@@ -405,32 +404,15 @@ module.exports = class MenteeExtensionQueries {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND ' + filterClause
 			}
 
-			const cteQueries = `
-				WITH mentees AS (
-					SELECT ${projectionClause}
-					FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
-					WHERE
-						${userFilterClause}
-						${filterClause}
-						${saasFilterClause}
-						${additionalFilter}
-				), mentors AS (
-					SELECT ${projectionClause}
-					FROM ${common.materializedViewsPrefix + MentorExtension.tableName}
-					WHERE
-						${userFilterClause}
-						${filterClause}
-						${saasFilterClause}
-						${additionalFilter}
-						${defaultFilter}
-				)
-			`
-
-			let combinedQuery = `
-				${cteQueries}
-				SELECT * FROM mentees
-				UNION
-				SELECT * FROM mentors
+			const query = `
+				SELECT ${projectionClause}
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${userFilterClause}
+					${filterClause}
+					${saasFilterClause}
+					${additionalFilter}
+					${defaultFilter}
 				OFFSET :offset
 				LIMIT :limit
 			`
@@ -445,19 +427,20 @@ module.exports = class MenteeExtensionQueries {
 				replacements.limit = limit
 			}
 
-			const combinedResults = await Sequelize.query(combinedQuery, {
+			const results = await Sequelize.query(query, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
 			})
 
 			const countQuery = `
-				${cteQueries}
 				SELECT COUNT(*) AS count
-				FROM (
-					SELECT * FROM mentees
-					UNION
-					SELECT * FROM mentors
-				) AS combined
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${userFilterClause}
+					${filterClause}
+					${saasFilterClause}
+					${additionalFilter}
+					${defaultFilter}
 			`
 
 			const count = await Sequelize.query(countQuery, {
@@ -466,7 +449,7 @@ module.exports = class MenteeExtensionQueries {
 			})
 
 			return {
-				data: combinedResults,
+				data: results,
 				count: Number(count[0].count),
 			}
 		} catch (error) {
