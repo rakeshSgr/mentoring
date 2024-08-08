@@ -28,6 +28,7 @@ module.exports = class OrgAdminService {
 
 	static async roleChange(bodyData, updateData = {}) {
 		try {
+			bodyData.user_id = bodyData.user_id.toString()
 			if (
 				utils.validateRoleAccess(bodyData.current_roles, common.MENTOR_ROLE) &&
 				utils.validateRoleAccess(bodyData.new_roles, common.MENTEE_ROLE)

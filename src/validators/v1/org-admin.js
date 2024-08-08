@@ -11,8 +11,6 @@ module.exports = {
 		req.checkBody('user_id')
 			.notEmpty()
 			.withMessage('user_id field is empty')
-			.isInt()
-			.withMessage('user_id must be an integer')
 		req.checkBody('current_roles')
 			.notEmpty()
 			.withMessage('current_roles field is empty')
