@@ -114,7 +114,7 @@ module.exports = class UserHelper {
 	}
 
 	static #getExtensionData(userDetails, orgExtension) {
-		const extensionData = {
+		return {
 			id: userDetails.id,
 			organization: {
 				id: orgExtension.organization_id,
@@ -125,16 +125,7 @@ module.exports = class UserHelper {
 			name: userDetails.name,
 			skipValidation: true,
 			competency: userDetails.competency,
-			language: userDetails.language,
-			designation: userDetails.designation,
 		}
-
-		Object.keys(extensionData).forEach((key) => {
-			if (extensionData[key] === undefined) {
-				delete extensionData[key]
-			}
-		})
-		return extensionData
 	}
 
 	static async #createOrUpdateOrg(orgData) {
