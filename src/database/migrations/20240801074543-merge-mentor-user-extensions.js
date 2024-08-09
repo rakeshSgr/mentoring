@@ -49,7 +49,7 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		return queryInterface.sequelize.transaction(async (transaction) => {
+		await queryInterface.sequelize.transaction(async (transaction) => {
 			// Recreate the mentor_extensions table
 			await queryInterface.createTable(
 				'mentor_extensions',
@@ -151,5 +151,6 @@ module.exports = {
 			// Remove the is_mentor flag from user_extensions
 			await queryInterface.removeColumn('user_extensions', 'is_mentor', { transaction })
 		})
+		await materializedViewsService.checkAndCreateMaterializedViews()
 	},
 }
