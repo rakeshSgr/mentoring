@@ -2216,7 +2216,7 @@ module.exports = class SessionsHelper {
 	 */
 	static async bulkUpdateMentorNames(mentorsId, mentorsName) {
 		try {
-			mentorsId = mentorsId.toString()
+			mentorsId = mentorsId.map(String)
 			await sessionQueries.updateSession(
 				{
 					mentor_id: mentorsId,

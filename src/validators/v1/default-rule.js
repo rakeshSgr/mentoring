@@ -110,15 +110,8 @@ module.exports = {
 				.withMessage('The target_field field is required and must be a non-empty string.')
 
 			req.checkBody('is_target_from_sessions_mentor')
-				.optional()
 				.isBoolean()
 				.withMessage('The is_target_from_sessions_mentor field must be a boolean if provided.')
-				.custom((value) => {
-					if (req.body.type === 'mentor' && value === true) {
-						throw new Error('The is_target_from_sessions_mentor field cannot be true when type is mentor.')
-					}
-					return true
-				})
 
 			req.checkBody('requester_field')
 				.isString()

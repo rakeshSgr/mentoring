@@ -402,9 +402,9 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
-			const orgId = bodyData.organization_id
 			bodyData.user_id = bodyData.user_id.toString()
 			bodyData.organization_id = bodyData.organization_id.toString()
+			const orgId = bodyData.organization_id
 			// Get organization details
 			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
