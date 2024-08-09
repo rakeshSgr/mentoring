@@ -95,6 +95,7 @@ module.exports = (sequelize, DataTypes) => {
 					where: {
 						is_mentor: true,
 					},
+					attributes: { exclude: ['name', 'email'] },
 				},
 			},
 		}
