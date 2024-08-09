@@ -247,14 +247,7 @@ module.exports = class OrgAdminService {
 					})
 					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
 				}
-
-				await mentorQueries.updateMentorExtension(
-					'', //userId not required
-					policyData, // data to update
-					{}, //options
-					{ organization_id: decodedToken.organization_id } //custom filter for where clause
-				)
-
+				//Update all users belonging to the org with new policies
 				await menteeQueries.updateMenteeExtension(
 					'', //userId not required
 					policyData, // data to update
@@ -531,18 +524,12 @@ module.exports = class OrgAdminService {
 	 * @param {Object} organizationDetails 		- Object of organization details of the related org from user service.
 	 * @returns {Object} 						- A object that reurn a response object.
 	 */
-	static async updateRelatedOrgs(delta_organization_ids, orgId, action) {
+	static async updateRelatedOrgs(deltaOrganizationIds, orgId, action) {
 		try {
-			if (action == common.PUSH) {
-				await Promise.all([
-					await menteeQueries.addVisibleToOrg(orgId, delta_organization_ids),
-					await mentorQueries.addVisibleToOrg(orgId, delta_organization_ids),
-				])
-			} else if (action == common.POP) {
-				await Promise.all([
-					await menteeQueries.removeVisibleToOrg(orgId, delta_organization_ids),
-					await mentorQueries.removeVisibleToOrg(orgId, delta_organization_ids),
-				])
+			if (action === common.PUSH) {
+				await menteeQueries.addVisibleToOrg(orgId, deltaOrganizationIds)
+			} else if (action === common.POP) {
+				await menteeQueries.removeVisibleToOrg(orgId, deltaOrganizationIds)
 			}
 
 			return responses.successResponse({
