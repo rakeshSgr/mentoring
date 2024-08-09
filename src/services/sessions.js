@@ -2209,16 +2209,17 @@ module.exports = class SessionsHelper {
 	 * Bulk update mentor names for sessions.
 	 * @method
 	 * @name bulkUpdateMentorNames
-	 * @param {Array} mentorsId - Array of mentor IDs to update.
+	 * @param {Array} mentorIds - Array of mentor IDs to update.
 	 * @param {STRING} mentorsName - Mentor name that needs to be updated.
 	 * @returns {Object} - Success response indicating the update was performed successfully.
 	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
 	 */
-	static async bulkUpdateMentorNames(mentorsId, mentorsName) {
+	static async bulkUpdateMentorNames(mentorIds, mentorsName) {
 		try {
+			mentorIds = mentorIds.map(String)
 			await sessionQueries.updateSession(
 				{
-					mentor_id: mentorsId,
+					mentor_id: mentorIds,
 				},
 				{
 					mentor_name: mentorsName,
