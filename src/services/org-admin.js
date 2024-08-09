@@ -400,6 +400,8 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
+			bodyData.user_id = bodyData.user_id.toString()
+			bodyData.organization_id = bodyData.organization_id.toString()
 			const orgId = bodyData.organization_id
 			// Get organization details
 			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
@@ -453,6 +455,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async deactivateUpcomingSession(userIds) {
 		try {
+			userIds = userIds.map(String)
 			let deactivatedIdsList = []
 			let failedUserIds = []
 			for (let key in userIds) {
@@ -533,6 +536,8 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateRelatedOrgs(delta_organization_ids, orgId, action) {
 		try {
+			orgId = orgId.toString()
+			delta_organization_ids = delta_organization_ids.map(String)
 			if (action == common.PUSH) {
 				await Promise.all([
 					await menteeQueries.addVisibleToOrg(orgId, delta_organization_ids),
