@@ -162,32 +162,23 @@ module.exports = class UserHelper {
 
 		let isRoleChanged = false
 
-		if (isAMentee) {
-			const menteeExtension = await menteeQueries.getMenteeExtension(userExtensionData.id, ['organization_id'])
+		const menteeExtension = await menteeQueries.getMenteeExtension(userExtensionData.id, [
+			'organization_id',
+			'is_mentor',
+		])
 
-			if (!menteeExtension) {
-				const mentorExtension = await mentorQueries.getMentorExtension(userExtensionData.id, [
-					'organization_id',
-				])
-				if (!mentorExtension) throw new Error('User Not Found')
+		if (!menteeExtension) throw new Error('User Not Found')
 
-				roleChangePayload.current_roles = [common.MENTOR_ROLE]
-				roleChangePayload.new_roles = [common.MENTEE_ROLE]
-				isRoleChanged = true
-			}
-		} else {
-			const mentorExtension = await mentorQueries.getMentorExtension(userExtensionData.id, ['organization_id'])
-			if (!mentorExtension) {
-				const menteeExtension = await menteeQueries.getMenteeExtension(userExtensionData.id, [
-					'organization_id',
-				])
-				if (!menteeExtension) throw new Error('User Not Found')
-
-				roleChangePayload.current_roles = [common.MENTEE_ROLE]
-				roleChangePayload.new_roles = [common.MENTOR_ROLE]
-				isRoleChanged = true
-			}
+		if (isAMentee && menteeExtension.is_mentor) {
+			roleChangePayload.current_roles = [common.MENTOR_ROLE]
+			roleChangePayload.new_roles = [common.MENTEE_ROLE]
+			isRoleChanged = true
+		} else if (!isAMentee && !menteeExtension.is_mentor) {
+			roleChangePayload.current_roles = [common.MENTEE_ROLE]
+			roleChangePayload.new_roles = [common.MENTOR_ROLE]
+			isRoleChanged = true
 		}
+
 		if (isRoleChanged) {
 			//If role is changed, the role change, org policy changes for that user
 			//and additional data update of the user is done by orgAdmin's roleChange workflow
@@ -210,16 +201,22 @@ module.exports = class UserHelper {
 			return user
 		}
 	}
+
+	/**
+	 * Checks the existence of a user based on their mentee extension.
+	 *
+	 * @param {string} userId - The ID of the user to check.
+	 * @returns {Promise<boolean>} - Returns `true` if the user does not exist, `false` otherwise.
+	 * @throws {Error} - Throws an error if the query fails.
+	 */
 	static async #checkUserExistence(userId) {
 		try {
-			const [menteeExtension, mentorExtension] = await Promise.all([
-				menteeQueries.getMenteeExtension(userId, ['organization_id']),
-				mentorQueries.getMentorExtension(userId, ['organization_id']),
-			])
+			const menteeExtension = await menteeQueries.getMenteeExtension(userId, ['organization_id'])
 
-			const userExists = menteeExtension !== null || mentorExtension !== null
+			// Check if menteeExtension exists
+			const userExists = menteeExtension !== null
 
-			return !userExists
+			return !userExists // Return true if user does not exist
 		} catch (error) {
 			console.error('HERE: ', error)
 			throw error
