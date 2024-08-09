@@ -5668,19 +5668,29 @@ paths:
                   type: string
                 type:
                   type: string
-                allow_filtering:
-                  type: boolean
                 data_type:
                   type: string
+                model_names:
+                  type: array
+                  items:
+                    type: string
+                allow_filtering:
+                  type: boolean
+                required:
+                  type: boolean
             examples:
               example1:
                 value:
-                  value: roles
-                  label: Roles
+                  value: QATESTING
+                  label: QATESTING
                   status: ACTIVE
                   type: SYSTEM
+                  data_type: ARRAY[STRING]
+                  model_names:
+                    - MentorExtension
+                    - UserExtension
                   allow_filtering: true
-                  data_type: string
+                  required: true
       responses:
         '201':
           description: Created
