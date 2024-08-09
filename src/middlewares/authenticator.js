@@ -7,7 +7,6 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
 const fs = require('fs')
-const MentorExtensionQueries = require('@database/queries/mentorExtension')
 const MenteeExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = async function (req, res, next) {
@@ -31,26 +30,26 @@ module.exports = async function (req, res, next) {
 
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
 
-		if (skipFurtherChecks) return next()
+		if (!skipFurtherChecks) {
+			if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
+				await validateSession(authHeader)
 
-		if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
-			await validateSession(authHeader)
+			const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
 
-		const roleValidation = common.roleValidationPaths.some((path) => req.path.includes(path))
+			if (roleValidation) {
+				if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
+				else if (process.env.AUTH_METHOD === common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY)
+					await dbBasedRoleValidation(decodedToken)
+			}
 
-		if (roleValidation) {
-			if (process.env.AUTH_METHOD === common.AUTH_METHOD.NATIVE) await nativeRoleValidation(decodedToken)
-			else if (process.env.AUTH_METHOD === common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY)
-				await dbBasedRoleValidation(decodedToken)
+			const isPermissionValid = await checkPermissions(
+				decodedToken.data.roles.map((role) => role.title),
+				req.path,
+				req.method
+			)
+
+			if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 		}
-
-		const isPermissionValid = await checkPermissions(
-			decodedToken.data.roles.map((role) => role.title),
-			req.path,
-			req.method
-		)
-
-		if (!isPermissionValid) throw createUnauthorizedResponse('PERMISSION_DENIED')
 
 		req.decodedToken = {
 			id: typeof decodedToken.data.id === 'number' ? decodedToken.data.id.toString() : decodedToken.data.id,
@@ -150,21 +149,12 @@ async function dbBasedRoleValidation(decodedToken) {
 	const userId = decodedToken.data.id
 	const roles = decodedToken.data.roles
 	const isMentor = isMentorRole(roles)
-	if (isMentor) {
-		const mentorExtension = await MentorExtensionQueries.getMentorExtension(userId, ['user_id'])
-		if (!mentorExtension) {
-			const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId, ['user_id'])
-			if (menteeExtension) throw createUnauthorizedResponse('USER_ROLE_UPDATED')
-			else throw createUnauthorizedResponse('USER_NOT_FOUND')
-		}
-	} else {
-		const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId, ['user_id'])
-		if (!menteeExtension) {
-			const mentorExtension = await MentorExtensionQueries.getMentorExtension(userId, ['user_id'])
-			if (mentorExtension) throw createUnauthorizedResponse('USER_ROLE_UPDATED')
-			else throw createUnauthorizedResponse('USER_NOT_FOUND')
-		}
-	}
+
+	const menteeExtension = await MenteeExtensionQueries.getMenteeExtension(userId.toString(), ['user_id', 'is_mentor'])
+	if (!menteeExtension) throw createUnauthorizedResponse('USER_NOT_FOUND')
+
+	const roleMismatch = (isMentor && !menteeExtension.is_mentor) || (!isMentor && menteeExtension.is_mentor)
+	if (roleMismatch) throw createUnauthorizedResponse('USER_ROLE_UPDATED')
 }
 
 function isAdminRole(roles) {

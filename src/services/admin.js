@@ -85,13 +85,8 @@ module.exports = class AdminHelper {
 
 				const sessionAttendeesIds = sessionAttendees.map((attendee) => attendee.mentee_id)
 
-				const mentees = await menteeQueries.getUsersByUserIds(sessionAttendeesIds, {}, true)
-				const enrolledMentors = await mentorQueries.getMentorsByUserIds(sessionAttendeesIds, {}, true)
+				const attendeeProfiles = await menteeQueries.getUsersByUserIds(sessionAttendeesIds, {}, true)
 
-				console.log('MENTEES: ', mentees)
-				console.log('MENTORS: ', enrolledMentors)
-
-				const attendeeProfiles = [...mentees, ...enrolledMentors]
 				console.log('ATTENDEE PROFILES: ', attendeeProfiles)
 
 				const sendEmailPromises = attendeeProfiles.map(async (attendee) => {

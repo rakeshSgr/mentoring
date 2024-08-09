@@ -69,6 +69,7 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
+				bodyData.organization_id = bodyData.organization_id.toString()
 				mentorDetails.organization_id = bodyData.organization_id
 				const organizationDetails = await userRequests.fetchOrgDetails({
 					organizationId: bodyData.organization_id,
@@ -95,12 +96,12 @@ module.exports = class OrgAdminService {
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				mentorDetails = _.merge({}, mentorDetails, newPolicy, updateData)
 				mentorDetails.visible_to_organizations = Array.from(
-					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+					new Set([...(organizationDetails.data.result.related_orgs || []), bodyData.organization_id])
 				)
 			}
-
+			mentorDetails.is_mentor = false
 			// Add fetched mentor details to user_extension table
-			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
+			const menteeCreationData = await menteeQueries.updateMenteeExtension(bodyData.user_id, mentorDetails)
 			if (!menteeCreationData) {
 				return responses.failureResponse({
 					message: 'MENTEE_EXTENSION_CREATION_FAILED',
@@ -115,11 +116,6 @@ module.exports = class OrgAdminService {
 				removedSessionsDetail,
 				mentorDetails.organization_id ? mentorDetails.organization_id : ''
 			)
-
-			// Delete mentor Extension
-			if (isAttendeesNotified) {
-				await mentorQueries.deleteMentorExtension(bodyData.user_id, true)
-			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -157,6 +153,7 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
+				bodyData.organization_id = bodyData.organization_id.toString()
 				let organizationDetails = await userRequests.fetchOrgDetails({
 					organizationId: bodyData.organization_id,
 				})
@@ -182,12 +179,19 @@ module.exports = class OrgAdminService {
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				menteeDetails = _.merge({}, menteeDetails, newPolicy, updateData)
 				menteeDetails.visible_to_organizations = Array.from(
-					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+					new Set([...(organizationDetails.data.result.related_orgs || []), bodyData.organization_id])
 				)
 			}
 
 			// Add fetched mentee details to mentor_extension table
-			const mentorCreationData = await mentorQueries.createMentorExtension(menteeDetails)
+			const mentorCreationData = await mentorQueries.updateMentorExtension(
+				bodyData.user_id,
+				menteeDetails,
+				'',
+				'',
+				true
+			)
+
 			if (!mentorCreationData) {
 				return responses.failureResponse({
 					message: 'MENTOR_EXTENSION_CREATION_FAILED',
@@ -195,15 +199,11 @@ module.exports = class OrgAdminService {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			// Delete mentee extension (user_extension table)
-			await menteeQueries.deleteMenteeExtension(bodyData.user_id, true)
-
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED',
 				result: {
-					user_id: mentorCreationData.user_id,
+					user_id: bodyData.user_id,
 					roles: bodyData.new_roles,
 				},
 			})
@@ -249,14 +249,7 @@ module.exports = class OrgAdminService {
 					})
 					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
 				}
-
-				await mentorQueries.updateMentorExtension(
-					'', //userId not required
-					policyData, // data to update
-					{}, //options
-					{ organization_id: decodedToken.organization_id } //custom filter for where clause
-				)
-
+				//Update all users belonging to the org with new policies
 				await menteeQueries.updateMenteeExtension(
 					'', //userId not required
 					policyData, // data to update
@@ -402,6 +395,8 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
+			bodyData.user_id = bodyData.user_id.toString()
+			bodyData.organization_id = bodyData.organization_id.toString()
 			const orgId = bodyData.organization_id
 			// Get organization details
 			let organizationDetails = await userRequests.fetchOrgDetails({ organizationId: orgId })
@@ -455,6 +450,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async deactivateUpcomingSession(userIds) {
 		try {
+			userIds = userIds.map(String)
 			let deactivatedIdsList = []
 			let failedUserIds = []
 			for (let key in userIds) {
@@ -533,18 +529,14 @@ module.exports = class OrgAdminService {
 	 * @param {Object} organizationDetails 		- Object of organization details of the related org from user service.
 	 * @returns {Object} 						- A object that reurn a response object.
 	 */
-	static async updateRelatedOrgs(delta_organization_ids, orgId, action) {
+	static async updateRelatedOrgs(deltaOrganizationIds, orgId, action) {
 		try {
-			if (action == common.PUSH) {
-				await Promise.all([
-					await menteeQueries.addVisibleToOrg(orgId, delta_organization_ids),
-					await mentorQueries.addVisibleToOrg(orgId, delta_organization_ids),
-				])
-			} else if (action == common.POP) {
-				await Promise.all([
-					await menteeQueries.removeVisibleToOrg(orgId, delta_organization_ids),
-					await mentorQueries.removeVisibleToOrg(orgId, delta_organization_ids),
-				])
+			orgId = orgId.toString()
+			deltaOrganizationIds = deltaOrganizationIds.map(String)
+			if (action === common.PUSH) {
+				await menteeQueries.addVisibleToOrg(orgId, deltaOrganizationIds)
+			} else if (action === common.POP) {
+				await menteeQueries.removeVisibleToOrg(orgId, deltaOrganizationIds)
 			}
 
 			return responses.successResponse({

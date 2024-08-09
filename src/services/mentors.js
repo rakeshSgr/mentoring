@@ -918,7 +918,7 @@ module.exports = class MentorsHelper {
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
 					extensionDetails.data,
 					uniqueOrgIds,
-					common.mentorExtensionModelName,
+					mentorExtensionsModelName,
 					'organization_id'
 				)
 			}

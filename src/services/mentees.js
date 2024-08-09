@@ -437,28 +437,24 @@ module.exports = class MenteesHelper {
 	 */
 	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			const mentorExtension = await mentorQueries.getMentorExtension(userId, [
-				'external_session_visibility',
-				'organization_id',
-			])
-
 			const menteeExtension = await menteeQueries.getMenteeExtension(userId, [
 				'external_session_visibility',
 				'organization_id',
+				'is_mentor',
 			])
 
-			if (!mentorExtension && !menteeExtension) {
+			if (!menteeExtension) {
 				throw responses.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
 					message: 'USER_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const organizationName = mentorExtension
-				? (await userRequests.fetchOrgDetails({ organizationId: mentorExtension.organization_id }))?.data
+			const organizationName = menteeExtension
+				? (await userRequests.fetchOrgDetails({ organizationId: menteeExtension.organization_id }))?.data
 						?.result?.name
 				: ''
-			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
+			if ((isAMentor && menteeExtension.is_mentor == false) || (!isAMentor && menteeExtension.is_mentor == true))
 				throw responses.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
 					message: `Congratulations! You are now a mentor to the organisation ${organizationName}. Please re-login to start your journey as a mentor.`,
@@ -1239,11 +1235,10 @@ module.exports = class MenteesHelper {
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const userExtensionModelName = await menteeQueries.getModelName()
-			const mentorExtensionModelName = await mentorQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
-				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
+				model_names: { [Op.overlap]: [userExtensionModelName] },
 			})
 
 			let filteredQuery = utils.validateAndBuildFilters(
@@ -1290,7 +1285,7 @@ module.exports = class MenteesHelper {
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
 					extensionDetails.data,
 					uniqueOrgIds,
-					common.mentorExtensionModelName,
+					userExtensionModelName,
 					'organization_id'
 				)
 			}

@@ -27,8 +27,7 @@ module.exports = class DefaultRuleHelper {
 	 */
 
 	static async validateFields(defaultOrgId, bodyData) {
-		const isSessionType =
-			bodyData.type === common.DEFAULT_RULES.SESSION_TYPE && !bodyData.is_target_from_sessions_mentor
+		const isSessionType = bodyData.type === common.DEFAULT_RULES.SESSION_TYPE
 		const modelNamePromise = isSessionType ? sessionQueries.getModelName() : mentorExtensionQueries.getModelName()
 
 		const mentorModelNamePromise = mentorExtensionQueries.getModelName()
