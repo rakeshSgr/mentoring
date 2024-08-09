@@ -69,6 +69,7 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
+				bodyData.organization_id = bodyData.organization_id.toString()
 				mentorDetails.organization_id = bodyData.organization_id
 				const organizationDetails = await userRequests.fetchOrgDetails({
 					organizationId: bodyData.organization_id,
@@ -95,7 +96,7 @@ module.exports = class OrgAdminService {
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				mentorDetails = _.merge({}, mentorDetails, newPolicy, updateData)
 				mentorDetails.visible_to_organizations = Array.from(
-					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+					new Set([...(organizationDetails.data.result.related_orgs || []), bodyData.organization_id])
 				)
 			}
 			mentorDetails.is_mentor = false
@@ -152,6 +153,7 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.organization_id) {
+				bodyData.organization_id = bodyData.organization_id.toString()
 				let organizationDetails = await userRequests.fetchOrgDetails({
 					organizationId: bodyData.organization_id,
 				})
@@ -177,7 +179,7 @@ module.exports = class OrgAdminService {
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				menteeDetails = _.merge({}, menteeDetails, newPolicy, updateData)
 				menteeDetails.visible_to_organizations = Array.from(
-					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
+					new Set([...(organizationDetails.data.result.related_orgs || []), bodyData.organization_id])
 				)
 			}
 
@@ -529,7 +531,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateRelatedOrgs(deltaOrganizationIds, orgId, action) {
 		try {
-      orgId = orgId.toString()
+			orgId = orgId.toString()
 			deltaOrganizationIds = deltaOrganizationIds.map(String)
 			if (action === common.PUSH) {
 				await menteeQueries.addVisibleToOrg(orgId, deltaOrganizationIds)
