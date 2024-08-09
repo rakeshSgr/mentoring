@@ -98,9 +98,9 @@ module.exports = class OrgAdminService {
 					new Set([...organizationDetails.data.result.related_orgs, bodyData.organization_id])
 				)
 			}
-
+			mentorDetails.is_mentor = false
 			// Add fetched mentor details to user_extension table
-			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
+			const menteeCreationData = await menteeQueries.updateMenteeExtension(bodyData.user_id, mentorDetails)
 			if (!menteeCreationData) {
 				return responses.failureResponse({
 					message: 'MENTEE_EXTENSION_CREATION_FAILED',
@@ -115,11 +115,6 @@ module.exports = class OrgAdminService {
 				removedSessionsDetail,
 				mentorDetails.organization_id ? mentorDetails.organization_id : ''
 			)
-
-			// Delete mentor Extension
-			if (isAttendeesNotified) {
-				await mentorQueries.deleteMentorExtension(bodyData.user_id, true)
-			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -187,7 +182,14 @@ module.exports = class OrgAdminService {
 			}
 
 			// Add fetched mentee details to mentor_extension table
-			const mentorCreationData = await mentorQueries.createMentorExtension(menteeDetails)
+			const mentorCreationData = await mentorQueries.updateMentorExtension(
+				bodyData.user_id,
+				menteeDetails,
+				'',
+				'',
+				true
+			)
+
 			if (!mentorCreationData) {
 				return responses.failureResponse({
 					message: 'MENTOR_EXTENSION_CREATION_FAILED',
@@ -195,15 +197,11 @@ module.exports = class OrgAdminService {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			// Delete mentee extension (user_extension table)
-			await menteeQueries.deleteMenteeExtension(bodyData.user_id, true)
-
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED',
 				result: {
-					user_id: mentorCreationData.user_id,
+					user_id: bodyData.user_id,
 					roles: bodyData.new_roles,
 				},
 			})

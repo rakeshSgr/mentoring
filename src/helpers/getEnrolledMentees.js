@@ -28,14 +28,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 				],
 			},
 		}
-		const [menteeDetails, mentorDetails, attendeesAccounts] = await Promise.all([
+		let [enrolledUsers, attendeesAccounts] = await Promise.all([
 			menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
-			mentorExtensionQueries.getMentorsByUserIds(menteeIds, options),
 			userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
 		])
 
-		// Combine details of mentees and mentors
-		let enrolledUsers = [...menteeDetails, ...mentorDetails]
 		enrolledUsers.forEach((user) => {
 			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
 				user.type = menteeTypeMap[user.user_id]

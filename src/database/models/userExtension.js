@@ -75,6 +75,11 @@ module.exports = (sequelize, DataTypes) => {
 			phone: {
 				type: DataTypes.STRING,
 			},
+			is_mentor: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false,
+				defaultValue: false,
+			},
 		},
 		{
 			sequelize,
@@ -84,6 +89,13 @@ module.exports = (sequelize, DataTypes) => {
 			paranoid: true,
 			defaultScope: {
 				attributes: { exclude: ['name', 'email'] },
+			},
+			scopes: {
+				mentors: {
+					where: {
+						is_mentor: true,
+					},
+				},
 			},
 		}
 	)
