@@ -1,5 +1,4 @@
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const mentorExtensionQueries = require('@database/queries/mentorExtension')
 const menteeExtensionQueries = require('@database/queries/userExtension')
 const userRequests = require('@requests/user')
 const entityTypeService = require('@services/entity-type')
@@ -65,7 +64,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		enrolledUsers = await entityTypeService.processEntityTypesToAddValueLabels(
 			enrolledUsers,
 			uniqueOrgIds,
-			[await menteeExtensionQueries.getModelName(), await mentorExtensionQueries.getModelName()],
+			[await menteeExtensionQueries.getModelName()],
 			'organization_id'
 		)
 
