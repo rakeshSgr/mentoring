@@ -440,6 +440,7 @@ module.exports = class MenteesHelper {
 			const menteeExtension = await menteeQueries.getMenteeExtension(userId, [
 				'external_session_visibility',
 				'organization_id',
+				'is_mentor',
 			])
 
 			if (!menteeExtension) {
@@ -1234,11 +1235,10 @@ module.exports = class MenteesHelper {
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			const userExtensionModelName = await menteeQueries.getModelName()
-			const mentorExtensionModelName = await mentorQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
-				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
+				model_names: { [Op.overlap]: [userExtensionModelName] },
 			})
 
 			let filteredQuery = utils.validateAndBuildFilters(
@@ -1285,7 +1285,7 @@ module.exports = class MenteesHelper {
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
 					extensionDetails.data,
 					uniqueOrgIds,
-					common.mentorExtensionModelName,
+					userExtensionModelName,
 					'organization_id'
 				)
 			}
