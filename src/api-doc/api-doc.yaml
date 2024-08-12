@@ -3394,6 +3394,7 @@ paths:
       description: >-
         This API is associated with updating questions
 
+
         * The API Endpoint forupdate question `/mentoring/v1/questions/update`
 
         * It is mandatory to provide values for parameters marked with
@@ -3453,7 +3454,7 @@ paths:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session-QA Org?
+                    session Org?
                   type: rating
                   options: null
                   no_of_stars: 5
@@ -3468,7 +3469,7 @@ paths:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session-QA Org?
+                    session Org?
                   type: rating
                   options: null
                   no_of_stars: 5
