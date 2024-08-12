@@ -3209,11 +3209,16 @@ paths:
       summary: Create questions
       tags:
         - Question
-      description: |-
-        This API is associated with creating questions 
-         - The API Endpoint forcreate question `/mentoring/v1/questions/create` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      description: >-
+        This API is associated with creating questions
+
+
+        * The API Endpoint forcreate question `/mentoring/v1/questions/create`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: x-auth-token
           in: header
@@ -3235,34 +3240,41 @@ paths:
                   description: Name of the question
                 question:
                   type: string
-                  description: Question
+                  description: 'What question you want to add '
                 type:
                   type: string
-                  description: type of question
+                  description: Give the type of the question like feedback or rating
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
-                  description: Number of stars
+                  description: Number of stars to be set
                 status:
                   type: string
                   description: Status of the question
                 category:
                   type: 'null'
+                  description: >-
+                    default is null and for mentor we can use evaluating :
+                    mentor
                 rendering_data:
                   type: object
                   properties:
                     value:
                       type: string
+                      description: Value of the data to be set
                     class:
                       type: string
+                      description: 'class of the data to be set '
                     disabled:
                       type: boolean
+                      description: data should be disabled should set as true or false
                     noOfstars:
                       type: string
-                      description: Number of stars
+                      description: Number of stars to be set
                     position:
                       type: string
+                      description: 'Setting the data position like floating '
                     validation:
                       type: object
                       properties:
@@ -3270,6 +3282,7 @@ paths:
                           type: boolean
                           description: Is required as true or false
                       description: validating data
+                  description: Setting validations and rules to show the data
                 meta:
                   type: 'null'
             examples:
@@ -3457,23 +3470,25 @@ paths:
                   description: Name of the question
                 question:
                   type: string
-                  description: Question
+                  description: 'What question you want to add '
                 type:
                   type: string
-                  description: 'Type of question '
+                  description: Give the type of the question like feedback or rating
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
-                  description: Number of Stars
+                  description: Number of stars to be set
                 status:
                   type: string
-                  description: Status of the queation
+                  description: Status of the question
                 category:
                   type: object
                   properties:
                     evaluating:
                       type: string
+                      description: For mentor category evaluating as mentor
+                  description: 'default category should be as null '
                 rendering_data:
                   type: object
                   properties:
@@ -3482,8 +3497,9 @@ paths:
                       properties:
                         required:
                           type: boolean
-                          description: Is required as true or false
-                      description: validating data
+                          description: 'Setting this question is mandatory or not '
+                      description: 'validating data '
+                  description: Setting validations and rules to show the data
             examples:
               example1:
                 value:
@@ -3626,11 +3642,16 @@ paths:
       summary: Get questions
       tags:
         - Question
-      description: |-
-        This API is associated with getting questions 
-         - The API Endpoint forget question `/mentoring/v1/questions/read` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      description: >-
+        This API is associated with getting questions
+
+
+        * The API Endpoint forget question `/mentoring/v1/questions/read`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: x-auth-token
           in: header
