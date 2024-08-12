@@ -3209,11 +3209,16 @@ paths:
       summary: Create questions
       tags:
         - Question
-      description: |-
-        This API is associated with creating questions 
-         - The API Endpoint forcreate question `/mentoring/v1/questions/create` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      description: >-
+        This API is associated with creating questions
+
+
+        * The API Endpoint forcreate question `/mentoring/v1/questions/create`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: x-auth-token
           in: header
@@ -3232,36 +3237,52 @@ paths:
               properties:
                 name:
                   type: string
+                  description: Name of the question
                 question:
                   type: string
+                  description: 'What question you want to add '
                 type:
                   type: string
+                  description: Give the type of the question like feedback or rating
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
+                  description: Number of stars to be set
                 status:
                   type: string
+                  description: Status of the question
                 category:
                   type: 'null'
+                  description: >-
+                    default is null and for mentor we can use evaluating :
+                    mentor
                 rendering_data:
                   type: object
                   properties:
                     value:
                       type: string
+                      description: Value of the data to be set
                     class:
                       type: string
+                      description: 'class of the data to be set '
                     disabled:
                       type: boolean
+                      description: data should be disabled should set as true or false
                     noOfstars:
                       type: string
+                      description: Number of stars to be set
                     position:
                       type: string
+                      description: 'Setting the data position like floating '
                     validation:
                       type: object
                       properties:
                         required:
                           type: boolean
+                          description: Is required as true or false
+                      description: validating data
+                  description: Setting validations and rules to show the data
                 meta:
                   type: 'null'
             examples:
@@ -3276,6 +3297,27 @@ paths:
                   no_of_stars: 5
                   status: active
                   category: null
+                  rendering_data:
+                    value: ''
+                    class: ion-margin
+                    disabled: false
+                    noOfstars: '5'
+                    position: floating
+                    validation:
+                      required: false
+                  meta: null
+              example2:
+                value:
+                  name: keyvalue
+                  question: >-
+                    To what extent did you feel comfortable sharing your
+                    thoughts in the session?
+                  type: rating
+                  options: null
+                  no_of_stars: 5
+                  status: active
+                  category:
+                    evaluating: mentor
                   rendering_data:
                     value: ''
                     class: ion-margin
@@ -3387,15 +3429,20 @@ paths:
                       correlation: c1987eb0-c58a-415c-99bc-a9de62518318
                       meeting_platform: BBB
   /mentoring/v1/questions/update/{QuestionId}:
-    patch:
+    put:
       summary: Update questions
       tags:
         - Question
-      description: |-
-        This API is associated with updating questions 
-         - The API Endpoint forupdate question `/mentoring/v1/questions/update` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      description: >-
+        This API is associated with updating questions
+
+
+        * The API Endpoint forupdate question `/mentoring/v1/questions/update`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: x-auth-token
           in: header
@@ -3420,45 +3467,69 @@ paths:
               properties:
                 name:
                   type: string
+                  description: Name of the question
                 question:
                   type: string
+                  description: 'What question you want to add '
                 type:
                   type: string
+                  description: Give the type of the question like feedback or rating
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
+                  description: Number of stars to be set
                 status:
                   type: string
+                  description: Status of the question
                 category:
-                  type: 'null'
+                  type: object
+                  properties:
+                    evaluating:
+                      type: string
+                      description: For mentor category evaluating as mentor
+                  description: 'default category should be as null '
                 rendering_data:
                   type: object
                   properties:
-                    value:
-                      type: string
-                    class:
-                      type: string
-                    disabled:
-                      type: boolean
-                    noOfstars:
-                      type: string
-                    position:
-                      type: string
-                    validation:
+                    validators:
                       type: object
                       properties:
                         required:
                           type: boolean
-                meta:
-                  type: 'null'
+                          description: 'Setting this question is mandatory or not '
+                      description: 'validating data '
+                  description: Setting validations and rules to show the data
             examples:
               example1:
                 value:
                   name: keyvalue
                   question: >-
-                    To what extent did you feel comfortable sharing your
-                    thoughts in the session
+                    To what extent were you able to learn new skills in the
+                    session Org?
+                  type: rating
+                  options: null
+                  no_of_stars: 5
+                  status: active
+                  category:
+                    evaluating: mentor
+                  rendering_data:
+                    validators:
+                      required: true
+              example2:
+                value:
+                  name: keyvalue
+                  question: >-
+                    To what extent were you able to learn new skills in the
+                    session Org?
+                  type: rating
+                  options: null
+                  no_of_stars: 5
+                  status: active
+                  category: null
+                  rendering_data:
+                    validators:
+                      required: true
       responses:
         '202':
           description: Accepted
@@ -3571,11 +3642,16 @@ paths:
       summary: Get questions
       tags:
         - Question
-      description: |-
-        This API is associated with getting questions 
-         - The API Endpoint forget question `/mentoring/v1/questions/read` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
+      description: >-
+        This API is associated with getting questions
+
+
+        * The API Endpoint forget question `/mentoring/v1/questions/read`
+
+        * It is mandatory to provide values for parameters marked with
+        `required`
+
+        * Mandatory parameter cannot be empty or null
       parameters:
         - name: x-auth-token
           in: header
