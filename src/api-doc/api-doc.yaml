@@ -3454,7 +3454,7 @@ paths:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session Org?
+                    session ?
                   type: rating
                   options: null
                   no_of_stars: 5
@@ -3469,7 +3469,7 @@ paths:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session Org?
+                    session ?
                   type: rating
                   options: null
                   no_of_stars: 5
