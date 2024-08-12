@@ -19,11 +19,11 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			recommended_for: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
-				allowNull: false,
+				allowNull: true,
 			},
 			categories: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
-				allowNull: false,
+				allowNull: true,
 			},
 			medium: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
