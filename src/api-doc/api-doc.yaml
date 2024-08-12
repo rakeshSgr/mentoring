@@ -3232,16 +3232,21 @@ paths:
               properties:
                 name:
                   type: string
+                  description: Name of the question
                 question:
                   type: string
+                  description: Question
                 type:
                   type: string
+                  description: type of question
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
+                  description: Number of stars
                 status:
                   type: string
+                  description: Status of the question
                 category:
                   type: 'null'
                 rendering_data:
@@ -3255,6 +3260,7 @@ paths:
                       type: boolean
                     noOfstars:
                       type: string
+                      description: Number of stars
                     position:
                       type: string
                     validation:
@@ -3262,6 +3268,8 @@ paths:
                       properties:
                         required:
                           type: boolean
+                          description: Is required as true or false
+                      description: validating data
                 meta:
                   type: 'null'
             examples:
@@ -3276,6 +3284,27 @@ paths:
                   no_of_stars: 5
                   status: active
                   category: null
+                  rendering_data:
+                    value: ''
+                    class: ion-margin
+                    disabled: false
+                    noOfstars: '5'
+                    position: floating
+                    validation:
+                      required: false
+                  meta: null
+              example2:
+                value:
+                  name: keyvalue
+                  question: >-
+                    To what extent did you feel comfortable sharing your
+                    thoughts in the session?
+                  type: rating
+                  options: null
+                  no_of_stars: 5
+                  status: active
+                  category:
+                    evaluating: mentor
                   rendering_data:
                     value: ''
                     class: ion-margin
@@ -3425,16 +3454,21 @@ paths:
               properties:
                 name:
                   type: string
+                  description: Name of the question
                 question:
                   type: string
+                  description: Question
                 type:
                   type: string
+                  description: 'Type of question '
                 options:
                   type: 'null'
                 no_of_stars:
                   type: number
+                  description: Number of Stars
                 status:
                   type: string
+                  description: Status of the queation
                 category:
                   type: object
                   properties:
@@ -3448,13 +3482,15 @@ paths:
                       properties:
                         required:
                           type: boolean
+                          description: Is required as true or false
+                      description: validating data
             examples:
               example1:
                 value:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session ?
+                    session Org?
                   type: rating
                   options: null
                   no_of_stars: 5
@@ -3469,7 +3505,7 @@ paths:
                   name: keyvalue
                   question: >-
                     To what extent were you able to learn new skills in the
-                    session ?
+                    session Org?
                   type: rating
                   options: null
                   no_of_stars: 5
