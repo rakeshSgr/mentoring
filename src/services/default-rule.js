@@ -27,17 +27,13 @@ module.exports = class DefaultRuleHelper {
 	 */
 
 	static async validateFields(defaultOrgId, bodyData) {
-		const isSessionType = bodyData.type === common.DEFAULT_RULES.SESSION_TYPE
+		const isSessionType =
+			bodyData.type === common.DEFAULT_RULES.SESSION_TYPE && !bodyData.is_target_from_sessions_mentor
 		const modelNamePromise = isSessionType ? sessionQueries.getModelName() : mentorExtensionQueries.getModelName()
 
 		const mentorModelNamePromise = mentorExtensionQueries.getModelName()
-		const menteeModelNamePromise = menteeExtensionQueries.getModelName()
 
-		const [modelName, mentorModelName, menteeModelName] = await Promise.all([
-			modelNamePromise,
-			mentorModelNamePromise,
-			menteeModelNamePromise,
-		])
+		const [modelName, mentorModelName] = await Promise.all([modelNamePromise, mentorModelNamePromise])
 
 		const validFieldsPromise = Promise.all([
 			entityTypeQueries.findAllEntityTypes(defaultOrgId, ['id', 'data_type'], {
@@ -52,7 +48,7 @@ module.exports = class DefaultRuleHelper {
 				status: 'ACTIVE',
 				organization_id: defaultOrgId,
 				value: bodyData.requester_field,
-				model_names: { [Op.contains]: [mentorModelName, menteeModelName] },
+				model_names: { [Op.contains]: [mentorModelName] },
 				required: true,
 				allow_filtering: true,
 			}),
