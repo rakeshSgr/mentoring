@@ -5465,11 +5465,24 @@ paths:
                   allow_filtering: 'true'
                   data_type: ARRAY[STRING]
                   model_names:
-                    - MentorExtension
                     - UserExtension
                   required: true
                   status: ACTIVE
                   type: SYSTEM
+              example2:
+                value:
+                  value: pgender
+                  label: gender
+                  allow_filtering: 'true'
+                  data_type: ARRAY[STRING]
+                  model_names:
+                    - Session
+                  required: true
+                  status: ACTIVE
+                  type: SYSTEM
+        description: >-
+          Example 1 is for creating user entity types and Example 2 is for
+          creating session enitity types
       responses:
         '201':
           description: Created
@@ -5763,10 +5776,23 @@ paths:
                   type: SYSTEM
                   data_type: ARRAY[STRING]
                   model_names:
-                    - MentorExtension
                     - UserExtension
                   allow_filtering: true
                   required: true
+              example2:
+                value:
+                  value: pgender
+                  label: gender
+                  allow_filtering: 'true'
+                  data_type: ARRAY[STRING]
+                  model_names:
+                    - Session
+                  required: true
+                  status: ACTIVE
+                  type: SYSTEM
+        description: >-
+          Example 1 is for updating user entity types and Example 2 is for
+          updating session enitity types
       responses:
         '201':
           description: Created
