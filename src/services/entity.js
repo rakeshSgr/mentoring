@@ -229,7 +229,7 @@ module.exports = class EntityHelper {
 
 			if (entities.rows == 0 || entities.count == 0) {
 				return responses.failureResponse({
-					message: 'ENTITY_NOT_FOUND',
+					message: 'NO_RESULTS_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
