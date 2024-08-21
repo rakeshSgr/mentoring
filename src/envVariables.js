@@ -29,6 +29,21 @@ let enviromentVariables = {
 		optional: true,
 		default: 'x-auth-token',
 	},
+	ADMIN_TOKEN_HEADER_NAME: {
+		message: 'Required admin token header name',
+		optional: true,
+		default: 'admin-auth-token',
+	},
+	ADMIN_ACCESS_TOKEN: {
+		message: 'Required admin access token',
+		optional: true,
+		default: false,
+	},
+	ORG_ID_HEADER_NAME: {
+		message: 'Required organization id header name',
+		optional: true,
+		default: 'organization-id',
+	},
 	IS_AUTH_TOKEN_BEARER: {
 		message: 'Required specification: If auth token is bearer or not',
 		optional: true,
