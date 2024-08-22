@@ -12,6 +12,8 @@ const MenteeExtensionQueries = require('@database/queries/userExtension')
 module.exports = async function (req, res, next) {
 	try {
 		const authHeader = req.get(process.env.AUTH_TOKEN_HEADER_NAME)
+		let adminHeader = false
+		if (process.env.ADMIN_ACCESS_TOKEN) adminHeader = req.get(process.env.ADMIN_TOKEN_HEADER_NAME)
 
 		const isInternalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
@@ -29,6 +31,27 @@ module.exports = async function (req, res, next) {
 		}
 
 		const [decodedToken, skipFurtherChecks] = await authenticateUser(authHeader, req)
+
+		if (adminHeader) {
+			if (adminHeader != process.env.ADMIN_ACCESS_TOKEN) throw createUnauthorizedResponse()
+			const organizationId = req.get(process.env.ORG_ID_HEADER_NAME)
+
+			if (!organizationId) {
+				throw responses.failureResponse({
+					message: {
+						key: 'ADD_ORG_HEADER',
+						interpolation: {
+							orgIdHeader: process.env.ORG_ID_HEADER_NAME,
+							adminHeader: process.env.ADMIN_TOKEN_HEADER_NAME,
+						},
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			decodedToken.data.organization_id = organizationId.toString()
+			decodedToken.data.roles.push({ title: common.ADMIN_ROLE })
+		}
 
 		if (!skipFurtherChecks) {
 			if (process.env.SESSION_VERIFICATION_METHOD === common.SESSION_VERIFICATION_METHOD.USER_SERVICE)
@@ -61,6 +84,7 @@ module.exports = async function (req, res, next) {
 					? decodedToken.data.organization_id.toString()
 					: decodedToken.data.organization_id,
 		}
+
 		console.log('DECODED TOKEN:', req.decodedToken)
 		next()
 	} catch (err) {
