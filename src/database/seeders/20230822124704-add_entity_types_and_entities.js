@@ -126,7 +126,7 @@ module.exports = {
 			if (sessionEntityTypes.includes(key)) {
 				entityTypeRow.model_names = ['Session']
 			} else {
-				entityTypeRow.model_names = ['MentorExtension', 'UserExtension']
+				entityTypeRow.model_names = ['UserExtension']
 			}
 			if (key === 'location') {
 				entityTypeRow.allow_custom_entities = false
