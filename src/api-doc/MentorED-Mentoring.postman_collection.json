@@ -15,7 +15,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -44,7 +44,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -86,7 +86,7 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -115,7 +115,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -139,7 +139,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -167,7 +167,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -195,7 +195,7 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -229,14 +229,14 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"STRING\",\n    \"allow_filtering\": true\n}",
+							"raw": "{\n    \"value\": \"roless\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"ARRAY[STRING]\",\n    \"model_names\": [\"UserExtension\",\"Session\"],\n    \"required\": true,\n    \"allow_filtering\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -258,7 +258,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -278,7 +278,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -324,14 +324,14 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"roles\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"STRING\"\n}",
+							"raw": "{\n    \"value\": \"roless\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"data_type\": \"ARRAY[STRING]\",\n    \"model_names\": [\"UserExtension\",\"Session\"],\n    \"required\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -353,7 +353,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -377,7 +377,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -406,7 +406,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -439,7 +439,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -465,7 +465,7 @@
 						"method": "PATCH",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -493,7 +493,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -549,7 +549,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -596,7 +596,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -631,7 +631,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -661,7 +661,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -697,7 +697,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -753,7 +753,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -779,7 +779,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							},
@@ -810,7 +810,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -836,7 +836,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "string"
 							}
@@ -862,7 +862,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -890,7 +890,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -924,7 +924,7 @@
 						"method": "PATCH",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -950,7 +950,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -976,7 +976,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1007,7 +1007,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -1091,7 +1091,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1110,7 +1110,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1143,7 +1143,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1180,7 +1180,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "string"
 							}
@@ -1206,7 +1206,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1255,7 +1255,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1281,7 +1281,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1327,7 +1327,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1353,7 +1353,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1379,7 +1379,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1428,7 +1428,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1458,7 +1458,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1507,7 +1507,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1538,7 +1538,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							},
 							{
@@ -1571,7 +1571,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							}
 						],
@@ -1601,7 +1601,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1629,7 +1629,7 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1664,7 +1664,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1700,7 +1700,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1728,7 +1728,7 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1763,7 +1763,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1803,7 +1803,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1822,7 +1822,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1886,7 +1886,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1919,7 +1919,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1943,7 +1943,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -1977,7 +1977,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2001,7 +2001,7 @@
 								"type": "text"
 							},
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text",
 								"disabled": true
@@ -2027,7 +2027,7 @@
 								"disabled": true
 							},
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2077,7 +2077,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2105,7 +2105,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2124,7 +2124,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2155,7 +2155,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2225,7 +2225,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							},
 							{
@@ -2251,7 +2251,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							}
 						],
@@ -2278,7 +2278,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							}
 						],
@@ -2296,7 +2296,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							}
 						],
@@ -2323,7 +2323,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2428,7 +2428,7 @@
 						"method": "PATCH",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}"
 							},
 							{
@@ -2469,7 +2469,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2497,7 +2497,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2536,7 +2536,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2571,7 +2571,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2602,7 +2602,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2630,7 +2630,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2672,7 +2672,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2705,7 +2705,7 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2739,7 +2739,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2793,7 +2793,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -2879,7 +2879,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -2949,7 +2949,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3055,7 +3055,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -3089,7 +3089,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -3123,7 +3123,7 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -3147,7 +3147,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							},
@@ -3178,7 +3178,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							},
@@ -3217,7 +3217,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3244,7 +3244,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3320,7 +3320,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3347,7 +3347,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3423,7 +3423,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3450,7 +3450,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3526,7 +3526,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3553,7 +3553,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3629,7 +3629,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3656,7 +3656,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3732,7 +3732,7 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3759,7 +3759,7 @@
 										"method": "POST",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -3840,7 +3840,7 @@
 								"method": "PATCH",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3874,7 +3874,7 @@
 								"method": "PATCH",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3913,7 +3913,7 @@
 								"method": "DELETE",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -3947,7 +3947,7 @@
 										"method": "GET",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -4030,7 +4030,7 @@
 								"method": "PATCH",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -4076,7 +4076,7 @@
 										"method": "GET",
 										"header": [
 											{
-												"key": "X-auth-token",
+												"key": "x-auth-token",
 												"value": "bearer {{token}}",
 												"type": "text"
 											}
@@ -4161,7 +4161,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -4195,7 +4195,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -4278,7 +4278,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -4312,7 +4312,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}
@@ -4395,7 +4395,7 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
+								"key": "x-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
@@ -4429,7 +4429,7 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "X-auth-token",
+										"key": "x-auth-token",
 										"value": "bearer {{token}}",
 										"type": "text"
 									}

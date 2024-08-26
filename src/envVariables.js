@@ -24,6 +24,16 @@ let enviromentVariables = {
 		message: 'Required access token secret',
 		optional: false,
 	},
+	AUTH_TOKEN_HEADER_NAME: {
+		message: 'Required auth token header name',
+		optional: true,
+		default: 'x-auth-token',
+	},
+	IS_AUTH_TOKEN_BEARER: {
+		message: 'Required specification: If auth token is bearer or not',
+		optional: true,
+		default: true,
+	},
 	KAFKA_URL: {
 		message: 'Required kafka connectivity url',
 		optional: false,
@@ -223,7 +233,7 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
-	SIGNED_URL_EXPIRY_IN_SECONDS: {
+	SIGNED_URL_EXPIRY_DURATION: {
 		message: 'Required signed url expiration time in seconds',
 		optional: true,
 		default: 900,
@@ -278,11 +288,6 @@ let enviromentVariables = {
 		optional: true,
 		default: './constants/keycloakPublicKeys',
 	},
-	IS_EXTERNAL_USER_SERVICE: {
-		message: 'Required Flag For External User Service',
-		optional: true,
-		default: 'false',
-	},
 	SESSION_VERIFICATION_METHOD: {
 		message: 'Required Session Verification Method',
 		optional: true,
@@ -292,6 +297,36 @@ let enviromentVariables = {
 		message: 'Required Mentees Limit for Session',
 		optional: true,
 		default: '6',
+	},
+	DEFAULT_SESSION_VISIBILITY_POLICY: {
+		message: 'Required Default Session Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_MENTOR_VISIBILITY_POLICY: {
+		message: 'Required Default Mentor Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_MENTEE_VISIBILITY_POLICY: {
+		message: 'Required Default Mentee Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_SESSION_VISIBILITY_POLICY: {
+		message: 'Required Default External Session Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_MENTOR_VISIBILITY_POLICY: {
+		message: 'Required Default External Mentor Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
+	},
+	DEFAULT_EXTERNAL_MENTEE_VISIBILITY_POLICY: {
+		message: 'Required Default External Mentee Visibility Policy',
+		optional: true,
+		default: 'CURRENT',
 	},
 }
 

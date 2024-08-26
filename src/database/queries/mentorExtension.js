@@ -1,4 +1,6 @@
-const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
+const UserExtension = require('@database/models/index').UserExtension
+const MentorExtension = UserExtension.scope('mentors')
+
 const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
@@ -32,6 +34,7 @@ module.exports = class MentorExtensionQueries {
 
 	static async createMentorExtension(data) {
 		try {
+			data = { ...data, is_mentor: true }
 			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
 			console.log(error)
@@ -39,23 +42,33 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async updateMentorExtension(userId, data, options = {}, customFilter = {}) {
+	static async updateMentorExtension(userId, data, options = {}, customFilter = {}, unscoped = false) {
 		try {
+			data = { ...data, is_mentor: true }
+
 			if (data.user_id) {
 				delete data['user_id']
 			}
+
 			const whereClause = _.isEmpty(customFilter) ? { user_id: userId } : customFilter
-			return await MentorExtension.update(data, {
-				where: whereClause,
-				...options,
-			})
+
+			const result = unscoped
+				? await MentorExtension.unscoped().update(data, {
+						where: whereClause,
+						...options,
+				  })
+				: await MentorExtension.update(data, {
+						where: whereClause,
+						...options,
+				  })
+			return result
 		} catch (error) {
 			console.log(error)
 			throw error
 		}
 	}
 
-	static async getMentorExtension(userId, attributes = []) {
+	static async getMentorExtension(userId, attributes = [], unScoped = false) {
 		try {
 			const queryOptions = {
 				where: { user_id: userId },
@@ -66,7 +79,14 @@ module.exports = class MentorExtensionQueries {
 			if (attributes.length > 0) {
 				queryOptions.attributes = attributes
 			}
-			const mentor = await MentorExtension.findOne(queryOptions)
+
+			let mentor
+			if (unScoped) {
+				mentor = await MentorExtension.unscoped().findOne(queryOptions)
+			} else {
+				mentor = await MentorExtension.findOne(queryOptions)
+			}
+
 			return mentor
 		} catch (error) {
 			throw error
@@ -115,19 +135,24 @@ module.exports = class MentorExtensionQueries {
 			throw error
 		}
 	}
-	static async getMentorsByUserIds(ids, options = {}) {
+	static async getMentorsByUserIds(ids, options = {}, unscoped = false) {
 		try {
-			const result = await MentorExtension.findAll({
+			const query = {
 				where: {
 					user_id: ids,
 				},
 				...options,
 				returning: true,
 				raw: true,
-			})
+			}
+
+			const result = unscoped
+				? await MentorExtension.unscoped().findAll(query)
+				: await MentorExtension.findAll(query)
 
 			return result
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -182,7 +207,7 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
+				'user_id,rating,meta,mentor_visibility,mentee_visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text,name'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'
@@ -190,7 +215,7 @@ module.exports = class MentorExtensionQueries {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 			if (userFilterClause && filterClause.length > 0) {
-				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
+				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND ' + filterClause
 			}
 
 			let query = `
@@ -203,6 +228,7 @@ module.exports = class MentorExtensionQueries {
 					${saasFilterClause}
 					${additionalFilter}
 					${defaultFilterClause}
+					AND is_mentor = true
 			`
 
 			const replacements = {
@@ -246,6 +272,7 @@ module.exports = class MentorExtensionQueries {
 				${saasFilterClause}
 				${additionalFilter}
 				${defaultFilterClause}
+				AND is_mentor = true
 			;
 		`
 			const count = await Sequelize.query(countQuery, {
@@ -376,6 +403,9 @@ module.exports = class MentorExtensionQueries {
 				saasFilterClause = saasFilterClause.replace('AND', '')
 			}
 
+			// Ensure whereClause includes the is_mentor = true condition
+			whereClause = `is_mentor = true${whereClause ? ` AND ${whereClause}` : ''}`
+
 			// Construct the query with the provided whereClause, projection, and saasFilterClause
 			let query = `
 				SELECT ${projection}
@@ -410,6 +440,7 @@ module.exports = class MentorExtensionQueries {
 			return error
 		}
 	}
+
 	static async findOneFromView(userId) {
 		try {
 			let query = `

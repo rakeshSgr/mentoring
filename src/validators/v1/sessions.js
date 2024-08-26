@@ -29,18 +29,6 @@ module.exports = {
 				.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 				.withMessage('invalid description')
 
-			req.checkBody('recommended_for')
-				.notEmpty()
-				.withMessage('recommended_for field is empty')
-				.isArray({ min: 1 })
-				.withMessage('recommended_for must be an array')
-
-			req.checkBody('categories')
-				.notEmpty()
-				.withMessage('categories field is empty')
-				.isArray({ min: 1 })
-				.withMessage('categories must be an array')
-
 			req.checkBody('medium')
 				.notEmpty()
 				.withMessage('medium field is empty')
@@ -93,19 +81,6 @@ module.exports = {
 				.withMessage('description must be a string')
 				.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 				.withMessage('invalid description')
-
-			req.checkBody('recommended_for')
-				.optional()
-				.notEmpty()
-				.isArray({ min: 1 })
-				.withMessage('recommended_for must be an array')
-
-			req.checkBody('categories')
-				.optional()
-				.notEmpty()
-				.withMessage('categories field is empty')
-				.isArray({ min: 1 })
-				.withMessage('categories must be an array')
 
 			req.checkBody('medium')
 				.optional()

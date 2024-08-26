@@ -1,5 +1,4 @@
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const mentorExtensionQueries = require('@database/queries/mentorExtension')
 const menteeExtensionQueries = require('@database/queries/userExtension')
 const userRequests = require('@requests/user')
 const entityTypeService = require('@services/entity-type')
@@ -28,14 +27,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 				],
 			},
 		}
-		const [menteeDetails, mentorDetails, attendeesAccounts] = await Promise.all([
+		let [enrolledUsers, attendeesAccounts] = await Promise.all([
 			menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
-			mentorExtensionQueries.getMentorsByUserIds(menteeIds, options),
 			userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
 		])
 
-		// Combine details of mentees and mentors
-		let enrolledUsers = [...menteeDetails, ...mentorDetails]
 		enrolledUsers.forEach((user) => {
 			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
 				user.type = menteeTypeMap[user.user_id]
@@ -68,7 +64,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		enrolledUsers = await entityTypeService.processEntityTypesToAddValueLabels(
 			enrolledUsers,
 			uniqueOrgIds,
-			[await menteeExtensionQueries.getModelName(), await mentorExtensionQueries.getModelName()],
+			[await menteeExtensionQueries.getModelName()],
 			'organization_id'
 		)
 

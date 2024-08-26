@@ -9,6 +9,8 @@
 const sessionService = require('@services/sessions')
 const { isAMentor } = require('@generics/utils')
 const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 module.exports = class Sessions {
 	/**
@@ -392,6 +394,37 @@ module.exports = class Sessions {
 		try {
 			const downloadUrlResponse = await sessionService.getSampleCSV(req.decodedToken.organization_id)
 			return downloadUrlResponse
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Remove Sessions Of Multiple Mentors In One Go
+	 * @method
+	 * @name removeAllSessions
+	 * @param {JSON} req request body.
+	 * @returns {JSON} Response with status message and result.
+	 */
+	async removeAllSessions(req) {
+		try {
+			if (req.body.mentorIds && req.body.orgId)
+				return responses.failureResponse({
+					message: 'Specify either mentorIds or orgId but not both.',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			else if (!req.body.mentorIds && !req.body.orgId)
+				return responses.failureResponse({
+					message: 'Specify at-least mentorIds or orgId.',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			const removedSessionsResponse = await sessionService.removeAllSessions({
+				mentorIds: req.body.mentorIds,
+				orgId: req.body.orgId,
+			})
+			return removedSessionsResponse
 		} catch (error) {
 			return error
 		}

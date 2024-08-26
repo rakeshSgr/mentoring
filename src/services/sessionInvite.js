@@ -517,7 +517,7 @@ module.exports = class UserInviteHelper {
 					const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail])
 					const mentor_Id = mentorId.result[0]
 
-					if (typeof mentor_Id !== 'number') {
+					if (isNaN(mentor_Id)) {
 						session.status = 'Invalid'
 						session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
 						session.mentor_id = mentor_Id
@@ -533,7 +533,7 @@ module.exports = class UserInviteHelper {
 
 			if (
 				session.type.toUpperCase() === common.SESSION_TYPE.PRIVATE &&
-				!session.mentees.some((item) => typeof item === 'number')
+				!session.mentees.some((item) => !isNaN(item))
 			) {
 				session.status = 'Invalid'
 				session.statusMessage = this.appendWithComma(
@@ -916,6 +916,10 @@ module.exports = class UserInviteHelper {
 						data.time_zone == common.TIMEZONE
 							? (data.time_zone = common.IST_TIMEZONE)
 							: (data.time_zone = common.UTC_TIMEZONE)
+					const previousMeetingInfo = data.meeting_info
+					if (data.meeting_info.platform === '' && data.meeting_info.link === '') {
+						delete data.meeting_info
+					}
 					const { id, ...dataWithoutId } = data
 					const sessionCreation = await sessionService.create(
 						dataWithoutId,
@@ -930,6 +934,9 @@ module.exports = class UserInviteHelper {
 						data.recommended_for = sessionCreation.result.recommended_for.map((item) => item.label)
 						data.categories = sessionCreation.result.categories.map((item) => item.label)
 						data.medium = sessionCreation.result.medium.map((item) => item.label)
+						if (previousMeetingInfo.platform === '' && previousMeetingInfo.link === '') {
+							data.meeting_info = previousMeetingInfo
+						}
 						data.time_zone =
 							data.time_zone == common.IST_TIMEZONE
 								? (data.time_zone = common.TIMEZONE)
@@ -1015,7 +1022,7 @@ module.exports = class UserInviteHelper {
 	static async fetchMentorIds(sessionCreationOutput) {
 		for (const item of sessionCreationOutput) {
 			const mentorIdPromise = item.mentor_id
-			if (typeof mentorIdPromise === 'number' && Number.isInteger(mentorIdPromise)) {
+			if (!isNaN(mentorIdPromise)) {
 				const mentorId = await userRequests.fetchUserDetails({ userId: mentorIdPromise })
 				item.mentor_id = mentorId.data.result.email
 			} else {
@@ -1026,7 +1033,7 @@ module.exports = class UserInviteHelper {
 				const menteeEmails = []
 				for (let i = 0; i < item.mentees.length; i++) {
 					const menteeId = item.mentees[i]
-					if (typeof menteeId === 'number' && Number.isInteger(menteeId)) {
+					if (!isNaN(menteeId)) {
 						const mentee = await userRequests.fetchUserDetails({ userId: menteeId })
 						menteeEmails.push(mentee.data.result.email)
 					} else {

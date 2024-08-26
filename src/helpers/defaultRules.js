@@ -145,7 +145,16 @@ exports.defaultRulesFilter = async function defaultRulesFilter({
 			}
 
 			if (is_target_from_sessions_mentor) {
-				mentorWhereClause.push(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
+				if (Array.isArray(requesterValue)) {
+					const formattedValues = requesterValue.map((value) =>
+						typeof value === 'string' ? `'${value}'` : value
+					)
+					mentorWhereClause.push(
+						`(${jsonPath} ${sqlOperator} ARRAY[${formattedValues.join(', ')}]::character varying[])`
+					)
+				} else {
+					mentorWhereClause.push(`${jsonPath} ${sqlOperator} '${requesterValue}'`)
+				}
 			} else {
 				if (Array.isArray(requesterValue)) {
 					const formattedValues = requesterValue.map((value) =>
@@ -299,6 +308,8 @@ function getNestedValue(obj, fieldPath) {
 	for (const field of fields) {
 		if (value && value[field] !== undefined) {
 			value = value[field]
+		} else if (value && value.meta && value.meta[field] !== undefined) {
+			value = value.meta[field]
 		} else {
 			return undefined
 		}

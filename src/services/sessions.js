@@ -45,6 +45,8 @@ const csvParser = require('csv-parser')
 const axios = require('axios')
 const messages = require('../locales/en.json')
 const { validateDefaultRulesFilter } = require('@helpers/defaultRules')
+const adminService = require('@services/admin')
+const mentorQueries = require('@database/queries/mentorExtension')
 
 module.exports = class SessionsHelper {
 	/**
@@ -352,6 +354,7 @@ module.exports = class SessionsHelper {
 							}),
 						},
 					}
+					console.log('EMAIL PAYLOAD: ', payload)
 					await kafkaCommunication.pushEmailToKafka(payload)
 				}
 			}
@@ -2206,16 +2209,17 @@ module.exports = class SessionsHelper {
 	 * Bulk update mentor names for sessions.
 	 * @method
 	 * @name bulkUpdateMentorNames
-	 * @param {Array} mentorsId - Array of mentor IDs to update.
+	 * @param {Array} mentorIds - Array of mentor IDs to update.
 	 * @param {STRING} mentorsName - Mentor name that needs to be updated.
 	 * @returns {Object} - Success response indicating the update was performed successfully.
 	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
 	 */
-	static async bulkUpdateMentorNames(mentorsId, mentorsName) {
+	static async bulkUpdateMentorNames(mentorIds, mentorsName) {
 		try {
+			mentorIds = mentorIds.map(String)
 			await sessionQueries.updateSession(
 				{
-					mentor_id: mentorsId,
+					mentor_id: mentorIds,
 				},
 				{
 					mentor_name: mentorsName,
@@ -2805,5 +2809,75 @@ module.exports = class SessionsHelper {
 		} catch (error) {
 			throw error
 		}
+	}
+
+	static async removeAllSessions(criteria) {
+		try {
+			const results = criteria.mentorIds
+				? await this.#removeSessionsByMentorIds(criteria.mentorIds)
+				: await this.#removeSessionsByOrgId(criteria.orgId)
+
+			const successfulMentorIds = []
+			const failedMentorIds = []
+
+			results.forEach((result) => {
+				if (result.status === 'fulfilled') {
+					successfulMentorIds.push(result.value)
+				} else {
+					failedMentorIds.push({
+						mentorId: result.reason?.data?.mentorId,
+						reason: result.reason?.message,
+					})
+				}
+			})
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'BULK_SESSIONS_REMOVED',
+				result: {
+					successfulMentors: successfulMentorIds,
+					failedMentors: failedMentorIds,
+				},
+			})
+		} catch (error) {
+			console.error(error)
+			throw error
+		}
+	}
+
+	static async #removeSessionsByMentorIds(mentorIds) {
+		return Promise.allSettled(
+			mentorIds.map(async (mentorId) => {
+				const mentor = await mentorQueries.getMentorExtension(mentorId, ['organization_id'])
+				if (!mentor) throw new MentorError('Invalid Mentor Id', { mentorId })
+
+				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(mentorId)
+				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail, mentor.organization_id)
+				return mentorId
+			})
+		)
+	}
+
+	static async #removeSessionsByOrgId(orgId) {
+		const mentors = await mentorQueries.getAllMentors({
+			where: { organization_id: orgId },
+			attributes: ['user_id', 'organization_id'],
+		})
+
+		return Promise.allSettled(
+			mentors.map(async (mentor) => {
+				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(mentor.user_id)
+				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail, mentor.organization_id)
+				return mentor.user_id
+			})
+		)
+	}
+}
+
+class MentorError extends Error {
+	constructor(message, data) {
+		super(message)
+		this.name = 'MentorError'
+		this.data = data
 	}
 }
