@@ -243,16 +243,19 @@ async function keycloakPublicKeyAuthentication(token) {
 
 		let isMentor = false
 		let isMenteeRolePresent = false
+		let roles = []
 
-		let roles = verifiedClaims.user_roles.reduce((acc, role) => {
-			role = role.toLowerCase()
-			if (validRoles.has(role)) {
-				if (role === common.MENTOR_ROLE) isMentor = true
-				else if (role === common.MENTEE_ROLE) isMenteeRolePresent = true
-				acc.push({ title: role })
-			}
-			return acc
-		}, [])
+		if (verifiedClaims.user_roles) {
+			roles = verifiedClaims.user_roles.reduce((acc, role) => {
+				role = role.toLowerCase()
+				if (validRoles.has(role)) {
+					if (role === common.MENTOR_ROLE) isMentor = true
+					else if (role === common.MENTEE_ROLE) isMenteeRolePresent = true
+					acc.push({ title: role })
+				}
+				return acc
+			}, [])
+		}
 
 		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
 
