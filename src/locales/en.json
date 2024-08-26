@@ -186,5 +186,7 @@
 	"VALIDATION_FAILED": "Validation failed, Entered data is incorrect!",
 	"PROFILE_NOT_UPDATED": "Please update your profile with all the mandatory fields",
 	"BULK_SESSIONS_REMOVED": "Bulk session removal process successfully executed.",
+	"ADD_ORG_HEADER": "{{orgIdHeader}} is mandatory when {{adminHeader}} is passed",
+	"UNAUTHORIZED_REQUEST": "You are not authorized to access this resource. Please ensure that you have the correct permissions or authentication credentials.",
 	"NO_RESULTS_FOUND": "No results found"
 }
