@@ -7,23 +7,35 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_user_extensions;')
 		await queryInterface.sequelize.query('DROP MATERIALIZED VIEW IF EXISTS m_mentor_extensions;')
+		const [result] = await queryInterface.sequelize.query(
+			`SELECT EXISTS (
+			   SELECT 1 
+			   FROM pg_tables 
+			   WHERE schemaname = 'public' 
+				 AND tablename = 'mentor_extensions'
+			 );`
+		)
 
-		await queryInterface.sequelize.transaction(async (transaction) => {
-			// Add the is_mentor flag to user_extensions
-			await queryInterface.addColumn(
-				'user_extensions',
-				'is_mentor',
-				{
-					type: Sequelize.BOOLEAN,
-					allowNull: false,
-					defaultValue: false,
-				},
-				{ transaction }
-			)
+		// Extract the 'exists' value
+		const tableExists = result[0].exists
 
-			// Copy data from mentor_extensions to user_extensions
-			await queryInterface.sequelize.query(
-				`
+		if (tableExists) {
+			await queryInterface.sequelize.transaction(async (transaction) => {
+				// Add the is_mentor flag to user_extensions
+				await queryInterface.addColumn(
+					'user_extensions',
+					'is_mentor',
+					{
+						type: Sequelize.BOOLEAN,
+						allowNull: false,
+						defaultValue: false,
+					},
+					{ transaction }
+				)
+
+				// Copy data from mentor_extensions to user_extensions
+				await queryInterface.sequelize.query(
+					`
         INSERT INTO user_extensions (
           user_id, designation, area_of_expertise, education_qualification,
           rating, meta, stats, tags, configs, mentor_visibility, visible_to_organizations,
@@ -39,12 +51,13 @@ module.exports = {
           name, email, phone, true,created_at,updated_at
         FROM mentor_extensions
       `,
-				{ transaction }
-			)
+					{ transaction }
+				)
 
-			// Drop the mentor_extensions table
-			await queryInterface.dropTable('mentor_extensions', { transaction })
-		})
+				// Drop the mentor_extensions table
+				await queryInterface.dropTable('mentor_extensions', { transaction })
+			})
+		}
 		await materializedViewsService.checkAndCreateMaterializedViews()
 	},
 
