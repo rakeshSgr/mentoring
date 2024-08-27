@@ -26,16 +26,16 @@ module.exports = {
 			deletedAt: 'deleted_at',
 			logging: false,
 		},
-		defaultOrgId: defaultOrgId, // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 	test: {
 		url: process.env.TEST_DATABASE_URL,
 		dialect: 'postgres',
-		defaultOrgId: defaultOrgId, // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 	production: {
 		url: process.env.DATABASE_URL,
 		dialect: 'postgres',
-		defaultOrgId: defaultOrgId, // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 }
