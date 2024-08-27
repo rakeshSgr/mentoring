@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 const defaultOrgId =
-	process.env.DEFAULT_ORG_ID ||
+	process.env.DEFAULT_ORG_ID.toString() ||
 	(() => {
 		throw new Error(
 			'DEFAULT_ORG_ID is not defined in env. Run the script called insertDefaultOrg.js in /scripts folder.'
@@ -26,16 +26,16 @@ module.exports = {
 			deletedAt: 'deleted_at',
 			logging: false,
 		},
-		defaultOrgId: parseInt(defaultOrgId), // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 	test: {
 		url: process.env.TEST_DATABASE_URL,
 		dialect: 'postgres',
-		defaultOrgId: parseInt(defaultOrgId), // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 	production: {
 		url: process.env.DATABASE_URL,
 		dialect: 'postgres',
-		defaultOrgId: parseInt(defaultOrgId), // Convert to integer
+		defaultOrgId: defaultOrgId,
 	},
 }

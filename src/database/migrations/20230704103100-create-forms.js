@@ -35,7 +35,7 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 			organization_id: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},

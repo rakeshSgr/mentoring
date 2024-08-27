@@ -42,7 +42,7 @@ module.exports = {
 				defaultValue: { exclude: false },
 			},
 			organization_id: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			created_by: {

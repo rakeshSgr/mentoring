@@ -62,7 +62,7 @@ module.exports = {
 				allowNull: true,
 			},
 			organization_id: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 				defaultValue: 0,
 				primaryKey: true,
