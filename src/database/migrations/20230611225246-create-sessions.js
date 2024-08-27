@@ -109,7 +109,7 @@ module.exports = {
 				allowNull: true,
 			},
 			mentor_org_id: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			seats_remaining: {
