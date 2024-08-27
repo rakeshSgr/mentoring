@@ -3,11 +3,11 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.changeColumn('user_extensions', 'org_id', {
-			type: Sequelize.INTEGER,
+			type: Sequelize.STRING,
 			allowNull: false,
 		})
 		await queryInterface.changeColumn('mentor_extensions', 'org_id', {
-			type: Sequelize.INTEGER,
+			type: Sequelize.STRING,
 			allowNull: false,
 		})
 	},

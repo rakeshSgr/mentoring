@@ -36,7 +36,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			organisation_ids: {
-				type: Sequelize.ARRAY(Sequelize.INTEGER),
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			external_session_visibility: {
 				type: Sequelize.STRING,
