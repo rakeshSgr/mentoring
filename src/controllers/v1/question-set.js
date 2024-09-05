@@ -23,13 +23,6 @@ module.exports = class QuestionsSet {
 
 	async create(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
-				throw responses.failureResponse({
-					message: 'USER_IS_NOT_A_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const createQuestionSet = await questionSetService.create(req.body, req.decodedToken)
 
 			return createQuestionSet
@@ -49,13 +42,6 @@ module.exports = class QuestionsSet {
 
 	async update(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
-				throw responses.failureResponse({
-					message: 'USER_IS_NOT_A_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const updateQuestionsSet = await questionSetService.update(req.params.id, req.body, req.decodedToken)
 			return updateQuestionsSet
 		} catch (error) {
