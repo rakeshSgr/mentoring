@@ -66,8 +66,8 @@ module.exports = class UserEntityData {
 					...filters,
 				},
 				attributes: attributes,
-				offset: parseInt((page - 1) * limit, 10),
-				limit: parseInt(limit, 10),
+				offset: limit * (page - 1),
+				limit: limit,
 				order: [['created_at', 'DESC']],
 			})
 		} catch (error) {
