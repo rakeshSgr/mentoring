@@ -73,7 +73,10 @@ module.exports = class UserEntityData {
 				attributes: attributes,
 				offset: limit * (page - 1),
 				limit: limit,
-				order: [['created_at', 'DESC']],
+				order: [
+					['created_at', 'DESC'],
+					['id', 'ASC'],
+				],
 			})
 		} catch (error) {
 			throw error
