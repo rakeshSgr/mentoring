@@ -187,6 +187,23 @@ module.exports = {
 	},
 
 	delete: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		if (req.body.value) {
+			req.checkBody('value')
+				.isArray()
+				.withMessage('value must be an array')
+				.custom((array) => {
+					// Allow letters and underscores
+					for (let str of array) {
+						if (typeof str !== 'string' || !/^[A-Za-z_]+$/.test(str)) {
+							throw new Error(
+								`"${str}" is invalid, each element in value must contain only letters and underscores`
+							)
+						}
+					}
+					return true
+				})
+		} else {
+			req.checkParams('id').notEmpty().withMessage('id param is empty')
+		}
 	},
 }
