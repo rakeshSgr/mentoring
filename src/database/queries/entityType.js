@@ -189,10 +189,12 @@ module.exports = class UserEntityData {
 				// Step 4: Delete the entities and entityTypes
 				await Entity.destroy({
 					where: { entity_type_id: entityTypeIds },
+					individualHooks: true,
 				})
 
 				await EntityType.destroy({
 					where: { id: entityTypeIds },
+					individualHooks: true,
 				})
 				return result
 			} else {
