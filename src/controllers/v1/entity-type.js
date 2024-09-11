@@ -69,7 +69,7 @@ module.exports = class Entity {
 	}
 
 	/**
-	 * deletes entity
+	 * deletes entity and entity related enities
 	 * @method
 	 * @name delete
 	 * @param {Object} req - request data.
@@ -78,7 +78,11 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			return await entityTypeService.delete(req.params.id, req.decodedToken.organization_id)
+			if (req.body.value) {
+				return await entityTypeService.deleteEntityTypesAndEntities(req.body.value)
+			} else {
+				return await entityTypeService.delete(req.params.id, req.decodedToken.organization_id)
+			}
 		} catch (error) {
 			return error
 		}
