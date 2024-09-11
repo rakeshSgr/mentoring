@@ -23,7 +23,7 @@ module.exports = class Notifications {
 			notificationsService.sendNotification(
 				req.body.job_id,
 				req.body.email_template_code,
-				req.body.job_creator_org_id ? parseInt(req.body.job_creator_org_id, 10) : ''
+				req.body.job_creator_org_id ? req.body.job_creator_org_id : ''
 			)
 			return {
 				statusCode: httpStatusCode.ok,
