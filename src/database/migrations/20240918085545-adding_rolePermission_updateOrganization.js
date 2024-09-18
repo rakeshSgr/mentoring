@@ -22,7 +22,6 @@ const getPermissionId = async (module, request_type, api_path) => {
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
-		await queryInterface.bulkDelete('role_permission_mapping', null, {})
 		try {
 			const rolePermissionsData = [
 				{
