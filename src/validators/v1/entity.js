@@ -17,12 +17,7 @@ module.exports = {
 			.matches(/^[A-Za-z0-9_]*$/)
 			.withMessage('value is invalid, must not contain spaces')
 
-		req.checkBody('label')
-			.trim()
-			.notEmpty()
-			.withMessage('label field is empty')
-			.matches(/^[A-Za-z0-9 ()-]*$/)
-			.withMessage('label is invalid')
+		req.checkBody('label').trim().notEmpty().withMessage('label field is empty')
 
 		req.checkBody('entity_type_id')
 			.notEmpty()
