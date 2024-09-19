@@ -8,7 +8,7 @@ module.exports = {
 
 	down: async (queryInterface, Sequelize) => {
 		await queryInterface.addColumn('question_sets', 'organization_id', {
-			type: Sequelize.INTEGER,
+			type: Sequelize.STRING,
 			allowNull: false,
 		})
 	},

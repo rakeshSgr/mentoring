@@ -10,14 +10,6 @@ const responses = require('@helpers/responses')
 module.exports = class OrganizationService {
 	static async update(bodyData, decodedToken) {
 		try {
-			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-
 			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },

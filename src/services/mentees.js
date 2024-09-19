@@ -454,12 +454,20 @@ module.exports = class MenteesHelper {
 				? (await userRequests.fetchOrgDetails({ organizationId: menteeExtension.organization_id }))?.data
 						?.result?.name
 				: ''
-			if ((isAMentor && menteeExtension.is_mentor == false) || (!isAMentor && menteeExtension.is_mentor == true))
+			if (!isAMentor && menteeExtension.is_mentor == true) {
 				throw responses.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
-					message: `Congratulations! You are now a mentor to the organisation ${organizationName}. Please re-login to start your journey as a mentor.`,
+					message: `Congratulations! You are now a mentor in the ${organizationName} organization. Please log in again to begin your journey.`,
 					responseCode: 'CLIENT_ERROR',
 				})
+			} else if (isAMentor && menteeExtension.is_mentor == false) {
+				throw responses.failureResponse({
+					statusCode: httpStatusCode.unauthorized,
+					message: `You are now a mentee in the ${organizationName} organization. Please log in again to continue your journey.`,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const userPolicyDetails = menteeExtension || mentorExtension
 			let filter = ''
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {

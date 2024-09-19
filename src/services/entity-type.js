@@ -249,4 +249,36 @@ module.exports = class EntityHelper {
 			return err
 		}
 	}
+
+	/**
+	 * Delete All entity type and entities based on entityType value.
+	 * @method
+	 * @name delete
+	 * @param {Object} bodyData -  body data.
+	 * @returns {JSON} - Entity deleted response.
+	 */
+
+	static async deleteEntityTypesAndEntities(value) {
+		try {
+			const deleteCount = await entityTypeQueries.deleteEntityTypesAndEntities({
+				status: 'ACTIVE',
+				value: { [Op.in]: value },
+			})
+
+			if (deleteCount === 0) {
+				return responses.failureResponse({
+					message: 'ENTITY_TYPE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ENTITY_TYPE_AND_ENTITES_DELETED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

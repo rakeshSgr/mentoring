@@ -10,7 +10,7 @@ const request = require('request')
 const apiEndpoints = require('@constants/endpoints')
 const schedulerServiceUrl = process.env.SCHEDULER_SERVICE_HOST + process.env.SCHEDULER_SERVICE_BASE_URL
 const email = [process.env.SCHEDULER_SERVICE_ERROR_REPORTING_EMAIL_ID]
-const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
+const mentoringBaseurl = `http://${process.env.APPLICATION_HOST}:${process.env.APPLICATION_PORT}`
 
 /**
  * Create a scheduler job.

@@ -60,15 +60,23 @@ module.exports = class UserEntityData {
 
 	static async getAllEntities(filters, attributes, page, limit, search) {
 		try {
+			let whereClause = {
+				...filters,
+			}
+
+			if (search) {
+				whereClause[Op.or] = [{ label: { [Op.iLike]: `%${search}%` } }]
+			}
+
 			return await Entity.findAndCountAll({
-				where: {
-					[Op.or]: [{ label: { [Op.iLike]: `%${search}%` } }],
-					...filters,
-				},
+				where: whereClause,
 				attributes: attributes,
-				offset: parseInt((page - 1) * limit, 10),
-				limit: parseInt(limit, 10),
-				order: [['created_at', 'DESC']],
+				offset: limit * (page - 1),
+				limit: limit,
+				order: [
+					['created_at', 'DESC'],
+					['id', 'ASC'],
+				],
 			})
 		} catch (error) {
 			throw error

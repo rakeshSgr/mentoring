@@ -31,7 +31,9 @@ const clearInternalCache = async (key) => {
 
 const pushPayloadToKafka = async (payload) => {
 	try {
+		console.log('sending kafka message from service ', payload)
 		let response = await kafkaProducer.send(payload)
+		console.log('kafka response for   ', response)
 		return response
 	} catch (error) {
 		return error

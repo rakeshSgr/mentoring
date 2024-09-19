@@ -32,7 +32,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			org_id: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				primaryKey: true,
 				allowNull: false,
 			},
