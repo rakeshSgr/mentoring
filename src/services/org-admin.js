@@ -215,14 +215,6 @@ module.exports = class OrgAdminService {
 
 	static async setOrgPolicies(decodedToken, policies) {
 		try {
-			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-
 			const orgPolicies = await organisationExtensionQueries.upsert({
 				organization_id: decodedToken.organization_id,
 				...policies,
@@ -281,13 +273,6 @@ module.exports = class OrgAdminService {
 
 	static async getOrgPolicies(decodedToken) {
 		try {
-			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
 			const orgPolicies = await organisationExtensionQueries.getById(decodedToken.organization_id)
 			if (orgPolicies) {
 				delete orgPolicies.deleted_at
@@ -317,13 +302,6 @@ module.exports = class OrgAdminService {
 
 	static async inheritEntityType(entityValue, entityLabel, userOrgId, decodedToken) {
 		try {
-			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
 			// Get default organisation details
 			let defaultOrgDetails = await userRequests.fetchOrgDetails({
 				organizationCode: process.env.DEFAULT_ORGANISATION_CODE,
@@ -550,13 +528,6 @@ module.exports = class OrgAdminService {
 
 	static async setDefaultQuestionSets(bodyData, decodedToken) {
 		try {
-			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
 			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
