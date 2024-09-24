@@ -2105,6 +2105,32 @@
 			"rateLimit": {
 				"type": "public-low"
 			}
+		},
+		{
+			"sourceRoute": "/mentoring/v1/notification/template",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "elevate-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/mentoring/v1/notification/template/:id",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "elevate-mentoring"
+				}
+			]
 		}
 	]
 }
