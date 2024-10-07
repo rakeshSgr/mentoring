@@ -218,7 +218,6 @@ module.exports = class SessionsHelper {
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			bodyData.status = common.PUBLISHED_STATUS
 			let res = utils.validateInput(bodyData, validationData, sessionModelName)
-			console.log('res', res)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -269,10 +268,8 @@ module.exports = class SessionsHelper {
 
 			// Create session
 
-			console.log('bodyData', bodyData)
 			const data = await sessionQueries.create(bodyData)
 
-			console.log('data ============', data)
 			if (!data?.id) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
