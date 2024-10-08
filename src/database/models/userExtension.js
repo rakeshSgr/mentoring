@@ -80,9 +80,8 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: false,
 			},
-			organization: {
+			organization_name: {
 				type: DataTypes.STRING,
-				allowNull: false,
 			},
 		},
 		{

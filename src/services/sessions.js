@@ -987,7 +987,7 @@ module.exports = class SessionsHelper {
 
 			const mentorExtension = await mentorExtensionQueries.getMentorExtension(
 				sessionDetails.mentor_id,
-				['user_id', 'name', 'designation', 'organization', 'organization_id', 'custom_entity_text'],
+				['user_id', 'name', 'designation', 'organization_name', 'organization_id', 'custom_entity_text'],
 				true
 			)
 
@@ -996,7 +996,7 @@ module.exports = class SessionsHelper {
 			}
 
 			sessionDetails.mentor_name = mentorExtension.name
-			sessionDetails.organization = mentorExtension.organization
+			sessionDetails.organization = mentorExtension.organization_name
 			sessionDetails.mentor_designation = []
 
 			const defaultOrgId = await getDefaultOrgId()
@@ -2682,7 +2682,7 @@ module.exports = class SessionsHelper {
 
 			const userDetail = await mentorExtensionQueries.getMentorExtension(
 				id,
-				['name', 'email', 'organization'],
+				['name', 'email', 'organization_name'],
 				true
 			)
 
@@ -2698,7 +2698,7 @@ module.exports = class SessionsHelper {
 						name: userDetail.name,
 						email: await emailEncryption.decrypt(userDetail.email),
 						organization_id,
-						org_name: userDetail.organization,
+						org_name: userDetail.organization_name,
 					},
 				},
 				{
