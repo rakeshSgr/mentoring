@@ -72,13 +72,26 @@ module.exports = class UserHelper {
 		try {
 			const isNew = await this.#checkUserExistence(decodedToken.id)
 			if (isNew) {
+				console.log('------------------- New call ------------------ ')
 				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id)
 				return result
 			} else {
+				console.log('------------------- existing call ------------------ ')
+
 				const menteeExtension = await menteeQueries.getMenteeExtension(decodedToken.id)
 
-				console.log('------------------- existing call ------------------ ', menteeExtension)
-				return menteeExtension
+				if (!menteeExtension) {
+					return responses.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'USER_NOT_FOUND',
+					})
+				}
+
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_DETAILS_FETCHED_SUCCESSFULLY',
+					result: menteeExtension,
+				})
 			}
 		} catch (error) {
 			console.log(error)
