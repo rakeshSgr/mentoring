@@ -70,8 +70,16 @@ module.exports = class UserHelper {
 
 	static async create(decodedToken) {
 		try {
-			const result = await this.#createOrUpdateUserAndOrg(decodedToken.id)
-			return result
+			const isNew = await this.#checkUserExistence(decodedToken.id)
+			if (isNew) {
+				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id)
+				return result
+			} else {
+				const menteeExtension = await menteeQueries.getMenteeExtension(decodedToken.id)
+
+				console.log('------------------- existing call ------------------ ', menteeExtension)
+				return menteeExtension
+			}
 		} catch (error) {
 			console.log(error)
 			throw error
@@ -81,7 +89,8 @@ module.exports = class UserHelper {
 	static async update(updateData) {
 		try {
 			const userId = updateData.userId
-			const result = await this.#createOrUpdateUserAndOrg(userId, updateData)
+			const isNew = await this.#checkUserExistence(userId)
+			const result = await this.#createOrUpdateUserAndOrg(userId, isNew)
 			return result
 		} catch (error) {
 			console.log(error)
@@ -89,8 +98,7 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async #createOrUpdateUserAndOrg(userId, updateData = null) {
-		const isNew = await this.#checkUserExistence(userId)
+	static async #createOrUpdateUserAndOrg(userId, isNew) {
 		const userDetails = await userRequests.fetchUserDetails({ userId })
 		if (!userDetails?.data?.result) {
 			return responses.failureResponse({
@@ -99,8 +107,28 @@ module.exports = class UserHelper {
 				responseCode: 'UNAUTHORIZED',
 			})
 		}
+
+		const validationError = this.#validateUserDetails(userDetails)
+		if (validationError) {
+			return responses.failureResponse({
+				message: validationError,
+				statusCode: httpStatusCode.not_found,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
+
 		const orgExtension = await this.#createOrUpdateOrg({ id: userDetails.data.result.organization_id })
+
+		console.log('orgExtension info ', orgExtension)
+		if (!orgExtension) {
+			return responses.failureResponse({
+				message: 'ORG_EXTENSION_NOT_FOUND',
+				statusCode: httpStatusCode.not_found,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
 		const userExtensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
+
 		const createOrUpdateResult = isNew
 			? await this.#createUser(userExtensionData)
 			: await this.#updateUser(userExtensionData)
@@ -127,6 +155,8 @@ module.exports = class UserHelper {
 			competency: userDetails.competency,
 			designation: userDetails.designation,
 			language: userDetails.language,
+			organization_name: userDetails.organization.name,
+			image: userDetails.image,
 		}
 	}
 
@@ -223,5 +253,37 @@ module.exports = class UserHelper {
 			console.error('HERE: ', error)
 			throw error
 		}
+	}
+
+	/**
+	 * Validates that the required user details are present and not null/undefined.
+	 *
+	 * This function checks if the userDetails object contains the necessary fields
+	 * for processing a user. It specifically looks for:
+	 * - id
+	 * - user_roles
+	 * - email
+	 * - name
+	 * - organization
+	 * - organization_id
+	 *
+	 * If any of these fields are missing or null, the function returns an error message.
+	 *
+	 * @param {Object} userDetails - The user details object containing user data.
+	 * @returns {string|null} - Returns an error message if validation fails, otherwise null.
+	 */
+
+	static async #validateUserDetails(userDetails) {
+		if (!userDetails.data.result) {
+			return 'FAILED_TO_GET_REQUIRED_USER_DETAILS'
+		} else {
+			const requiredFields = ['id', 'user_roles', 'email', 'name', 'organization', 'organization_id']
+			for (const field of requiredFields) {
+				if (!userDetails.data.result[field] || userDetails.data.result[field] == null) {
+					return 'FAILED_TO_GET_REQUIRED_USER_DETAILS'
+				}
+			}
+		}
+		return null
 	}
 }
