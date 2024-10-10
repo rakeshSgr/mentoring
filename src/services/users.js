@@ -121,7 +121,9 @@ module.exports = class UserHelper {
 			})
 		}
 
-		const validationError = this.#validateUserDetails(userDetails)
+		const validationError = await this.#validateUserDetails(userDetails)
+
+		console.log('validationError ============ ', validationError)
 		if (validationError) {
 			return responses.failureResponse({
 				message: validationError,
