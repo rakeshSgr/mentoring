@@ -194,7 +194,7 @@ module.exports = class UserHelper {
 	}
 
 	static async #createUser(userExtensionData) {
-		cconsole.log('create user')
+		console.log('create user')
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
