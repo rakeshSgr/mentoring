@@ -144,6 +144,10 @@ module.exports = class UserHelper {
 		}
 		const userExtensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
 
+		console.log('isNew', isNew)
+
+		console.log('userExtensionData ---------- ', userExtensionData)
+
 		const createOrUpdateResult = isNew
 			? await this.#createUser(userExtensionData)
 			: await this.#updateUser(userExtensionData)
@@ -190,6 +194,7 @@ module.exports = class UserHelper {
 	}
 
 	static async #createUser(userExtensionData) {
+		cconsole.log('create user')
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
@@ -201,6 +206,7 @@ module.exports = class UserHelper {
 	static #checkOrgChange = (existingOrgId, newOrgId) => existingOrgId !== newOrgId
 
 	static async #updateUser(userExtensionData) {
+		console.log('update user')
 		const isAMentee = userExtensionData.roles.some((role) => role.title === common.MENTEE_ROLE)
 		const roleChangePayload = {
 			user_id: userExtensionData.id,
@@ -213,6 +219,8 @@ module.exports = class UserHelper {
 			'organization_id',
 			'is_mentor',
 		])
+
+		console.log('menteeExtension user', menteeExtension)
 
 		if (!menteeExtension) throw new Error('User Not Found')
 
