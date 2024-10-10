@@ -70,14 +70,11 @@ module.exports = class UserHelper {
 
 	static async create(decodedToken) {
 		try {
-			const isNew = await this.#checkUserExistence(decodedToken.id)
-			if (isNew) {
-				console.log('------------------- New call ------------------ ')
-				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNew)
+			const isNewUser = await this.#checkUserExistence(decodedToken.id)
+			if (isNewUser) {
+				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNewUser)
 				return result
 			} else {
-				console.log('------------------- existing call ------------------ ')
-
 				const menteeExtension = await menteeQueries.getMenteeExtension(decodedToken.id)
 
 				if (!menteeExtension) {
@@ -102,8 +99,8 @@ module.exports = class UserHelper {
 	static async update(updateData) {
 		try {
 			const userId = updateData.userId
-			const isNew = await this.#checkUserExistence(userId)
-			const result = await this.#createOrUpdateUserAndOrg(userId, isNew)
+			const isNewUser = await this.#checkUserExistence(userId)
+			const result = await this.#createOrUpdateUserAndOrg(userId, isNewUser)
 			return result
 		} catch (error) {
 			console.log(error)
@@ -111,7 +108,7 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async #createOrUpdateUserAndOrg(userId, isNew) {
+	static async #createOrUpdateUserAndOrg(userId, isNewUser) {
 		const userDetails = await userRequests.fetchUserDetails({ userId })
 		if (!userDetails?.data?.result) {
 			return responses.failureResponse({
@@ -123,7 +120,6 @@ module.exports = class UserHelper {
 
 		const validationError = await this.#validateUserDetails(userDetails)
 
-		console.log('validationError ============ ', validationError)
 		if (validationError) {
 			return responses.failureResponse({
 				message: validationError,
@@ -134,7 +130,6 @@ module.exports = class UserHelper {
 
 		const orgExtension = await this.#createOrUpdateOrg({ id: userDetails.data.result.organization_id })
 
-		console.log('orgExtension info ', orgExtension)
 		if (!orgExtension) {
 			return responses.failureResponse({
 				message: 'ORG_EXTENSION_NOT_FOUND',
@@ -144,11 +139,7 @@ module.exports = class UserHelper {
 		}
 		const userExtensionData = this.#getExtensionData(userDetails.data.result, orgExtension)
 
-		console.log('isNew', isNew)
-
-		console.log('userExtensionData ---------- ', userExtensionData)
-
-		const createOrUpdateResult = isNew
+		const createOrUpdateResult = isNewUser
 			? await this.#createUser(userExtensionData)
 			: await this.#updateUser(userExtensionData)
 		if (createOrUpdateResult.statusCode != httpStatusCode.ok) return createOrUpdateResult
@@ -194,7 +185,6 @@ module.exports = class UserHelper {
 	}
 
 	static async #createUser(userExtensionData) {
-		console.log('create user')
 		const isAMentor = userExtensionData.roles.some((role) => role.title == common.MENTOR_ROLE)
 		const orgId = userExtensionData.organization.id
 		const user = isAMentor
@@ -206,7 +196,6 @@ module.exports = class UserHelper {
 	static #checkOrgChange = (existingOrgId, newOrgId) => existingOrgId !== newOrgId
 
 	static async #updateUser(userExtensionData) {
-		console.log('update user')
 		const isAMentee = userExtensionData.roles.some((role) => role.title === common.MENTEE_ROLE)
 		const roleChangePayload = {
 			user_id: userExtensionData.id,
@@ -219,8 +208,6 @@ module.exports = class UserHelper {
 			'organization_id',
 			'is_mentor',
 		])
-
-		console.log('menteeExtension user', menteeExtension)
 
 		if (!menteeExtension) throw new Error('User Not Found')
 
