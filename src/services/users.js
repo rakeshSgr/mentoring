@@ -73,7 +73,7 @@ module.exports = class UserHelper {
 			const isNew = await this.#checkUserExistence(decodedToken.id)
 			if (isNew) {
 				console.log('------------------- New call ------------------ ')
-				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id)
+				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNew)
 				return result
 			} else {
 				console.log('------------------- existing call ------------------ ')
