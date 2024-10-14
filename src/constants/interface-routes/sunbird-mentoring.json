@@ -3175,7 +3175,7 @@
 			"targetPackages": [
 				{
 					"service": "user",
-					"basePackageName": "user",
+					"basePackageName": "mentoring",
 					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
@@ -3217,7 +3217,7 @@
 			"targetPackages": [
 				{
 					"service": "user",
-					"basePackageName": "user",
+					"basePackageName": "mentoring",
 					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
@@ -3275,7 +3275,7 @@
 			"targetPackages": [
 				{
 					"service": "user",
-					"basePackageName": "user",
+					"basePackageName": "mentoring",
 					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
@@ -3309,7 +3309,7 @@
 			"targetPackages": [
 				{
 					"service": "user",
-					"basePackageName": "user",
+					"basePackageName": "mentoring",
 					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": []
