@@ -71,7 +71,6 @@ module.exports = class UserHelper {
 	static async create(decodedToken) {
 		try {
 			const isNewUser = await this.#checkUserExistence(decodedToken.id)
-			console.log('-------------- ', isNewUser)
 			if (isNewUser) {
 				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNewUser)
 				return result

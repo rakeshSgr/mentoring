@@ -658,8 +658,6 @@ module.exports = class MenteesHelper {
 				organization_name
 			)
 
-			console.log('organisationPolicy', organisationPolicy)
-
 			data.user_id = userId
 
 			const defaultOrgId = await getDefaultOrgId()

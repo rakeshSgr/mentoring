@@ -31,7 +31,7 @@ module.exports = {
 					}
 
 					const updatePromises = orgDetails.data.result.map(async (orgInfo) => {
-						console.log(`Updating user_extensions for the : ${orgInfo.name} (ID: ${orgInfo.id})`)
+						console.log(`Updating organization_extension for the : ${orgInfo.name} (ID: ${orgInfo.id})`)
 						await queryInterface.sequelize.query(
 							`UPDATE organization_extension 
                              SET organization_name = :organization_name 
