@@ -256,7 +256,10 @@ module.exports = class SessionsHelper {
 				})
 			}
 			// Find organisation policy from organisation_extension table
-			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+				orgId,
+				userOrgDetails.data.result.name
+			)
 			bodyData.visibility = organisationPolicy.session_visibility_policy
 			bodyData.visible_to_organizations = userOrgDetails.data.result.related_orgs
 				? userOrgDetails.data.result.related_orgs.concat([orgId])
@@ -987,7 +990,7 @@ module.exports = class SessionsHelper {
 
 			const mentorExtension = await mentorExtensionQueries.getMentorExtension(
 				sessionDetails.mentor_id,
-				['user_id', 'name', 'designation', 'organization_name', 'organization_id', 'custom_entity_text'],
+				['user_id', 'name', 'designation', 'organization_id', 'custom_entity_text'],
 				true
 			)
 
@@ -995,8 +998,16 @@ module.exports = class SessionsHelper {
 				sessionDetails.manager_name = mentorExtension.name
 			}
 
+			const orgDetails = await organisationExtensionQueries.findOne(
+				{ organization_id: mentorExtension.organization_id },
+				{ attributes: ['organization_name'] }
+			)
+
+			if (orgDetails && orgDetails.organization_name) {
+				sessionDetails.organization = orgDetails.organization_name
+			}
+
 			sessionDetails.mentor_name = mentorExtension.name
-			sessionDetails.organization = mentorExtension.organization_name
 			sessionDetails.mentor_designation = []
 
 			const defaultOrgId = await getDefaultOrgId()
@@ -2680,10 +2691,11 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const userDetail = await mentorExtensionQueries.getMentorExtension(
-				id,
-				['name', 'email', 'organization_name'],
-				true
+			const userDetail = await mentorExtensionQueries.getMentorExtension(id, ['name', 'email'], true)
+
+			const orgDetails = await organisationExtensionQueries.findOne(
+				{ organization_id: organization_id },
+				{ attributes: ['organization_name'] }
 			)
 
 			//push to queue
@@ -2698,7 +2710,7 @@ module.exports = class SessionsHelper {
 						name: userDetail.name,
 						email: await emailEncryption.decrypt(userDetail.email),
 						organization_id,
-						org_name: userDetail.organization_name,
+						org_name: orgDetails.organization_name,
 					},
 				},
 				{

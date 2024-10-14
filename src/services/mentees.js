@@ -650,10 +650,15 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			data.organization_name = userOrgDetails.data.result.name
+			const organization_name = userOrgDetails.data.result.name
 
 			// Find organisation policy from organisation_extension table
-			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+				orgId,
+				organization_name
+			)
+
+			console.log('organisationPolicy', organisationPolicy)
 
 			data.user_id = userId
 
@@ -792,7 +797,8 @@ module.exports = class MenteesHelper {
 				//both both user data and organisation can change at the same time.
 				let userOrgDetails = await userRequests.fetchOrgDetails({ organizationId: data.organization.id })
 				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
-					data.organization.id
+					data.organization.id,
+					userOrgDetails.data.result.name
 				)
 				if (!orgPolicies?.organization_id) {
 					return responses.failureResponse({

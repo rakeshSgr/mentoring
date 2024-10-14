@@ -80,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: false,
 			},
-			organization_name: {
+			image: {
 				type: DataTypes.STRING,
 			},
 		},

@@ -71,6 +71,7 @@ module.exports = class UserHelper {
 	static async create(decodedToken) {
 		try {
 			const isNewUser = await this.#checkUserExistence(decodedToken.id)
+			console.log('-------------- ', isNewUser)
 			if (isNewUser) {
 				const result = await this.#createOrUpdateUserAndOrg(decodedToken.id, isNewUser)
 				return result
@@ -165,8 +166,7 @@ module.exports = class UserHelper {
 			competency: userDetails.competency,
 			designation: userDetails.designation,
 			language: userDetails.language,
-			organization_name: userDetails.organization.name,
-			image: userDetails.image,
+			image: userDetails.image ? userDetails.image : '',
 		}
 	}
 
