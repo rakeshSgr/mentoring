@@ -8,10 +8,12 @@ module.exports = {
 		try {
 			const { STRING } = Sequelize
 
-			await queryInterface.addColumn('organization_extension', 'organization_name', {
+			await queryInterface.addColumn('organization_extension', 'name', {
 				type: STRING,
 				allowNull: true,
 			})
+
+			await queryInterface.addIndex('organization_extension', ['name'])
 
 			// Fetch the count of distinct organizations
 			const [[orgList]] = await queryInterface.sequelize.query(
@@ -34,7 +36,7 @@ module.exports = {
 						console.log(`Updating organization_extension for the : ${orgInfo.name} (ID: ${orgInfo.id})`)
 						await queryInterface.sequelize.query(
 							`UPDATE organization_extension 
-                             SET organization_name = :organization_name 
+                             SET name = :organization_name 
                              WHERE organization_id = :organizationId`,
 							{
 								replacements: {
@@ -69,7 +71,7 @@ module.exports = {
 
 	down: async (queryInterface) => {
 		try {
-			await queryInterface.removeColumn('organization_extension', 'organization_name')
+			await queryInterface.removeColumn('organization_extension', 'name')
 		} catch (err) {
 			console.error('Rollback failed:', err)
 			throw err

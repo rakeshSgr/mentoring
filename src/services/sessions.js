@@ -1000,11 +1000,11 @@ module.exports = class SessionsHelper {
 
 			const orgDetails = await organisationExtensionQueries.findOne(
 				{ organization_id: mentorExtension.organization_id },
-				{ attributes: ['organization_name'] }
+				{ attributes: ['name'] }
 			)
 
-			if (orgDetails && orgDetails.organization_name) {
-				sessionDetails.organization = orgDetails.organization_name
+			if (orgDetails && orgDetails.name) {
+				sessionDetails.organization = orgDetails.name
 			}
 
 			sessionDetails.mentor_name = mentorExtension.name
@@ -2695,7 +2695,7 @@ module.exports = class SessionsHelper {
 
 			const orgDetails = await organisationExtensionQueries.findOne(
 				{ organization_id: organization_id },
-				{ attributes: ['organization_name'] }
+				{ attributes: ['name'] }
 			)
 
 			//push to queue
@@ -2710,7 +2710,7 @@ module.exports = class SessionsHelper {
 						name: userDetail.name,
 						email: await emailEncryption.decrypt(userDetail.email),
 						organization_id,
-						org_name: orgDetails.organization_name,
+						org_name: orgDetails.name,
 					},
 				},
 				{

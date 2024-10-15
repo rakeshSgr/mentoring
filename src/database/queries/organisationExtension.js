@@ -48,7 +48,7 @@ module.exports = class OrganizationExtensionQueries {
 
 			const data = common.getDefaultOrgPolicies()
 			data.organization_id = organizationId
-			data.organization_name = organization_name
+			data.name = organization_name
 
 			// Try to find the data, and if it doesn't exist, create it
 			const [orgPolicies, created] = await OrganizationExtension.findOrCreate({

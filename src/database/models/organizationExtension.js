@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			mentee_visibility_policy: { type: DataTypes.STRING },
 			external_mentee_visibility_policy: { type: DataTypes.STRING },
-			organization_name: { type: DataTypes.STRING },
+			name: { type: DataTypes.STRING },
 		},
 		{
 			sequelize,
