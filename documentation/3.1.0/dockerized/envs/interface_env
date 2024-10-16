@@ -11,3 +11,5 @@ SCHEDULER_SERVICE_BASE_URL=http://scheduler:4000
 SUPPORTED_HTTP_TYPES="GET POST PUT PATCH DELETE"
 USER_SERVICE_BASE_URL=http://user:3001
 ALLOWED_HOST="*"
+INTERNAL_ACCESS_TOKEN="internal_access_token"  # Replace with secure internal access token
+

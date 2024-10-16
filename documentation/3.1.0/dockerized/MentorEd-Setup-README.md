@@ -43,7 +43,7 @@ Once these prerequisites are in place, you're all set to get started with settin
          -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/notification_env \
          -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/scheduler_env \
          -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/user_env \
-         -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/environment.ts
+         -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/env.js
         ```
     -   **Windows**
 
@@ -54,7 +54,7 @@ Once these prerequisites are in place, you're all set to get started with settin
             -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/notification_env ^
             -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/scheduler_env ^
             -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/user_env ^
-            -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/environment.ts
+            -O https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/envs/env.js
         ```
 
     > **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Mentoring](https://github.com/ELEVATE-Project/mentoring/blob/master/src/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) repositories for reference.
@@ -102,7 +102,7 @@ Once these prerequisites are in place, you're all set to get started with settin
         >
         > volumes:
         >
-        > \- /home/joffin/elevate/backend/environment.ts:/app/src/environments/environment.ts
+        > \- ./env.js:/usr/src/app/www/assets/env/env.js
 
 6.  **Download `docker-compose-up` and `docker-compose-down` Script Files**
 
@@ -289,12 +289,19 @@ In such cases, you can generate sample user accounts using the steps below. This
 
     - **Ubuntu/Linux/Mac**
 
+        
         ```
+        curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh && 
         curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
         ```
 
     - **Windows**
 
+        ```
+        curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
+
+        ```
+        
         ```
         curl -L -o insert_sample_data.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_data.bat
         ```
