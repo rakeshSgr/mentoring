@@ -120,3 +120,26 @@ while IFS= read -r line; do
 done <"$SAMPLE_COLUMNS_FILE"
 
 echo "Sample Data Insertion Completed"
+
+# ------------------------------------------------------------
+# New code to push `forms.sql` data into the database
+# ------------------------------------------------------------
+
+DEFAULT_FORM_FOLDER_LOCATION=$FOLDER_NAME
+DEFAULT_ORG_ID=$(echo $DEFAULT_ORG_ID | awk -F '[:@/]' '{print $6}')
+
+./insert_default_forms.sh $DEFAULT_ORG_ID $FOLDER_NAME
+
+FORMS_SQL_FILE="forms.sql"
+if [ ! -f "$FORMS_SQL_FILE" ]; then
+    echo "Error: forms.sql not found."
+    exit 1
+fi
+
+echo "Copying forms.sql to container '$CONTAINER_NAME'..."
+docker cp "$FORMS_SQL_FILE" "$CONTAINER_NAME:/forms.sql"
+
+echo "Inserting Forms Data from forms.sql..."
+docker exec --user "$DB_USER" "$CONTAINER_NAME" bash -c "PGPASSWORD='$DB_PASSWORD' psql -h localhost -U $DB_USER -d $DB_NAME -p $DB_PORT -f /forms.sql"
+
+echo "Forms Data Insertion Completed"
