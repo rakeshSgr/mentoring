@@ -1243,7 +1243,7 @@ module.exports = class SessionsHelper {
 				)
 
 				userId = userDetails.user_id
-				email = await emailEncryption.decrypt(userDetails.email)
+				email = userDetails.email
 				name = userDetails.name
 				enrollmentType = common.ENROLLED
 			} else {
@@ -1410,7 +1410,7 @@ module.exports = class SessionsHelper {
 				)
 
 				userId = userDetails.user_id
-				email = await emailEncryption.decrypt(userDetails.email)
+				email = userDetails.email
 				name = userDetails.name
 			} else {
 				userId = userTokenData.id
@@ -2426,7 +2426,7 @@ module.exports = class SessionsHelper {
 			const payload = {
 				type: 'email',
 				email: {
-					to: await emailEncryption.decrypt(userDetails.email),
+					to: userDetails.email,
 					subject: templateData.subject,
 					body: utils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
