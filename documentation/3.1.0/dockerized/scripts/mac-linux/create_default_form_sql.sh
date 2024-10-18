@@ -7,6 +7,7 @@ set -e
 GITHUB_REPO="https://raw.githubusercontent.com/ELEVATE-Project/mentoring-mobile-app/refs/heads/release-3.1.0/forms.json"
 JSON_FILE="forms.json"  # The name to save the downloaded file
 
+
 # Check if the organization_id is passed as an argument, otherwise use 'default_org'
 if [ -z "$1" ]; then
     organization_id="default_org"
@@ -27,8 +28,37 @@ if [ ! -d "$OUTPUT_DIR" ]; then
     exit 1
 fi
 
-# Define the output file path in the specified directory
-SQL_OUTPUT_FILE="$OUTPUT_DIR/forms.sql"
+# Function to install jq
+install_jq() {
+    if command -v jq &>/dev/null; then
+        echo "jq is already installed."
+    else
+        echo "Installing jq..."
+        if [[ -x "$(command -v apt-get)" ]]; then
+            # For Debian/Ubuntu
+            sudo apt-get update
+            sudo apt-get install -y jq
+        elif [[ -x "$(command -v yum)" ]]; then
+            # For Red Hat/CentOS
+            sudo yum install -y jq
+        elif [[ -x "$(command -v brew)" ]]; then
+            # For macOS
+            brew install jq
+        else
+            echo "Unsupported OS or package manager. Please install jq manually."
+            exit 1
+        fi
+    fi
+}
+
+# Install jq
+install_jq
+
+# Output file
+DUMP_FILE="$OUTPUT_DIR/forms.sql"
+
+# Clear the output file if it exists
+> "$DUMP_FILE"
 
 # Fetch the JSON file from the GitHub repository
 echo "Fetching JSON file from GitHub..."
@@ -40,54 +70,27 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Create or overwrite the SQL output file
-echo "Generating SQL insert statements..."
-echo "delete * from forms" > $SQL_OUTPUT_FILE
+# Read the JSON file into a variable
+jsonData=$(cat "$JSON_FILE")
+
+echo "delete * from forms;" >> "$DUMP_FILE"
+
+# Loop through the JSON array
+echo "$jsonData" | jq -c '.[]' | while read -r item; do
+    # Extract values using jq
+    type_value=$(echo "$item" | jq -r '.type')
+    sub_type_value=$(echo "$item" | jq -r '.sub_type')
+    data_value=$(echo "$item" | jq -c '.data')
+
+    # Sample values for ID, version, and organization ID
+    version_value=1
+
+    # Construct the SQL query
+    query="INSERT INTO forms (type, sub_type, data, version, organization_id, created_at, updated_at) VALUES ('$type_value', '$sub_type_value', '$data_value', $version_value, '$organization_id', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);"
+
+    # Append the query to the dump file
+    echo "$query" >> "$DUMP_FILE"
+done
 
 
-
-# Initialize ID counter starting from 1
-id_counter=1
-
-# Use grep and sed to extract type, sub_type, and data fields
-while read -r line; do
-  # Extract type field
-  if echo "$line" | grep -q '"type"'; then
-    type=$(echo "$line" | sed -E 's/.*"type": *"([^"]+)".*/\1/')
-  fi
-
-  # Extract sub_type field
-  if echo "$line" | grep -q '"sub_type"'; then
-    sub_type=$(echo "$line" | sed -E 's/.*"sub_type": *"([^"]+)".*/\1/')
-  fi
-
-  # Extract the value of the data field (without including the "data" key itself)
-  if echo "$line" | grep -q '"data"'; then
-    data=$(sed -n '/"data": {/,/\}\}/p' $JSON_FILE | sed '1d;$d' | tr '\n' ' ' | sed 's/\"/\\\"/g')
-  fi
-
-  # Check if we have extracted enough fields to insert
-  if [[ -n "$type" && -n "$sub_type" && -n "$data" ]]; then
-    # Default version is set to 1
-    version=1
-# Format the JSON for SQL (escape single quotes for SQL)
-    escaped_data=$(echo "$data" | sed "s/'/''/g")
-    
-    # Write the SQL insert statement to the output file
-    echo "INSERT INTO forms (id, type, sub_type, data, version, organization_id) VALUES ($id_counter, '$type', '$sub_type', '{$escaped_data}', 
-$version, '$organization_id');" >> $SQL_OUTPUT_FILE
-
-    # Increment the ID counter for the next record
-    id_counter=$((id_counter + 1))
-
-    # Reset fields for the next record
-    type=""
-    sub_type=""
-    data=""
-  fi
-done < $JSON_FILE
-
-# Append 'SELECT NULL;' to the end of the SQL file
-echo "SELECT NULL;" >> $SQL_OUTPUT_FILE
-
-echo "SQL file generated: $SQL_OUTPUT_FILE"
+echo "Queries written to: $DUMP_FILE"
