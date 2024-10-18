@@ -8,12 +8,9 @@ GITHUB_REPO="https://raw.githubusercontent.com/ELEVATE-Project/mentoring-mobile-
 JSON_FILE="forms.json"  # The name to save the downloaded file
 
 
-# Check if the organization_id is passed as an argument, otherwise use 'default_org'
-if [ -z "$1" ]; then
-    organization_id="default_org"
-else
-    organization_id="$1"
-fi
+# set organization_id
+organization_id=1
+
 
 # Check if the output directory is passed as an argument, otherwise use the current directory
 if [ -z "$2" ]; then
@@ -60,6 +57,9 @@ DUMP_FILE="$OUTPUT_DIR/forms.sql"
 # Clear the output file if it exists
 > "$DUMP_FILE"
 
+#set default query to delete existing forms
+echo "delete from forms;" > "$DUMP_FILE"
+
 # Fetch the JSON file from the GitHub repository
 echo "Fetching JSON file from GitHub..."
 curl -o $JSON_FILE $GITHUB_REPO
@@ -72,8 +72,6 @@ fi
 
 # Read the JSON file into a variable
 jsonData=$(cat "$JSON_FILE")
-
-echo "delete * from forms;" >> "$DUMP_FILE"
 
 # Loop through the JSON array
 echo "$jsonData" | jq -c '.[]' | while read -r item; do

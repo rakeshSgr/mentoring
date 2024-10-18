@@ -8,12 +8,9 @@ setlocal EnableDelayedExpansion
 set "GITHUB_REPO=https://raw.githubusercontent.com/ELEVATE-Project/mentoring-mobile-app/refs/heads/release-3.1.0/forms.json"
 set "JSON_FILE=forms.json"
 
-:: Check if the organization_id is passed as an argument, otherwise use 'default_org'
-if "%~1"=="" (
-    set "organization_id=default_org"
-) else (
-    set "organization_id=%~1"
-)
+:: set organization_id
+set "organization_id=1"
+
 
 :: Check if the output directory is passed as an argument, otherwise use the current directory
 if "%~2"=="" (
@@ -41,9 +38,12 @@ if errorlevel 1 (
     exit /b 1
 )
 
+:: Append 'SELECT NULL;' to the end of the SQL file
+echo delete from forms; > "!SQL_OUTPUT_FILE!"
+
 :: Create or overwrite the SQL output file
 echo Generating SQL insert statements...
-> "!SQL_OUTPUT_FILE!" (
+>> "!SQL_OUTPUT_FILE!" (
     echo.
 
     :: Initialize ID counter starting from 1

@@ -285,12 +285,14 @@ In such cases, you can generate sample user accounts using the steps below. This
         curl -L "https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/windows/user/sampleData.sql" -o sample-data\user\sampleData.sql
         ```
 
-2. **Download The `insert_sample_data` Script File:**
+2. **Download The `insert_sample_data` , `create_default_form_sql` and `insert_sample_forms.sh`  Script File:**
 
     - **Ubuntu/Linux/Mac**
 
         
         ```
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
+        &&
         curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh && 
         curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
         ```
@@ -329,3 +331,18 @@ In such cases, you can generate sample user accounts using the steps below. This
     | aaravpatel@example.com   | Password1@ | Mentee             |
     | arunimareddy@example.com | Password1@ | Mentor             |
     | aaravpatel@example.com   | Password1@ | Organization Admin |
+
+3. **Run The `insert_sample_forms` Script File:**
+
+    - **Ubuntu/Linux/Mac**
+        ```
+        ./insert_sample_forms.sh mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        ```
+
+    - **Windows**
+
+        ```
+        insert_sample_data.bat mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        ```
+        
+    After successfully running the script mentioned above, sample forms will be added to database
