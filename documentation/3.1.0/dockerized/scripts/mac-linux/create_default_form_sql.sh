@@ -42,7 +42,9 @@ fi
 
 # Create or overwrite the SQL output file
 echo "Generating SQL insert statements..."
-echo "" > $SQL_OUTPUT_FILE
+echo "delete * from forms" > $SQL_OUTPUT_FILE
+
+
 
 # Initialize ID counter starting from 1
 id_counter=1
