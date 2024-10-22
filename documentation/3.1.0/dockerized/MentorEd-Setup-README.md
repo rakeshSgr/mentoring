@@ -259,6 +259,46 @@ To ensure the persistence of database data when running `docker compose down`, i
 
 By implementing these adjustments, the configuration ensures that when the `docker-compose down` command is executed, the database data is securely stored within the specified volumes. Consequently, this data will be retained and remain accessible, even after the containers are terminated and subsequently reinstated using the `docker-compose up` command.
 
+## Add Required forms
+There ar few forms required for mentoting application to run, to add those fallow the below steps
+
+ 1. **Download The `create_default_form_sql` and `insert_sample_forms.sh`  Script File:**
+
+- **Ubuntu/Linux/Mac**
+        
+        ```
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
+        &&
+        curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh
+        ```
+
+    - **Windows**
+
+        ```
+        curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
+
+        ```
+        
+        ```
+        curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat
+        ```
+2. **Run The `insert_sample_forms` Script File:**
+
+    - **Ubuntu/Linux/Mac**
+        ```
+        ./insert_sample_forms.sh mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        ```
+
+    - **Windows**
+
+        ```
+        insert_sample_forms.bat mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        ```
+        
+    After successfully running the script, forms will be added to database. 
+
+
+
 ## Sample User Accounts Generation
 
 During the initial setup of Mentor services with the default configuration, you may encounter issues creating new accounts through the regular Signup flow on the Mentor portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
@@ -285,25 +325,17 @@ In such cases, you can generate sample user accounts using the steps below. This
         curl -L "https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/windows/user/sampleData.sql" -o sample-data\user\sampleData.sql
         ```
 
-2. **Download The `insert_sample_data` , `create_default_form_sql` and `insert_sample_forms.sh`  Script File:**
+2. **Download The `insert_sample_data.sh` Script File:**
 
     - **Ubuntu/Linux/Mac**
 
         
         ```
-        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
-        &&
-        curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh && 
         curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
         ```
 
     - **Windows**
 
-        ```
-        curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
-
-        ```
-        
         ```
         curl -L -o insert_sample_data.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_data.bat
         ```
@@ -332,17 +364,3 @@ In such cases, you can generate sample user accounts using the steps below. This
     | arunimareddy@example.com | Password1@ | Mentor             |
     | aaravpatel@example.com   | Password1@ | Organization Admin |
 
-3. **Run The `insert_sample_forms` Script File:**
-
-    - **Ubuntu/Linux/Mac**
-        ```
-        ./insert_sample_forms.sh mentoring postgres://postgres:postgres@citus_master:5432/mentoring
-        ```
-
-    - **Windows**
-
-        ```
-        insert_sample_data.bat mentoring postgres://postgres:postgres@citus_master:5432/mentoring
-        ```
-        
-    After successfully running the script mentioned above, sample forms will be added to database
