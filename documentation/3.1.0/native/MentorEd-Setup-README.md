@@ -565,6 +565,35 @@ Before setting up the application, the dependencies should be installed and veri
 
     Navigate to http://localhost:7601 to access the portal.
 
+## Add Required forms
+There ar few forms required for mentoting application to run, to add those fallow the below steps
+
+ 1. **Download and Run The `insert_sample_forms.sh`  Script File:**
+
+- **Ubuntu/Linux**
+
+        ```
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/insert_sample_forms.sh &&
+          chmod +x insert_sample_data.sh && ./insert_sample_data.sh
+        ```
+
+- **Mac**
+        
+        ```
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/macos/insert_sample_forms.sh && \
+        chmod +x insert_sample_data.sh && \
+        ./insert_sample_data.sh
+        ```
+
+    - **Windows**
+
+        ```
+        curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat && ^
+        insert_sample_data.bat
+        ```
+    After successfully running the script, forms will be added to database. 
+
+
 ## Sample User Accounts Generation
 
 During the initial setup of Mentor services with the default configuration, you may encounter issues creating new accounts through the regular Signup flow on the Mentor portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
