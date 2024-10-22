@@ -267,7 +267,7 @@ There ar few forms required for mentoting application to run, to add those fallo
 - **Ubuntu/Linux/Mac**
         
         ```
-        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
+        mkdir -p sample-data/mentoring && curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
         &&
         curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh
         ```
@@ -275,7 +275,7 @@ There ar few forms required for mentoting application to run, to add those fallo
     - **Windows**
 
         ```
-        curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
+        mkdir sample-data\mentoring 2>nul & curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
 
         ```
         
@@ -312,7 +312,7 @@ In such cases, you can generate sample user accounts using the steps below. This
     - **Ubuntu/Linux/Mac**
 
         ```
-        mkdir -p sample-data/mentoring sample-data/user && \
+        mkdir -p sample-data/user && \
         curl -L https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/mac-linux/mentoring/sampleData.sql -o sample-data/mentoring/sampleData.sql && \
         curl -L https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
         ```
@@ -320,7 +320,7 @@ In such cases, you can generate sample user accounts using the steps below. This
     - **Windows**
 
         ```
-        mkdir sample-data\mentoring 2>nul & mkdir sample-data\user 2>nul & ^
+         mkdir sample-data\user 2>nul & ^
         curl -L "https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/windows/mentoring/sampleData.sql" -o sample-data\mentoring\sampleData.sql & ^
         curl -L "https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/sample-data/windows/user/sampleData.sql" -o sample-data\user\sampleData.sql
         ```

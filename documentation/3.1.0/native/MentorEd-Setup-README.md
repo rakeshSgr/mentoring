@@ -573,23 +573,28 @@ There ar few forms required for mentoting application to run, to add those fallo
 - **Ubuntu/Linux**
 
         ```
-        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/insert_sample_forms.sh &&
-          chmod +x insert_sample_data.sh && ./insert_sample_data.sh
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/forms.sql
+        && 
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/insert_sample_forms.sh && chmod +x insert_sample_forms.sh && ./insert_sample_forms.sh
         ```
 
 - **Mac**
         
         ```
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/macos/forms.sql
+        && 
         curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/macos/insert_sample_forms.sh && \
-        chmod +x insert_sample_data.sh && \
-        ./insert_sample_data.sh
+        chmod +x insert_sample_forms.sh && \
+        ./insert_sample_forms.sh
         ```
 
     - **Windows**
 
         ```
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/forms.sql
+        &&
         curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat && ^
-        insert_sample_data.bat
+        insert_sample_forms.bat
         ```
     After successfully running the script, forms will be added to database. 
 
