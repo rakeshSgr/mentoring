@@ -267,20 +267,20 @@ There ar few forms required for mentoting application to run, to add those fallo
 - **Ubuntu/Linux/Mac**
         
         ```
-        mkdir -p sample-data/mentoring && curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
+        mkdir -p sample-data/mentoring && curl -L -o sample-data/mentoring/insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
         &&
-        curl -L -o create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh
+        curl -L -o sample-data/mentoring/create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh
         ```
 
     - **Windows**
 
         ```
-        mkdir sample-data\mentoring 2>nul & curl -L -o create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
+        mkdir sample-data\mentoring 2>nul & curl -L -o sample-data/mentoring/create_default_form_sql.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/create_default_form_sql.bat
 
         ```
         
         ```
-        curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat
+        curl -L -o sample-data/mentoring/insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat
         ```
 2. **Run The `insert_sample_forms` Script File:**
 
