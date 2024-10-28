@@ -259,7 +259,7 @@ module.exports = class MentorsHelper {
 			if (session.length > 0) {
 				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
-				let mentorDetails = await userRequests.getListOfUserDetails(userIds)
+				let mentorDetails = await userRequests.getListOfUserDetails(userIds, true)
 				mentorDetails = mentorDetails.result
 
 				for (let i = 0; i < session.length; i++) {
@@ -646,7 +646,7 @@ module.exports = class MentorsHelper {
 				}
 			}
 
-			let mentorProfile = await userRequests.fetchUserDetails({ userId: id })
+			let mentorProfile = await userRequests.fetchUserDetails({ userId: id, db: true })
 			if (!mentorProfile.data.result) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
@@ -918,7 +918,7 @@ module.exports = class MentorsHelper {
 
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
-			const userDetails = await userRequests.getListOfUserDetails(mentorIds, true)
+			const userDetails = await userRequests.getListOfUserDetails(mentorIds, true, false)
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]

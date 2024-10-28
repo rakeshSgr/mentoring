@@ -114,4 +114,24 @@ module.exports = class OrganizationExtensionQueries {
 			throw new Error(`Error updating organization extension: ${error.message}`)
 		}
 	}
+
+	static async getAllByIds(ids) {
+		try {
+			const filterClause = `organization_id IN (${ids.map((id) => `'${id}'`).join(',')})`
+
+			const query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${filterClause}
+				`
+
+			const results = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+			})
+			return results
+		} catch (error) {
+			throw error
+		}
+	}
 }

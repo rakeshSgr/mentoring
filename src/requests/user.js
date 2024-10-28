@@ -13,6 +13,14 @@ const request = require('request')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
 const common = require('@constants/common')
+const { Op } = require('sequelize')
+
+const menteeQueries = require('@database/queries/userExtension')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
+
+const emailEncryption = require('@utils/emailEncryption')
+const utils = require('@generics/utils')
+const { resolve } = require('path')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -20,18 +28,29 @@ const common = require('@constants/common')
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
+const fetchOrgDetails = async function ({ organizationCode, organizationId, db = true }) {
 	try {
-		let orgReadUrl
+		if (organizationId && db == true) {
+			const organizationDetails = await organisationExtensionQueries.findOne({ organization_id: organizationId })
 
-		if (organizationId)
-			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
-		else if (organizationCode)
-			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
+			return {
+				success: true,
+				data: {
+					result: organizationDetails,
+				},
+			}
+		} else {
+			let orgReadUrl
 
-		const internalToken = true
-		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
-		return orgDetails
+			if (organizationId)
+				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
+			else if (organizationCode)
+				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
+
+			const internalToken = true
+			const orgDetails = await requests.get(orgReadUrl, '', internalToken)
+			return orgDetails
+		}
 	} catch (error) {
 		console.error('Error fetching organization details:', error)
 		throw error
@@ -55,39 +74,59 @@ const validRoles = new Set([
 	common.SESSION_MANAGER_ROLE,
 ])
 
-const fetchUserDetails = async ({ token, userId }) => {
+const fetchUserDetails = async ({ token, userId, db = true }) => {
 	try {
-		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
+		if (db) {
+			const userDetails = await menteeQueries.findOneFromView(userId)
 
-		if (userId) profileUrl += `/${userId}`
-
-		const isInternalTokenRequired = true
-		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
-		userDetails.data = userDetails.data || {}
-		userDetails.data.result = userDetails.data.result || {}
-		userDetails.data.result.user_roles = userDetails.data.result.user_roles || [{ title: common.MENTEE_ROLE }]
-
-		if (
-			userDetails.data.result.user_roles.length === 1 &&
-			userDetails.data.result.user_roles[0].title === common.MENTEE_ROLE
-		)
-			return userDetails
-
-		let isMentor = false
-		let isMenteeRolePresent = false
-		const roles = userDetails.data.result.user_roles.reduce((acc, role) => {
-			if (validRoles.has(role.title)) {
-				if (role.title === common.MENTOR_ROLE) isMentor = true
-				else if (role.title === common.MENTEE_ROLE) isMenteeRolePresent = true
-				acc.push(role)
+			if (userDetails.image) {
+				userDetails.image = await getDownloadableUrl(userDetails.image).result
 			}
-			return acc
-		}, [])
+			userDetails.user_roles = [{ title: common.MENTEE_ROLE }]
+			if (userDetails.is_mentor) {
+				userDetails.user_roles.push({ title: common.MENTOR_ROLE })
+			}
 
-		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
-		userDetails.data.result.user_roles = roles
+			let response = {
+				data: {
+					result: userDetails,
+				},
+			}
+			return response
+		} else {
+			let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
 
-		return userDetails
+			if (userId) profileUrl += `/${userId}`
+
+			const isInternalTokenRequired = true
+			const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
+
+			userDetails.data = userDetails.data || {}
+			userDetails.data.result = userDetails.data.result || {}
+			userDetails.data.result.user_roles = userDetails.data.result.user_roles || [{ title: common.MENTEE_ROLE }]
+
+			if (
+				userDetails.data.result.user_roles.length === 1 &&
+				userDetails.data.result.user_roles[0].title === common.MENTEE_ROLE
+			)
+				return userDetails
+
+			let isMentor = false
+			let isMenteeRolePresent = false
+			const roles = userDetails.data.result.user_roles.reduce((acc, role) => {
+				if (validRoles.has(role.title)) {
+					if (role.title === common.MENTOR_ROLE) isMentor = true
+					else if (role.title === common.MENTEE_ROLE) isMenteeRolePresent = true
+					acc.push(role)
+				}
+				return acc
+			}, [])
+
+			if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
+			userDetails.data.result.user_roles = roles
+
+			return userDetails
+		}
 	} catch (error) {
 		console.error(error)
 		throw error
@@ -103,38 +142,90 @@ const fetchUserDetails = async ({ token, userId }) => {
  * @returns
  */
 
-const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
+const getListOfUserDetails = function (userIds, db = false, excludeDeletedRecords = false) {
 	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-			},
-			form: {
-				userIds,
-			},
-		}
+		if (db) {
+			try {
+				// Fetch user details
+				const userDetails = await menteeQueries.getAllUsersByIds(userIds)
 
-		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
-		if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
-		try {
-			request.get(apiUrl, options, callback)
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'USER_SERVICE_DOWN',
+				// Extract unique organization IDs and create a mapping for organization details
+				const organizationIds = new Set()
+				const orgDetails = {}
+
+				if (userDetails && userDetails.length > 0) {
+					userDetails.forEach((user) => {
+						organizationIds.add(user.organization_id)
 					})
-				} else {
-					data.body = JSON.parse(data.body)
-					return resolve(data.body)
 				}
+
+				// Fetch organization details
+				const filter = {
+					organization_id: {
+						[Op.in]: Array.from(organizationIds),
+					},
+				}
+
+				const organizationDetails = await organisationExtensionQueries.findAll(filter, {
+					attributes: ['name', 'organization_id'],
+				})
+
+				// Map organization details for quick access
+				organizationDetails.forEach((org) => {
+					orgDetails[org.organization_id] = org
+				})
+
+				// Enrich user details with roles and organization info
+				userDetails.forEach(async (user) => {
+					if (user.image) {
+						user.image = await getDownloadableUrl(user.image).result
+					}
+					user.user_roles = [{ title: common.MENTEE_ROLE }]
+					if (user.is_mentor) {
+						user.user_roles.push({ title: common.MENTOR_ROLE })
+					}
+					user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+				})
+
+				const response = {
+					result: userDetails,
+				}
+
+				return resolve(response)
+			} catch (error) {
+				return reject(error)
 			}
-		} catch (error) {
-			return reject(error)
+		} else {
+			const options = {
+				headers: {
+					'Content-Type': 'application/json',
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+				},
+				form: {
+					userIds,
+				},
+			}
+
+			let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+			if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
+			try {
+				request.get(apiUrl, options, callback)
+				function callback(err, data) {
+					if (err) {
+						reject({
+							message: 'USER_SERVICE_DOWN',
+						})
+					} else {
+						data.body = JSON.parse(data.body)
+						return resolve(data.body)
+					}
+				}
+			} catch (error) {
+				return reject(error)
+			}
 		}
 	})
 }
-
 /**
  * Get Accounts details.
  * @method
@@ -143,33 +234,57 @@ const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
  * @returns
  */
 
-const getListOfUserDetailsByEmail = function (emailIds) {
+const getListOfUserDetailsByEmail = function (emailIds, db = false) {
 	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-			},
-			form: {
-				emailIds,
-			},
-		}
-
-		const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
-		try {
-			await request.post(apiUrl, options, callback)
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'USER_SERVICE_DOWN',
-					})
-				} else {
-					data.body = JSON.parse(data.body)
-					return resolve(data.body)
+		if (db) {
+			const encryptedEmailIds = emailIds.map((email) => {
+				if (typeof email !== 'string') {
+					throw new TypeError('Each email ID must be a string.')
 				}
+				return emailEncryption.encrypt(email)
+			})
+
+			const userDetails = await menteeQueries.getUsersByEmailIds(encryptedEmailIds)
+
+			let ids = []
+
+			if (userDetails && userDetails.length > 0) {
+				userDetails.map((users) => {
+					ids.push(users.user_id)
+				})
 			}
-		} catch (error) {
-			return reject(error)
+
+			const response = {
+				result: ids,
+			}
+			return resolve(response)
+		} else {
+			const options = {
+				headers: {
+					'Content-Type': 'application/json',
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+				},
+				form: {
+					emailIds,
+				},
+			}
+
+			const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
+			try {
+				await request.post(apiUrl, options, callback)
+				function callback(err, data) {
+					if (err) {
+						reject({
+							message: 'USER_SERVICE_DOWN',
+						})
+					} else {
+						data.body = JSON.parse(data.body)
+						return resolve(data.body)
+					}
+				}
+			} catch (error) {
+				return reject(error)
+			}
 		}
 	})
 }
@@ -220,25 +335,104 @@ const share = function (profileId) {
  * @returns {JSON} - List of users
  */
 
-const list = function (userType, pageNo, pageSize, searchText) {
+const list = function (userType, pageNo, pageSize, db = true, searchText) {
 	return new Promise(async (resolve, reject) => {
-		try {
-			const apiUrl =
-				userBaseUrl +
-				endpoints.USERS_LIST +
-				'?type=' +
-				userType +
-				'&page=' +
-				pageNo +
-				'&limit=' +
-				pageSize +
-				'&search=' +
-				searchText
-			const userDetails = await requests.get(apiUrl, false, true)
+		if (db) {
+			try {
+				const filter = {
+					query: '',
+					replacements: {},
+				}
 
-			return resolve(userDetails)
-		} catch (error) {
-			return reject(error)
+				// Add conditions to the filter based on userType or searchText
+				if (userType) {
+					filter.query += `is_mentor = :is_mentor `
+					filter.replacements.is_mentor = userType.toLowerCase() === common.MENTOR_ROLE ? true : false
+				}
+
+				const userDetails = await menteeQueries.getAllUsers(
+					[],
+					pageNo,
+					pageSize,
+					filter,
+					(saasFilter = ''),
+					(additionalProjectionClause = `name,email,organization_id`),
+					(returnOnlyUserId = false),
+					(searchText = ''),
+					(defaultFilter = '')
+				)
+
+				let foundKeys = {}
+				let result = []
+
+				/* Required to resolve all promises first before preparing response object else sometime 
+				it will push unresolved promise object if you put this logic in below for loop */
+
+				if (userDetails.count == 0) {
+					return responses.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'USER_LIST',
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
+
+				await Promise.all(
+					userDetails.data.map(async (user) => {
+						if (user.image) {
+							user.image = await getDownloadableUrl(user.image)
+						}
+						return user
+					})
+				)
+
+				for (let user of userDetails.data) {
+					let firstChar = user.name.charAt(0)
+					firstChar = firstChar.toUpperCase()
+
+					if (!foundKeys[firstChar]) {
+						result.push({
+							key: firstChar,
+							values: [user],
+						})
+						foundKeys[firstChar] = result.length
+					} else {
+						let index = foundKeys[firstChar] - 1
+						result[index].values.push(user)
+					}
+				}
+
+				const sortedData = _.sortBy(result, 'key') || []
+
+				return resolve({
+					result: {
+						data: sortedData,
+					},
+				})
+			} catch (error) {
+				return reject(error)
+			}
+		} else {
+			try {
+				const apiUrl =
+					userBaseUrl +
+					endpoints.USERS_LIST +
+					'?type=' +
+					userType +
+					'&page=' +
+					pageNo +
+					'&limit=' +
+					pageSize +
+					'&search=' +
+					searchText
+				const userDetails = await requests.get(apiUrl, false, true)
+
+				return resolve(userDetails)
+			} catch (error) {
+				return reject(error)
+			}
 		}
 	})
 }
@@ -365,32 +559,99 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
  * @returns
  */
 
-const listOrganization = function (organizationIds = []) {
+const listOrganization = function (organizationIds = [], db = false) {
+	return new Promise(async (resolve, reject) => {
+		if (db) {
+			try {
+				// Fetch organization details
+				const filter = {
+					organization_id: {
+						[Op.in]: Array.from(organizationIds),
+					},
+				}
+
+				const organizationDetails = await organisationExtensionQueries.findAll(filter, {
+					attributes: ['name', 'organization_id'],
+				})
+
+				let result = {
+					success: true,
+					data: {
+						result: organizationDetails,
+					},
+				}
+
+				return resolve({
+					responseCode: httpStatusCode.ok,
+					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+					result: result,
+				})
+			} catch (error) {
+				return reject(error)
+			}
+		} else {
+			const options = {
+				headers: {
+					'Content-Type': 'application/json',
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+				},
+				form: {
+					organizationIds,
+				},
+			}
+
+			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+			try {
+				request.get(apiUrl, options, callback)
+				let result = {
+					success: true,
+				}
+				function callback(err, data) {
+					if (err) {
+						result.success = false
+					} else {
+						response = JSON.parse(data.body)
+						result.data = response
+					}
+					return resolve(result)
+				}
+			} catch (error) {
+				return reject(error)
+			}
+		}
+	})
+}
+
+/**
+ * Get Accounts details.
+ * @method
+ * @name getDownloadableUrl
+ * @param {Array} userIds
+ * @param {Array} paranoid : if true, discards deleted users.
+ * @returns
+ */
+
+const getDownloadableUrl = function (path) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
 				'Content-Type': 'application/json',
 				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 			},
-			form: {
-				organizationIds,
-			},
 		}
 
-		const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+		let apiUrl = userBaseUrl + endpoints.DOWNLOAD_IMAGE_URL + '?filePath=' + path
 		try {
 			request.get(apiUrl, options, callback)
-			let result = {
-				success: true,
-			}
 			function callback(err, data) {
 				if (err) {
-					result.success = false
+					reject({
+						message: 'USER_SERVICE_DOWN',
+					})
 				} else {
-					response = JSON.parse(data.body)
-					result.data = response
+					data.body = JSON.parse(data.body)
+					return resolve(data.body)
 				}
-				return resolve(result)
 			}
 		} catch (error) {
 			return reject(error)
@@ -399,14 +660,15 @@ const listOrganization = function (organizationIds = []) {
 }
 
 module.exports = {
-	fetchOrgDetails,
-	fetchUserDetails,
+	fetchOrgDetails, // dependent on releated orgs  And query on code
+	fetchUserDetails, // dependendt on languages and prefered lang etc
 	getListOfUserDetails,
 	list,
 	share,
-	listWithoutLimit,
-	search,
-	getListOfUserRoles,
+	listWithoutLimit, // not using
+	search, // not using
+	getListOfUserRoles, // not using
 	listOrganization,
-	getListOfUserDetailsByEmail,
+	getListOfUserDetailsByEmail, // need to fix
+	getDownloadableUrl,
 }

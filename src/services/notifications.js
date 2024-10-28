@@ -6,6 +6,7 @@ const sessionQueries = require('@database/queries/sessions')
 const notificationQueries = require('@database/queries/notificationTemplate')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const userRequests = require('@requests/user')
+const menteeQueries = require('@database/queries/userExtension')
 
 module.exports = class Notifications {
 	/**
@@ -62,7 +63,8 @@ module.exports = class Notifications {
 
 			// Get all sessionAttendees joined for the session
 			const sessionAttendees = await sessionAttendeesQueries.findAll({
-				session_id: session.id,
+				// session_id: session.id,
+				session_id: 2,
 			})
 
 			// If sessionAttendees data is available process the data
@@ -77,12 +79,21 @@ module.exports = class Notifications {
 			}
 
 			// Get attendees accound details
-			const attendeesAccounts = await userRequests.getListOfUserDetails(allAttendees)
+			const attendeesAccounts = await menteeQueries.getUsersByUserIds(
+				allAttendees,
+				{
+					attributes: ['user_id', 'name', 'email'],
+				},
+				true
+			)
 
-			if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
+			// Get attendees accound details
+			// const attendeesAccounts = await userRequests.getListOfUserDetails(allAttendees)
+
+			if (attendeesAccounts && attendeesAccounts.length > 0) {
 				attendeesInfo.forEach(async function (attendee) {
 					let emailBody = emailTemplate.body.replace('{sessionTitle}', attendee.title)
-					var foundElement = attendeesAccounts.result.find((e) => e.id === attendee.userId)
+					var foundElement = attendeesAccounts.find((e) => e.user_id === attendee.userId)
 					if (foundElement && foundElement.email && foundElement.name) {
 						emailBody = emailBody.replace('{name}', foundElement.name)
 						const payload = {
@@ -115,7 +126,7 @@ module.exports = class Notifications {
 			mentorIds.push(session.mentor_id.toString())
 
 			// Get mentor details
-			const userAccounts = await userRequests.getListOfUserDetails(mentorIds)
+			const userAccounts = await userRequests.getListOfUserDetails(mentorIds, true)
 
 			if (userAccounts && userAccounts.result.length > 0) {
 				const userAccountDetails = userAccounts.result[0]

@@ -348,7 +348,6 @@ module.exports = class MenteeExtensionQueries {
 				WHERE user_id = :userId
 				LIMIT 1
 			`
-
 			const user = await Sequelize.query(query, {
 				replacements: { userId },
 				type: QueryTypes.SELECT,
@@ -389,6 +388,7 @@ module.exports = class MenteeExtensionQueries {
 			if (excludeUserIds && filter.query.length === 0) {
 				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
 			}
+			console.log('filterClause', Object.keys(filterClause))
 
 			let projectionClause = `
 				user_id,
@@ -409,6 +409,8 @@ module.exports = class MenteeExtensionQueries {
 			if (userFilterClause && filter?.query.length > 0) {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND ' + filterClause
 			}
+
+			console.log('filterClause', filter?.query)
 
 			const query = `
 				SELECT ${projectionClause}
@@ -458,6 +460,47 @@ module.exports = class MenteeExtensionQueries {
 				data: results,
 				count: Number(count[0].count),
 			}
+		} catch (error) {
+			throw error
+		}
+	}
+	static async getAllUsersByIds(ids) {
+		try {
+			const excludeUserIds = ids.length === 0
+			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.map((id) => `'${id}'`).join(',')})`
+
+			const query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${userFilterClause}
+				`
+
+			const results = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+			})
+			return results
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async getUsersByEmailIds(emailIds) {
+		try {
+			const userFilterClause =
+				emailIds.length === 0 ? '' : `email IN (${emailIds.map((id) => `'${id}'`).join(',')})`
+
+			const query = `
+				SELECT *
+				FROM ${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${userFilterClause}
+				`
+
+			const results = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+			})
+			return results
 		} catch (error) {
 			throw error
 		}

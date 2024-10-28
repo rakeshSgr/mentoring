@@ -22,6 +22,8 @@ const entityTypeQueries = require('@database/queries/entityType')
 const { Op } = require('sequelize')
 const moment = require('moment')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
+const menteeExtensionQueries = require('@database/queries/userExtension')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class UserInviteHelper {
 	static async uploadSession(data) {
@@ -31,8 +33,11 @@ module.exports = class UserInviteHelper {
 				const userId = data.user.id
 				const orgId = data.user.organization_id
 				const notifyUser = true
-				const roles = await userRequests.fetchUserDetails({ userId })
-				const isMentor = isAMentor(roles.data.result.user_roles)
+
+				const mentor = await menteeExtensionQueries.getMenteeExtension(userId, ['is_mentor'])
+				if (!mentor) throw createUnauthorizedResponse('USER_NOT_FOUND')
+
+				const isMentor = mentor.is_mentor
 
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
@@ -487,7 +492,7 @@ module.exports = class UserInviteHelper {
 			if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
 				const validEmails = await this.validateAndCategorizeEmails(session)
 				if (validEmails.length != 0) {
-					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails)
+					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails, true)
 					session.mentees = menteeDetails.result
 				} else if (session.mentees.some((item) => typeof item === 'string')) {
 					session.statusMessage = this.appendWithComma(session.statusMessage, ' Mentee Details are incorrect')
@@ -514,7 +519,7 @@ module.exports = class UserInviteHelper {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
 				} else {
-					const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail])
+					const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail], true)
 					const mentor_Id = mentorId.result[0]
 
 					if (isNaN(mentor_Id)) {
@@ -1023,8 +1028,9 @@ module.exports = class UserInviteHelper {
 		for (const item of sessionCreationOutput) {
 			const mentorIdPromise = item.mentor_id
 			if (!isNaN(mentorIdPromise)) {
-				const mentorId = await userRequests.fetchUserDetails({ userId: mentorIdPromise })
-				item.mentor_id = mentorId.data.result.email
+				const mentorId = await menteeExtensionQueries.getMenteeExtension(mentorIdPromise, ['email'])
+				if (!mentorId) throw createUnauthorizedResponse('USER_NOT_FOUND')
+				item.mentor_id = await emailEncryption.decrypt(mentorId.email)
 			} else {
 				item.mentor_id = item.mentor_id
 			}
@@ -1034,8 +1040,9 @@ module.exports = class UserInviteHelper {
 				for (let i = 0; i < item.mentees.length; i++) {
 					const menteeId = item.mentees[i]
 					if (!isNaN(menteeId)) {
-						const mentee = await userRequests.fetchUserDetails({ userId: menteeId })
-						menteeEmails.push(mentee.data.result.email)
+						const mentee = await menteeExtensionQueries.getMenteeExtension(menteeId, ['email'])
+						if (!mentee) throw createUnauthorizedResponse('USER_NOT_FOUND')
+						menteeEmails.push(await emailEncryption.decrypt(mentee.email))
 					} else {
 						menteeEmails.push(menteeId)
 					}
