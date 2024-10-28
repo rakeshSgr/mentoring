@@ -5,8 +5,6 @@ const secretKey = Buffer.from(process.env.EMAIL_ID_ENCRYPTION_KEY, 'hex')
 const fixedIV = Buffer.from(process.env.EMAIL_ID_ENCRYPTION_IV, 'hex')
 const algorithm = process.env.EMAIL_ID_ENCRYPTION_ALGORITHM
 
-const isHex = (str) => /^[0-9a-fA-F]+$/.test(str)
-
 const encrypt = (plainTextEmail) => {
 	try {
 		const cipher = crypto.createCipheriv(algorithm, secretKey, fixedIV)

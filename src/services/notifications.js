@@ -63,8 +63,7 @@ module.exports = class Notifications {
 
 			// Get all sessionAttendees joined for the session
 			const sessionAttendees = await sessionAttendeesQueries.findAll({
-				// session_id: session.id,
-				session_id: 2,
+				session_id: session.id,
 			})
 
 			// If sessionAttendees data is available process the data

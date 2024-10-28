@@ -388,7 +388,6 @@ module.exports = class MenteeExtensionQueries {
 			if (excludeUserIds && filter.query.length === 0) {
 				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
 			}
-			console.log('filterClause', Object.keys(filterClause))
 
 			let projectionClause = `
 				user_id,
@@ -409,8 +408,6 @@ module.exports = class MenteeExtensionQueries {
 			if (userFilterClause && filter?.query.length > 0) {
 				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND ' + filterClause
 			}
-
-			console.log('filterClause', filter?.query)
 
 			const query = `
 				SELECT ${projectionClause}
