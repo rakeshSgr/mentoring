@@ -188,9 +188,9 @@ Before setting up the application, the dependencies should be installed and veri
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/mentoring.git && \
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/user.git && \
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/notification.git && \
-        git clone -b release-3.1.0 https://github.com/ELEVATE-Project/interface-service.git && \
+        git clone -b release-3.1.1 https://github.com/ELEVATE-Project/interface-service.git && \
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/scheduler.git && \
-        git clone -b release-3.1.0 https://github.com/ELEVATE-Project/mentoring-mobile-app.git
+        git clone -b release-3.1.1 https://github.com/ELEVATE-Project/mentoring-mobile-app.git
         ```
 
     - **Windows**
@@ -199,9 +199,9 @@ Before setting up the application, the dependencies should be installed and veri
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/mentoring.git & ^
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/user.git & ^
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/notification.git & ^
-        git clone -b release-3.1.0 https://github.com/ELEVATE-Project/interface-service.git & ^
+        git clone -b release-3.1.1 https://github.com/ELEVATE-Project/interface-service.git & ^
         git clone -b release-3.1.0 https://github.com/ELEVATE-Project/scheduler.git & ^
-        git clone -b release-3.1.0 https://github.com/ELEVATE-Project/mentoring-mobile-app.git
+        git clone -b release-3.1.1 https://github.com/ELEVATE-Project/mentoring-mobile-app.git
         ```
 
 3. **Install NPM Packages**
@@ -570,20 +570,21 @@ There ar few forms required for mentoting application to run, to add those fallo
 
  1. **Download and Run The `insert_sample_forms.sh`  Script File:**
 
-- **Ubuntu/Linux**
+    - **Ubuntu/Linux**
 
         ```
-        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/forms.sql
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/linux/forms.sql
         && 
-        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/linux/insert_sample_forms.sh && chmod +x insert_sample_forms.sh && ./insert_sample_forms.sh
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/linux/insert_sample_forms.sh && chmod +x insert_sample_forms.sh && ./insert_sample_forms.sh
+
         ```
 
-- **Mac**
+    - **Mac**
         
         ```
-        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/macos/forms.sql
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/macos/forms.sql
         && 
-        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/macos/insert_sample_forms.sh && \
+        curl -L -o insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/macos/insert_sample_forms.sh && \
         chmod +x insert_sample_forms.sh && \
         ./insert_sample_forms.sh
         ```
@@ -591,9 +592,9 @@ There ar few forms required for mentoting application to run, to add those fallo
     - **Windows**
 
         ```
-        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/forms.sql
+        curl -L -o forms.sql https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/windows/forms.sql
         &&
-        curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/windows/insert_sample_forms.bat && ^
+        curl -L -o insert_sample_forms.bat https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/native/scripts/windows/insert_sample_forms.bat && ^
         insert_sample_forms.bat
         ```
     After successfully running the script, forms will be added to database. 

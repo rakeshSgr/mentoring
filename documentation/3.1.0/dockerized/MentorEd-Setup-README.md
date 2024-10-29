@@ -264,12 +264,13 @@ There ar few forms required for mentoting application to run, to add those fallo
 
  1. **Download The `create_default_form_sql` and `insert_sample_forms.sh`  Script File:**
 
-- **Ubuntu/Linux/Mac**
+    - **Ubuntu/Linux/Mac**
         
         ```
-        mkdir -p sample-data/mentoring && curl -L -o sample-data/mentoring/insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh
-        &&
+        mkdir -p sample-data/mentoring && curl -L -o sample-data/mentoring/insert_sample_forms.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/insert_sample_forms.sh 
+        && 
         curl -L -o sample-data/mentoring/create_default_form_sql.sh https://raw.githubusercontent.com/ELEVATE-Project/mentoring/master/documentation/3.1.0/dockerized/scripts/mac-linux/create_default_form_sql.sh
+
         ```
 
     - **Windows**
