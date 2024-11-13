@@ -287,13 +287,13 @@ There ar few forms required for mentoting application to run, to add those fallo
 
     - **Ubuntu/Linux/Mac**
         ```
-        ./insert_sample_forms.sh mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        ./sample-data/mentoring/insert_sample_forms.sh mentoring postgres://postgres:postgres@citus_master:5432/mentoring
         ```
 
     - **Windows**
 
         ```
-        insert_sample_forms.bat mentoring postgres://postgres:postgres@citus_master:5432/mentoring
+        sample-data\mentoring\insert_sample_forms.bat mentoring postgres://postgres:postgres@citus_master:5432/mentoring
         ```
         
     After successfully running the script, forms will be added to database. 
