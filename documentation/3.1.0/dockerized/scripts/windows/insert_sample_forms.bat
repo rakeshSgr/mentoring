@@ -1,107 +1,139 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Exit on error
-set "ERRORLEVEL=0"
-
-REM Ensure correct number of arguments are provided
+:: Ensure the correct number of arguments are provided
 if "%~2"=="" (
-    echo Error: Folder name and database URL not provided. Usage: %0 <folder_name> <database_url>
+    echo Error: Folder name and database URL not provided. Usage: %0 &lt;folder_name&gt; &lt;database_url&gt;
     exit /b 1
 )
 
-REM Use the provided folder name
+:: Use the provided folder name
 set "FOLDER_NAME=sample-data\%~1"
 
-REM Check if folder exists
-if not exist "!FOLDER_NAME!" (
-    echo Error: Folder '!FOLDER_NAME!' not found.
+:: Check if folder exists
+if not exist "%FOLDER_NAME%" (
+    echo Error: Folder '%FOLDER_NAME%' not found.
     exit /b 1
 )
 
-REM Use the provided database URL
+:: Use the provided database URL
 set "DEV_DATABASE_URL=%~2"
 
-REM Extract database credentials and connection details using for
-for /f "tokens=4,5,6,7 delims=:@/" %%a in ("%DEV_DATABASE_URL%") do (
-    set "DB_USER=%%a"
-    set "DB_PASSWORD=%%b"
-    set "DB_HOST=%%c"
-    set "DB_PORT=%%d"
-)
+set "conn=%DEV_DATABASE_URL%"
 
-REM Extract DB_NAME
-for /f "tokens=*" %%a in ("%DEV_DATABASE_URL%") do (
-    for /f "delims=/ tokens=2" %%b in ("%%a") do set "DB_NAME=%%b"
-)
+set "conn=!conn:postgres://=!"
 
-REM Log database variables
-echo Extracted Database Variables:
-echo DB_USER: !DB_USER!
-echo DB_PASSWORD: !DB_PASSWORD!
-echo DB_HOST: !DB_HOST!
-echo DB_PORT: !DB_PORT!
-echo DB_NAME: !DB_NAME!
+for /f "tokens=1 delims=:" %%a in ("!conn!") do set "DB_USER=%%a"
 
-REM Define the container name (same as DB_HOST)
-set "CONTAINER_NAME=!DB_HOST!"
+set "conn=!conn:%DB_USER%:=!"
 
-REM Wait for Docker container to be up
-echo Waiting for Docker container '!CONTAINER_NAME!' to be up...
-:waitForContainer
-docker inspect "!CONTAINER_NAME!" >nul 2>&1
+for /f "tokens=1 delims=@" %%a in ("!conn!") do set "DB_PASSWORD=%%a"
+
+set "conn=!conn:%DB_PASSWORD%@=!"
+
+set "hostport=!conn:*@=!"
+for /f "tokens=1 delims=:" %%a in ("!hostport!") do set "DB_HOST=%%a"
+
+set "conn=!conn:%DB_HOST%:=!"
+
+for /f "tokens=1 delims=/" %%a in ("!conn!") do set "DB_PORT=%%a"
+
+set "conn=!conn:*%DB_PORT%/=!"
+
+set "DB_NAME=!conn!"
+
+echo DB_USER: %DB_USER%
+echo DB_PASSWORD: %DB_PASSWORD%
+echo DB_HOST: %DB_HOST%
+echo DB_PORT: %DB_PORT%
+echo DB_NAME: %DB_NAME%
+
+:: Define the container name (same as DB_HOST)
+set "CONTAINER_NAME=%DB_HOST%"
+
+:: Wait for Docker container to be up
+echo Waiting for Docker container '%CONTAINER_NAME%' to be up...
+:WAIT_CONTAINER
+docker inspect "%CONTAINER_NAME%" >nul 2>&1
 if errorlevel 1 (
     echo Waiting for container...
-    timeout /t 1 >nul
-    goto waitForContainer
+    timeout /t 1 /nobreak
+    goto WAIT_CONTAINER
 )
 echo Container is now up.
 
-REM Wait for PostgreSQL to be ready to accept connections
-echo Waiting for PostgreSQL on '!DB_HOST!:!DB_PORT!' to accept connections...
-:waitForDB
-docker exec "!CONTAINER_NAME!" pg_isready -h localhost -p !DB_PORT! -U !DB_USER! >nul 2>&1
+:: Wait for PostgreSQL to be ready to accept connections
+echo Waiting for PostgreSQL on '%DB_HOST%:%DB_PORT%' to accept connections...
+:WAIT_DB
+docker exec "%CONTAINER_NAME%" bash -c "pg_isready -h localhost -p %DB_PORT% -U %DB_USER%" >nul 2>&1
 if errorlevel 1 (
     echo Waiting for database to be ready...
-    timeout /t 1 >nul
-    goto waitForDB
+    timeout /t 1 /nobreak
+    goto WAIT_DB
 )
 echo Database is ready.
 
-REM Function to check if the database exists
-:checkDatabase
-docker exec "!CONTAINER_NAME!" psql -h localhost -U !DB_USER! -p !DB_PORT! -lqt | findstr /i /c:"!DB_NAME!" >nul
-exit /b %errorlevel%
-
-echo Checking existence of database '!DB_NAME!'...
-:waitForDBExistence
-call :checkDatabase
+:: Check if the database exists
+:CHECK_DB
+docker exec "%CONTAINER_NAME%" bash -c "PGPASSWORD='%DB_PASSWORD%' psql -h localhost -U %DB_USER% -p %DB_PORT% -lqt | cut -d \| -f 1 | grep -qw '%DB_NAME%'" >nul 2>&1
 if errorlevel 1 (
-    echo Database '!DB_NAME!' does not exist, waiting...
-    timeout /t 5 >nul
-    goto waitForDBExistence
+    echo Database '%DB_NAME%' does not exist, waiting...
+    timeout /t 5 /nobreak
+    goto CHECK_DB
 )
-echo Database '!DB_NAME!' exists, proceeding with script.
+echo Database '%DB_NAME%' exists, proceeding with script.
 
-REM ------------------------------------------------------------
-REM New code to push `forms.sql` data into the database
-REM ------------------------------------------------------------
-
-set "DEFAULT_FORM_FOLDER_LOCATION=!FOLDER_NAME!"
-
-REM Ensure create_default_form_sql.bat is executable
-call create_default_form_sql.bat "!FOLDER_NAME!"
-
-set "FORMS_SQL_FILE=forms.sql"
-if not exist "!FORMS_SQL_FILE!" (
-    echo Error: forms.sql not found.
+:: Retrieve and prepare SQL file operations
+set "SAMPLE_COLUMNS_FILE=%FOLDER_NAME%\sampleData.sql"
+if not exist "%SAMPLE_COLUMNS_FILE%" (
+    echo Error: sampleData.sql not found in folder '%FOLDER_NAME%'.
     exit /b 1
 )
 
-echo Copying forms.sql to container '!CONTAINER_NAME!'...
-docker cp "!FORMS_SQL_FILE!" "!CONTAINER_NAME!:/forms.sql"
+:: Copy the SQL file into the Docker container
+echo Copying sampleData.sql to container '%CONTAINER_NAME%'...
+docker cp "%SAMPLE_COLUMNS_FILE%" "%CONTAINER_NAME%:/sampleData.sql"
+
+:: Execute the SQL file inside the container
+echo Executing sampleData.sql in the database...
+docker exec "%CONTAINER_NAME%" bash -c "PGPASSWORD='%DB_PASSWORD%' psql -h localhost -U %DB_USER% -d %DB_NAME% -p %DB_PORT% -f /sampleData.sql"
+if errorlevel 1 (
+    echo Error executing SQL script.
+    exit /b 1
+) else (
+    echo SQL script executed successfully.
+)
+
+echo Sample Data Insertion Completed
+
+:: New code to push `forms.sql` data into the database
+set "DEFAULT_ORG_ID=%~1"
+set "FORMS_SQL_FILE=forms.sql"
+
+
+:: Check if the create_default_form_sql.sh script exists
+if not exist "create_default_form_sql.bat" (
+    echo Error: create_default_form_sql.bat not found.
+    exit /b 1
+)
+
+:: Run the create_default_form_sql.sh script with the provided arguments
+echo Running create_default_form_sql.bat...
+bash create_default_form_sql.bat "%ORGANIZATION_ID%" "%FOLDER_NAME%"
+
+if errorlevel 1 (
+    echo Error running create_default_form_sql.bat.
+    exit /b 1
+) else (
+    echo create_default_form_sql.bat executed successfully.
+)
+
+echo Copying forms.sql to container '%CONTAINER_NAME%'...
+docker cp "%FORMS_SQL_FILE%" "%CONTAINER_NAME%:/forms.sql"
 
 echo Inserting Forms Data from forms.sql...
-docker exec --user "!DB_USER!" "!CONTAINER_NAME!" psql -h localhost -U !DB_USER! -d !DB_NAME! -p !DB_PORT! -f /forms.sql
+docker exec --user "%DB_USER%" "%CONTAINER_NAME%" bash -c "PGPASSWORD='%DB_PASSWORD%' psql -h localhost -U %DB_USER% -d %DB_NAME% -p %DB_PORT% -f /forms.sql"
 
 echo Forms Data Insertion Completed
+
+endlocal
