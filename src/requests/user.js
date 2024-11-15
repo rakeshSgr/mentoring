@@ -19,13 +19,28 @@ const menteeQueries = require('@database/queries/userExtension')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 
 const emailEncryption = require('@utils/emailEncryption')
-const utils = require('@generics/utils')
-const { resolve } = require('path')
 
 /**
- * Fetches the default organization details for a given organization code/id.
- * @param {string} organisationIdentifier - The code/id of the organization.
- * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
+ * @method fetchOrgDetails
+ * @description Fetches details of an organization either from the database or an external API based on provided parameters.
+ * If `db` is `true`, the function fetches the organization details from the database. If `db` is `false`, it fetches the
+ * organization details from an external API using the organization ID or code.
+ *
+ * This function takes either an `organizationId` or `organizationCode` and fetches the corresponding organization details.
+ * If the `db` parameter is set to `true`, the details are fetched from the database. Otherwise, it constructs a URL to fetch
+ * the details from an external service. The function handles both types of requests and returns the appropriate response.
+ *
+ * @param {object} params - The parameters for fetching organization details.
+ * @param {string} [params.organizationCode] - The organization code for identifying the organization.
+ * @param {string} [params.organizationId] - The organization ID for identifying the organization.
+ * @param {boolean} [params.db=true] - Flag to indicate whether to fetch data from the database (`true`) or external API (`false`).
+ * @returns {Promise<object>} - A promise that resolves to the organization details.
+ *
+ * @example
+ * const organizationId = 'org123';
+ * fetchOrgDetails({ organizationId, db: true })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
  */
 
 const fetchOrgDetails = async function ({ organizationCode, organizationId, db = true }) {
@@ -74,6 +89,29 @@ const validRoles = new Set([
 	common.SESSION_MANAGER_ROLE,
 ])
 
+/**
+ * @method fetchUserDetails
+ * @description Fetches user details based on the provided `userId`. It can either retrieve the details from the database or
+ * an external API, depending on the value of `db`. Additionally, it processes user roles and image URLs.
+ *
+ * This function fetches user details using a given `userId`. If `db` is `true`, it queries the database and adds roles
+ * (`MENTEE_ROLE` and `MENTOR_ROLE`) to the user object. If `db` is `false`, it fetches the details from an external API.
+ * The function also handles image URLs and ensures user roles are correctly set, adding the `MENTEE_ROLE` if missing.
+ *
+ * @param {object} params - The parameters for fetching user details.
+ * @param {string} params.token - The authentication token required for API requests.
+ * @param {string} params.userId - The user ID to fetch details for.
+ * @param {boolean} [params.db=true] - Flag to indicate whether to fetch data from the database (`true`) or external API (`false`).
+ * @returns {Promise<object>} - A promise that resolves to the user details, with roles and images processed.
+ *
+ * @example
+ * const token = 'user-auth-token';
+ * const userId = '12345';
+ * fetchUserDetails({ token, userId, db: true })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+
 const fetchUserDetails = async ({ token, userId, db = true }) => {
 	try {
 		if (db) {
@@ -92,6 +130,7 @@ const fetchUserDetails = async ({ token, userId, db = true }) => {
 					result: userDetails,
 				},
 			}
+
 			return response
 		} else {
 			let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
@@ -134,12 +173,24 @@ const fetchUserDetails = async ({ token, userId, db = true }) => {
 }
 
 /**
- * Get Accounts details.
- * @method
- * @name getAllAccountsDetail
- * @param {Array} userIds
- * @param {Array} paranoid : if true, discards deleted users.
- * @returns
+ * @method getListOfUserDetails
+ * @description Fetches a list of user details by user IDs, either from the database or via an external API.
+ *
+ * This function retrieves user details by their user IDs. It can either query the database
+ * to fetch user and organization data or call an external API endpoint based on the `db` parameter.
+ * It enriches the user details with roles and organization info and resolves the result as a response.
+ * If `excludeDeletedRecords` is true, it excludes deleted records from the API call.
+ *
+ * @param {Array<string>} userIds - An array of user IDs whose details are to be fetched.
+ * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
+ * @param {boolean} [excludeDeletedRecords=false] - Flag to exclude deleted records from the API response.
+ * @returns {Promise<object>} - A promise that resolves to an object containing the list of user details.
+ *
+ * @example
+ * const userIds = ['user1', 'user2'];
+ * getListOfUserDetails(userIds, true)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
  */
 
 const getListOfUserDetails = function (userIds, db = false, excludeDeletedRecords = false) {
@@ -226,12 +277,24 @@ const getListOfUserDetails = function (userIds, db = false, excludeDeletedRecord
 		}
 	})
 }
+
 /**
- * Get Accounts details.
- * @method
- * @name getAllAccountsDetail
- * @param {Array} userIds
- * @returns
+ * @method getListOfUserDetailsByEmail
+ * @description Fetches a list of user IDs based on provided email addresses, either from the database or via an external API.
+ *
+ * This function retrieves user details by their email addresses. It can either query the database
+ * to fetch the encrypted email IDs and map them to user records, or it can call an external API to validate the emails.
+ * The function returns an array of user IDs that correspond to the provided email addresses.
+ *
+ * @param {Array<string>} emailIds - An array of email addresses to fetch user details for.
+ * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
+ * @returns {Promise<object>} - A promise that resolves to an object containing a list of user IDs corresponding to the email addresses.
+ *
+ * @example
+ * const emailIds = ['user1@example.com', 'user2@example.com'];
+ * getListOfUserDetailsByEmail(emailIds, true)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
  */
 
 const getListOfUserDetailsByEmail = function (emailIds, db = false) {
@@ -325,14 +388,29 @@ const share = function (profileId) {
 }
 
 /**
- * User list.
- * @method
- * @name list
- * @param {Boolean} userType - mentor/mentee.
- * @param {Number} page - page No.
- * @param {Number} limit - page limit.
- * @param {String} search - search field.
- * @returns {JSON} - List of users
+ * @method list
+ * @description Fetches a list of users, either from the database or an external API.
+ *
+ * This function retrieves a paginated list of users based on the provided filters, including `userType`,
+ * `pageNo`, `pageSize`, and an optional `searchText`. If `db` is `true`, it queries the database and organizes
+ * the results by the first letter of the user's name, returning them in alphabetical order. If `db` is `false`,
+ * it fetches the data from an external API.
+ *
+ * @param {string} userType - The type of users to retrieve (e.g., 'mentor', 'mentee').
+ * @param {number} pageNo - The page number to fetch.
+ * @param {number} pageSize - The number of records per page.
+ * @param {boolean} [db=true] - Flag to determine whether to fetch data from the database (true) or external API (false).
+ * @param {string} [searchText] - Optional search text to filter users.
+ * @returns {Promise<object>} - A promise that resolves to an object containing the list of users.
+ *
+ * @example
+ * const userType = 'mentor';
+ * const pageNo = 1;
+ * const pageSize = 10;
+ * const searchText = 'john';
+ * list(userType, pageNo, pageSize, true, searchText)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
  */
 
 const list = function (userType, pageNo, pageSize, db = true, searchText) {
@@ -552,11 +630,22 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
 // }
 
 /**
- * Get Organization list.
- * @method
- * @name listOrganization
- * @param {Array} organizationIds
- * @returns
+ * @method listOrganization
+ * @description Fetches organization details based on provided organization IDs, either from the database or an external API.
+ *
+ * This function retrieves details of organizations by their IDs. It can either query the database to fetch
+ * organization details or call an external API to retrieve them. If `db` is `true`, the data is fetched from the
+ * database, and if `db` is `false`, it calls an external API to get the data.
+ *
+ * @param {Array<string>} organizationIds - An array of organization IDs to fetch details for.
+ * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
+ * @returns {Promise<object>} - A promise that resolves to an object containing the organization details.
+ *
+ * @example
+ * const organizationIds = ['org1', 'org2'];
+ * listOrganization(organizationIds, true)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
  */
 
 const listOrganization = function (organizationIds = [], db = false) {
@@ -623,38 +712,51 @@ const listOrganization = function (organizationIds = [], db = false) {
 }
 
 /**
- * Get Accounts details.
- * @method
- * @name getDownloadableUrl
- * @param {Array} userIds
- * @param {Array} paranoid : if true, discards deleted users.
- * @returns
+ * @method getDownloadableUrl
+ * @description Retrieves the downloadable URL for a given file path. If the path is already a valid URL, it returns it directly.
+ * Otherwise, it constructs a URL to fetch the downloadable link from an external API.
+ *
+ * This function checks if the provided `path` is already a valid URL (starting with `http`). If so, it resolves with the URL.
+ * Otherwise, it constructs an API request to get a downloadable URL for the file path.
+ *
+ * @param {string} path - The file path or URL to retrieve a downloadable URL for.
+ * @returns {Promise<object|string>} - A promise that resolves to the downloadable URL (either the provided URL or fetched from the API).
+ *
+ * @example
+ * const filePath = 'images/profile.png';
+ * getDownloadableUrl(filePath)
+ *   .then(url => console.log(url))
+ *   .catch(error => console.error(error));
  */
 
 const getDownloadableUrl = function (path) {
 	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-			},
-		}
-
-		let apiUrl = userBaseUrl + endpoints.DOWNLOAD_IMAGE_URL + '?filePath=' + path
-		try {
-			request.get(apiUrl, options, callback)
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'USER_SERVICE_DOWN',
-					})
-				} else {
-					data.body = JSON.parse(data.body)
-					return resolve(data.body)
-				}
+		if (/^http/i.test(path)) {
+			return resolve(path)
+		} else {
+			const options = {
+				headers: {
+					'Content-Type': 'application/json',
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+				},
 			}
-		} catch (error) {
-			return reject(error)
+
+			let apiUrl = userBaseUrl + endpoints.DOWNLOAD_IMAGE_URL + '?filePath=' + path
+			try {
+				request.get(apiUrl, options, callback)
+				function callback(err, data) {
+					if (err) {
+						reject({
+							message: 'USER_SERVICE_DOWN',
+						})
+					} else {
+						data.body = JSON.parse(data.body)
+						return resolve(data.body)
+					}
+				}
+			} catch (error) {
+				return reject(error)
+			}
 		}
 	})
 }

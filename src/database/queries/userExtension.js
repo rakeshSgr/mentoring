@@ -482,6 +482,21 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
+	/**
+	 * Retrieves users from the database based on the provided email IDs.
+	 *
+	 * This static method constructs and executes a SQL query to fetch users whose email
+	 * addresses are provided in the `emailIds` array. It returns an array of user records
+	 * matching the given email IDs.
+	 *
+	 * @param {Array<string>} emailIds - An array of email IDs to filter the users by.
+	 * @returns {Promise<Array<object>>} - A promise that resolves to an array of user objects.
+	 *
+	 * @example
+	 * const emailIds = ['user1@example.com', 'user2@example.com'];
+	 * const users = await getUsersByEmailIds(emailIds);
+	 * console.log(users); // Outputs an array of user records matching the provided email IDs.
+	 */
 	static async getUsersByEmailIds(emailIds) {
 		try {
 			const userFilterClause =

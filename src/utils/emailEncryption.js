@@ -25,6 +25,21 @@ const decrypt = async (encryptedEmail) => {
 	}
 }
 
+/**
+ * Decrypts the given encrypted data and validates the integrity of the data.
+ *
+ * This function attempts to decrypt the provided data using the specified algorithm,
+ * secret key, and initialization vector (IV). If successful, it returns the decrypted
+ * string. If any error occurs during decryption, it returns `false` to indicate failure.
+ *
+ * @param {string} data - The encrypted data to be decrypted (in hexadecimal format).
+ * @returns {string|boolean} - The decrypted string if successful, or `false` if decryption fails.
+ *
+ * @example
+ * const encryptedData = '5d41402abc4b2a76b9719d911017c592';
+ * const decryptedData = await decryptAndValidate(encryptedData);
+ * console.log(decryptedData); // Outputs decrypted string or false if decryption fails.
+ */
 async function decryptAndValidate(data) {
 	try {
 		const decipher = crypto.createDecipheriv(algorithm, secretKey, fixedIV)
