@@ -55,7 +55,7 @@ Once these prerequisites are in place, you're all set to get started with settin
 
 ## Operating Systems: Windows
 
-1.**Download Docker Compose File:** Retrieve the **[docker-compose-mentoring.yml](https://github.com/ELEVATE-Project/mentoring/blob/master/src/scripts/setup/docker-compose-mentoring.yml)** file from the Mentoring repository and save it to the mentoring directory.
+1.**Download Docker Compose File:** Retrieve the **[docker-compose-mentoring.yml](https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/docker-compose-mentoring.yml)** file from the Mentoring repository and save it to the mentoring directory.
 
 ```
     curl -OJL https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/3.1.0/dockerized/docker-compose-mentoring.yml
