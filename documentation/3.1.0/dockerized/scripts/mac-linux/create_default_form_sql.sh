@@ -79,12 +79,14 @@ echo "$jsonData" | jq -c '.[]' | while read -r item; do
     type_value=$(echo "$item" | jq -r '.type')
     sub_type_value=$(echo "$item" | jq -r '.sub_type')
     data_value=$(echo "$item" | jq -c '.data')
+    
+    escaped_data_value=$(echo "$data_value" | sed "s/'/''/g")
 
     # Sample values for ID, version, and organization ID
     version_value=1
 
     # Construct the SQL query
-    query="INSERT INTO forms (type, sub_type, data, version, organization_id, created_at, updated_at) VALUES ('$type_value', '$sub_type_value', '$data_value', $version_value, '$organization_id', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);"
+    query="INSERT INTO forms (type, sub_type, data, version, organization_id, created_at, updated_at) VALUES ('$type_value', '$sub_type_value', '$escaped_data_value', $version_value, '$organization_id', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);"
 
     # Append the query to the dump file
     echo "$query" >> "$DUMP_FILE"
