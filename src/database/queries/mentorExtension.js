@@ -7,6 +7,7 @@ const Sequelize = require('@database/models/index').sequelize
 const common = require('@constants/common')
 const _ = require('lodash')
 const { Op } = require('sequelize')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class MentorExtensionQueries {
 	static async getColumns() {
@@ -86,7 +87,9 @@ module.exports = class MentorExtensionQueries {
 			} else {
 				mentor = await MentorExtension.findOne(queryOptions)
 			}
-
+			if (mentor.email) {
+				mentor.email = await emailEncryption.decrypt(mentor.email.toLowerCase())
+			}
 			return mentor
 		} catch (error) {
 			throw error

@@ -125,7 +125,7 @@ module.exports = class Notifications {
 			mentorIds.push(session.mentor_id.toString())
 
 			// Get mentor details
-			const userAccounts = await userRequests.getListOfUserDetails(mentorIds, true)
+			const userAccounts = await userRequests.getUserDetailedList(mentorIds)
 
 			if (userAccounts && userAccounts.result.length > 0) {
 				const userAccountDetails = userAccounts.result[0]

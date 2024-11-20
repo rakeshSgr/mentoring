@@ -23,7 +23,6 @@ const { Op } = require('sequelize')
 const moment = require('moment')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 const menteeExtensionQueries = require('@database/queries/userExtension')
-const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class UserInviteHelper {
 	static async uploadSession(data) {
@@ -492,7 +491,7 @@ module.exports = class UserInviteHelper {
 			if (session.mentees.length != 0 && Array.isArray(session.mentees)) {
 				const validEmails = await this.validateAndCategorizeEmails(session)
 				if (validEmails.length != 0) {
-					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails, true)
+					const menteeDetails = await userRequests.getListOfUserDetailsByEmail(validEmails)
 					session.mentees = menteeDetails.result
 				} else if (session.mentees.some((item) => typeof item === 'string')) {
 					session.statusMessage = this.appendWithComma(session.statusMessage, ' Mentee Details are incorrect')
@@ -519,7 +518,7 @@ module.exports = class UserInviteHelper {
 					session.status = 'Invalid'
 					session.statusMessage = this.appendWithComma(session.statusMessage, 'Invalid Mentor Email')
 				} else {
-					const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail], true)
+					const mentorId = await userRequests.getListOfUserDetailsByEmail([mentorEmail])
 					const mentor_Id = mentorId.result[0]
 
 					if (isNaN(mentor_Id)) {
@@ -1030,7 +1029,7 @@ module.exports = class UserInviteHelper {
 			if (!isNaN(mentorIdPromise)) {
 				const mentorId = await menteeExtensionQueries.getMenteeExtension(mentorIdPromise, ['email'])
 				if (!mentorId) throw createUnauthorizedResponse('USER_NOT_FOUND')
-				item.mentor_id = await emailEncryption.decrypt(mentorId.email)
+				item.mentor_id = mentorId.email
 			} else {
 				item.mentor_id = item.mentor_id
 			}
@@ -1042,7 +1041,7 @@ module.exports = class UserInviteHelper {
 					if (!isNaN(menteeId)) {
 						const mentee = await menteeExtensionQueries.getMenteeExtension(menteeId, ['email'])
 						if (!mentee) throw createUnauthorizedResponse('USER_NOT_FOUND')
-						menteeEmails.push(await emailEncryption.decrypt(mentee.email))
+						menteeEmails.push(mentee.email)
 					} else {
 						menteeEmails.push(menteeId)
 					}

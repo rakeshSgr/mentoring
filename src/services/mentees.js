@@ -1307,7 +1307,7 @@ module.exports = class MenteesHelper {
 			}
 
 			const menteeIds = extensionDetails.data.map((item) => item.user_id)
-			const userDetails = await userRequests.getListOfUserDetails(menteeIds, true)
+			const userDetails = await userRequests.getUserDetailedList(menteeIds)
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]

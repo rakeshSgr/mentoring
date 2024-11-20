@@ -182,98 +182,44 @@ const fetchUserDetails = async ({ token, userId, db = true }) => {
  * If `excludeDeletedRecords` is true, it excludes deleted records from the API call.
  *
  * @param {Array<string>} userIds - An array of user IDs whose details are to be fetched.
- * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
  * @param {boolean} [excludeDeletedRecords=false] - Flag to exclude deleted records from the API response.
  * @returns {Promise<object>} - A promise that resolves to an object containing the list of user details.
  *
  * @example
  * const userIds = ['user1', 'user2'];
- * getListOfUserDetails(userIds, true)
+ * getListOfUserDetails(userIds)
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
 
-const getListOfUserDetails = function (userIds, db = false, excludeDeletedRecords = false) {
+const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
 	return new Promise(async (resolve, reject) => {
-		if (db) {
-			try {
-				// Fetch user details
-				const userDetails = await menteeQueries.getAllUsersByIds(userIds)
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				userIds,
+			},
+		}
 
-				// Extract unique organization IDs and create a mapping for organization details
-				const organizationIds = new Set()
-				const orgDetails = {}
-
-				if (userDetails && userDetails.length > 0) {
-					userDetails.forEach((user) => {
-						organizationIds.add(user.organization_id)
+		let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
+		if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
+		try {
+			request.get(apiUrl, options, callback)
+			function callback(err, data) {
+				if (err) {
+					reject({
+						message: 'USER_SERVICE_DOWN',
 					})
+				} else {
+					data.body = JSON.parse(data.body)
+					return resolve(data.body)
 				}
-
-				// Fetch organization details
-				const filter = {
-					organization_id: {
-						[Op.in]: Array.from(organizationIds),
-					},
-				}
-
-				const organizationDetails = await organisationExtensionQueries.findAll(filter, {
-					attributes: ['name', 'organization_id'],
-				})
-
-				// Map organization details for quick access
-				organizationDetails.forEach((org) => {
-					orgDetails[org.organization_id] = org
-				})
-
-				// Enrich user details with roles and organization info
-				userDetails.forEach(async (user) => {
-					if (user.image) {
-						user.image = await getDownloadableUrl(user.image).result
-					}
-					user.user_roles = [{ title: common.MENTEE_ROLE }]
-					if (user.is_mentor) {
-						user.user_roles.push({ title: common.MENTOR_ROLE })
-					}
-					user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
-				})
-
-				const response = {
-					result: userDetails,
-				}
-
-				return resolve(response)
-			} catch (error) {
-				return reject(error)
 			}
-		} else {
-			const options = {
-				headers: {
-					'Content-Type': 'application/json',
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-				},
-				form: {
-					userIds,
-				},
-			}
-
-			let apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
-			if (excludeDeletedRecords) apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS + '?exclude_deleted_records=true'
-			try {
-				request.get(apiUrl, options, callback)
-				function callback(err, data) {
-					if (err) {
-						reject({
-							message: 'USER_SERVICE_DOWN',
-						})
-					} else {
-						data.body = JSON.parse(data.body)
-						return resolve(data.body)
-					}
-				}
-			} catch (error) {
-				return reject(error)
-			}
+		} catch (error) {
+			return reject(error)
 		}
 	})
 }
@@ -297,7 +243,7 @@ const getListOfUserDetails = function (userIds, db = false, excludeDeletedRecord
  *   .catch(error => console.error(error));
  */
 
-const getListOfUserDetailsByEmail = function (emailIds, db = false) {
+const getListOfUserDetailsByEmail = function (emailIds, db = true) {
 	return new Promise(async (resolve, reject) => {
 		if (db) {
 			const encryptedEmailIds = emailIds.map((email) => {
@@ -761,6 +707,80 @@ const getDownloadableUrl = function (path) {
 	})
 }
 
+/**
+ * @method getUserDetailedList
+ * @description Fetches a list of user details by user IDs, either from the database or via an external API.
+ *
+ * This function retrieves user details by their user IDs. It can either query the database
+ * to fetch user and organization data or call an external API endpoint based on the `db` parameter.
+ * It enriches the user details with roles and organization info and resolves the result as a response.
+ * If `excludeDeletedRecords` is true, it excludes deleted records from the API call.
+ *
+ * @param {Array<string>} userIds - An array of user IDs whose details are to be fetched.
+ * @returns {Promise<object>} - A promise that resolves to an object containing the list of user details.
+ *
+ * @example
+ * const userIds = ['user1', 'user2'];
+ * getUserDetailedList(userIds)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+
+const getUserDetailedList = function (userIds) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// Fetch user details
+			const userDetails = await menteeQueries.getAllUsersByIds(userIds)
+
+			// Extract unique organization IDs and create a mapping for organization details
+			const organizationIds = new Set()
+			const orgDetails = {}
+
+			if (userDetails && userDetails.length > 0) {
+				userDetails.forEach((user) => {
+					organizationIds.add(user.organization_id)
+				})
+			}
+
+			// Fetch organization details
+			const filter = {
+				organization_id: {
+					[Op.in]: Array.from(organizationIds),
+				},
+			}
+
+			const organizationDetails = await organisationExtensionQueries.findAll(filter, {
+				attributes: ['name', 'organization_id'],
+			})
+
+			// Map organization details for quick access
+			organizationDetails.forEach((org) => {
+				orgDetails[org.organization_id] = org
+			})
+
+			// Enrich user details with roles and organization info
+			userDetails.forEach(async (user) => {
+				if (user.image) {
+					user.image = await getDownloadableUrl(user.image).result
+				}
+				user.user_roles = [{ title: common.MENTEE_ROLE }]
+				if (user.is_mentor) {
+					user.user_roles.push({ title: common.MENTOR_ROLE })
+				}
+				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+			})
+
+			const response = {
+				result: userDetails,
+			}
+
+			return resolve(response)
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchOrgDetails, // dependent on releated orgs  And query on code
 	fetchUserDetails, // dependendt on languages and prefered lang etc
@@ -773,4 +793,5 @@ module.exports = {
 	listOrganization,
 	getListOfUserDetailsByEmail, // need to fix
 	getDownloadableUrl,
+	getUserDetailedList,
 }

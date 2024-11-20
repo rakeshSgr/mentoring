@@ -5,6 +5,7 @@ const Sequelize = require('@database/models/index').sequelize
 const common = require('@constants/common')
 const _ = require('lodash')
 const { Op } = require('sequelize')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class MenteeExtensionQueries {
 	static async getColumns() {
@@ -154,6 +155,9 @@ module.exports = class MenteeExtensionQueries {
 				mentee = await MenteeExtension.unscoped().findOne(queryOptions)
 			} else {
 				mentee = await MenteeExtension.findOne(queryOptions)
+			}
+			if (mentee.email) {
+				mentee.email = await emailEncryption.decrypt(mentee.email.toLowerCase())
 			}
 			return mentee
 		} catch (error) {
