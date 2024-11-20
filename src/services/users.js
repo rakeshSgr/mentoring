@@ -26,7 +26,7 @@ module.exports = class UserHelper {
 
 	static async list(userType, pageNo, pageSize, searchText) {
 		try {
-			const userDetails = await userRequests.list(userType, pageNo, pageSize, (db = true), searchText)
+			const userDetails = await userRequests.list(userType, pageNo, pageSize, searchText)
 			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
 
 			let extensionDetails

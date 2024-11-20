@@ -22,49 +22,65 @@ const emailEncryption = require('@utils/emailEncryption')
 
 /**
  * @method fetchOrgDetails
- * @description Fetches details of an organization either from the database or an external API based on provided parameters.
- * If `db` is `true`, the function fetches the organization details from the database. If `db` is `false`, it fetches the
- * organization details from an external API using the organization ID or code.
+ * @description Fetches details of an organization from an external API based on provided parameters.
  *
  * This function takes either an `organizationId` or `organizationCode` and fetches the corresponding organization details.
- * If the `db` parameter is set to `true`, the details are fetched from the database. Otherwise, it constructs a URL to fetch
  * the details from an external service. The function handles both types of requests and returns the appropriate response.
  *
  * @param {object} params - The parameters for fetching organization details.
  * @param {string} [params.organizationCode] - The organization code for identifying the organization.
  * @param {string} [params.organizationId] - The organization ID for identifying the organization.
- * @param {boolean} [params.db=true] - Flag to indicate whether to fetch data from the database (`true`) or external API (`false`).
  * @returns {Promise<object>} - A promise that resolves to the organization details.
  *
  * @example
  * const organizationId = 'org123';
- * fetchOrgDetails({ organizationId, db: true })
+ * fetchOrgDetails({ organizationId })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
 
-const fetchOrgDetails = async function ({ organizationCode, organizationId, db = true }) {
+const fetchOrgDetails = async function ({ organizationCode, organizationId }) {
 	try {
-		if (organizationId && db == true) {
-			const organizationDetails = await organisationExtensionQueries.findOne({ organization_id: organizationId })
+		let orgReadUrl
+		if (organizationId)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
+		else if (organizationCode)
+			orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
 
-			return {
-				success: true,
-				data: {
-					result: organizationDetails,
-				},
-			}
-		} else {
-			let orgReadUrl
+		const internalToken = true
+		const orgDetails = await requests.get(orgReadUrl, '', internalToken)
+		return orgDetails
+	} catch (error) {
+		console.error('Error fetching organization details:', error)
+		throw error
+	}
+}
 
-			if (organizationId)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_id=${organizationId}`
-			else if (organizationCode)
-				orgReadUrl = `${userBaseUrl}${endpoints.ORGANIZATION_READ}?organisation_code=${organizationCode}`
+/**
+ * @method getOrgDetails
+ * @description Fetches details of an organization from the database.
+ *
+ * This function takes either an `organizationId`  fetches the corresponding organization details.
+ *
+ * @param {object} params - The parameters for fetching organization details.
+ * @param {string} [params.organizationId] - The organization ID for identifying the organization.
+ * @returns {Promise<object>} - A promise that resolves to the organization details.
+ *
+ * @example
+ * const organizationId = 'org123';
+ * getOrgDetails({ organizationId })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 
-			const internalToken = true
-			const orgDetails = await requests.get(orgReadUrl, '', internalToken)
-			return orgDetails
+const getOrgDetails = async function ({ organizationId }) {
+	try {
+		const organizationDetails = await organisationExtensionQueries.findOne({ organization_id: organizationId })
+		return {
+			success: true,
+			data: {
+				result: organizationDetails,
+			},
 		}
 	} catch (error) {
 		console.error('Error fetching organization details:', error)
@@ -94,78 +110,98 @@ const validRoles = new Set([
  * @description Fetches user details based on the provided `userId`. It can either retrieve the details from the database or
  * an external API, depending on the value of `db`. Additionally, it processes user roles and image URLs.
  *
- * This function fetches user details using a given `userId`. If `db` is `true`, it queries the database and adds roles
- * (`MENTEE_ROLE` and `MENTOR_ROLE`) to the user object. If `db` is `false`, it fetches the details from an external API.
- * The function also handles image URLs and ensures user roles are correctly set, adding the `MENTEE_ROLE` if missing.
+ * This function fetches user details using a given `userId`. it fetches the details from an external API.
  *
  * @param {object} params - The parameters for fetching user details.
  * @param {string} params.token - The authentication token required for API requests.
  * @param {string} params.userId - The user ID to fetch details for.
- * @param {boolean} [params.db=true] - Flag to indicate whether to fetch data from the database (`true`) or external API (`false`).
  * @returns {Promise<object>} - A promise that resolves to the user details, with roles and images processed.
  *
  * @example
  * const token = 'user-auth-token';
  * const userId = '12345';
- * fetchUserDetails({ token, userId, db: true })
+ * fetchUserDetails({ token, userId })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
 
-const fetchUserDetails = async ({ token, userId, db = true }) => {
+const fetchUserDetails = async ({ token, userId }) => {
 	try {
-		if (db) {
-			const userDetails = await menteeQueries.findOneFromView(userId)
+		let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
 
-			if (userDetails.image) {
-				userDetails.image = await getDownloadableUrl(userDetails.image).result
-			}
-			userDetails.user_roles = [{ title: common.MENTEE_ROLE }]
-			if (userDetails.is_mentor) {
-				userDetails.user_roles.push({ title: common.MENTOR_ROLE })
-			}
+		if (userId) profileUrl += `/${userId}`
 
-			let response = {
-				data: {
-					result: userDetails,
-				},
-			}
+		const isInternalTokenRequired = true
+		const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
 
-			return response
-		} else {
-			let profileUrl = `${userBaseUrl}${endpoints.USER_PROFILE_DETAILS}`
+		userDetails.data = userDetails.data || {}
+		userDetails.data.result = userDetails.data.result || {}
+		userDetails.data.result.user_roles = userDetails.data.result.user_roles || [{ title: common.MENTEE_ROLE }]
 
-			if (userId) profileUrl += `/${userId}`
-
-			const isInternalTokenRequired = true
-			const userDetails = await requests.get(profileUrl, token, isInternalTokenRequired)
-
-			userDetails.data = userDetails.data || {}
-			userDetails.data.result = userDetails.data.result || {}
-			userDetails.data.result.user_roles = userDetails.data.result.user_roles || [{ title: common.MENTEE_ROLE }]
-
-			if (
-				userDetails.data.result.user_roles.length === 1 &&
-				userDetails.data.result.user_roles[0].title === common.MENTEE_ROLE
-			)
-				return userDetails
-
-			let isMentor = false
-			let isMenteeRolePresent = false
-			const roles = userDetails.data.result.user_roles.reduce((acc, role) => {
-				if (validRoles.has(role.title)) {
-					if (role.title === common.MENTOR_ROLE) isMentor = true
-					else if (role.title === common.MENTEE_ROLE) isMenteeRolePresent = true
-					acc.push(role)
-				}
-				return acc
-			}, [])
-
-			if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
-			userDetails.data.result.user_roles = roles
-
+		if (
+			userDetails.data.result.user_roles.length === 1 &&
+			userDetails.data.result.user_roles[0].title === common.MENTEE_ROLE
+		)
 			return userDetails
+
+		let isMentor = false
+		let isMenteeRolePresent = false
+		const roles = userDetails.data.result.user_roles.reduce((acc, role) => {
+			if (validRoles.has(role.title)) {
+				if (role.title === common.MENTOR_ROLE) isMentor = true
+				else if (role.title === common.MENTEE_ROLE) isMenteeRolePresent = true
+				acc.push(role)
+			}
+			return acc
+		}, [])
+
+		if (!isMentor && !isMenteeRolePresent) roles.push({ title: common.MENTEE_ROLE })
+		userDetails.data.result.user_roles = roles
+
+		return userDetails
+	} catch (error) {
+		console.error(error)
+		throw error
+	}
+}
+
+/**
+ * @method getUserDetails
+ * @description Fetches user details based on the provided `userId`. It  retrieve the details from the database. Additionally, it processes user roles and image URLs.
+ *
+ * This function fetches user details using a given `userId`. , it queries the database and adds roles
+ * (`MENTEE_ROLE` and `MENTOR_ROLE`) to the user object.
+ *
+ * @param {string} userId - The user ID to fetch details for.
+ * @returns {Promise<object>} - A promise that resolves to the user details, with roles and images processed.
+ *
+ * @example
+ * const token = 'user-auth-token';
+ * const userId = '12345';
+ * getUserDetails( userId)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+
+const getUserDetails = async (userId) => {
+	try {
+		const userDetails = await menteeQueries.findOneFromView(userId)
+
+		if (userDetails.image) {
+			userDetails.image = await getDownloadableUrl(userDetails.image).result
 		}
+		userDetails.user_roles = [{ title: common.MENTEE_ROLE }]
+		if (userDetails.is_mentor) {
+			userDetails.user_roles.push({ title: common.MENTOR_ROLE })
+		}
+
+		let response = {
+			data: {
+				result: userDetails,
+			},
+		}
+
+		return response
 	} catch (error) {
 		console.error(error)
 		throw error
@@ -233,7 +269,6 @@ const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
  * The function returns an array of user IDs that correspond to the provided email addresses.
  *
  * @param {Array<string>} emailIds - An array of email addresses to fetch user details for.
- * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
  * @returns {Promise<object>} - A promise that resolves to an object containing a list of user IDs corresponding to the email addresses.
  *
  * @example
@@ -243,9 +278,9 @@ const getListOfUserDetails = function (userIds, excludeDeletedRecords = false) {
  *   .catch(error => console.error(error));
  */
 
-const getListOfUserDetailsByEmail = function (emailIds, db = true) {
+const getListOfUserDetailsByEmail = function (emailIds) {
 	return new Promise(async (resolve, reject) => {
-		if (db) {
+		try {
 			const encryptedEmailIds = emailIds.map((email) => {
 				if (typeof email !== 'string') {
 					throw new TypeError('Each email ID must be a string.')
@@ -267,33 +302,8 @@ const getListOfUserDetailsByEmail = function (emailIds, db = true) {
 				result: ids,
 			}
 			return resolve(response)
-		} else {
-			const options = {
-				headers: {
-					'Content-Type': 'application/json',
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-				},
-				form: {
-					emailIds,
-				},
-			}
-
-			const apiUrl = userBaseUrl + endpoints.VALIDATE_EMAIL
-			try {
-				await request.post(apiUrl, options, callback)
-				function callback(err, data) {
-					if (err) {
-						reject({
-							message: 'USER_SERVICE_DOWN',
-						})
-					} else {
-						data.body = JSON.parse(data.body)
-						return resolve(data.body)
-					}
-				}
-			} catch (error) {
-				return reject(error)
-			}
+		} catch (error) {
+			reject(error)
 		}
 	})
 }
@@ -335,17 +345,14 @@ const share = function (profileId) {
 
 /**
  * @method list
- * @description Fetches a list of users, either from the database or an external API.
+ * @description Fetches a list of users from the database
  *
  * This function retrieves a paginated list of users based on the provided filters, including `userType`,
- * `pageNo`, `pageSize`, and an optional `searchText`. If `db` is `true`, it queries the database and organizes
- * the results by the first letter of the user's name, returning them in alphabetical order. If `db` is `false`,
- * it fetches the data from an external API.
+ * `pageNo`, `pageSize`, and an optional `searchText`.
  *
  * @param {string} userType - The type of users to retrieve (e.g., 'mentor', 'mentee').
  * @param {number} pageNo - The page number to fetch.
  * @param {number} pageSize - The number of records per page.
- * @param {boolean} [db=true] - Flag to determine whether to fetch data from the database (true) or external API (false).
  * @param {string} [searchText] - Optional search text to filter users.
  * @returns {Promise<object>} - A promise that resolves to an object containing the list of users.
  *
@@ -354,109 +361,88 @@ const share = function (profileId) {
  * const pageNo = 1;
  * const pageSize = 10;
  * const searchText = 'john';
- * list(userType, pageNo, pageSize, true, searchText)
+ * list(userType, pageNo, pageSize, searchText)
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
 
-const list = function (userType, pageNo, pageSize, db = true, searchText) {
+const list = function (userType, pageNo, pageSize, searchText) {
 	return new Promise(async (resolve, reject) => {
-		if (db) {
-			try {
-				const filter = {
-					query: '',
-					replacements: {},
-				}
+		try {
+			const filter = {
+				query: '',
+				replacements: {},
+			}
 
-				// Add conditions to the filter based on userType or searchText
-				if (userType) {
-					filter.query += `is_mentor = :is_mentor `
-					filter.replacements.is_mentor = userType.toLowerCase() === common.MENTOR_ROLE ? true : false
-				}
+			// Add conditions to the filter based on userType or searchText
+			if (userType) {
+				filter.query += `is_mentor = :is_mentor `
+				filter.replacements.is_mentor = userType.toLowerCase() === common.MENTOR_ROLE ? true : false
+			}
 
-				const userDetails = await menteeQueries.getAllUsers(
-					[],
-					pageNo,
-					pageSize,
-					filter,
-					(saasFilter = ''),
-					(additionalProjectionClause = `name,email,organization_id`),
-					(returnOnlyUserId = false),
-					(searchText = ''),
-					(defaultFilter = '')
-				)
+			const userDetails = await menteeQueries.getAllUsers(
+				[],
+				pageNo,
+				pageSize,
+				filter,
+				(saasFilter = ''),
+				(additionalProjectionClause = `name,email,organization_id`),
+				(returnOnlyUserId = false),
+				searchText ? searchText : '',
+				(defaultFilter = '')
+			)
 
-				let foundKeys = {}
-				let result = []
+			let foundKeys = {}
+			let result = []
 
-				/* Required to resolve all promises first before preparing response object else sometime 
+			/* Required to resolve all promises first before preparing response object else sometime 
 				it will push unresolved promise object if you put this logic in below for loop */
 
-				if (userDetails.count == 0) {
-					return responses.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'USER_LIST',
-						result: {
-							data: [],
-							count: 0,
-						},
-					})
-				}
-
-				await Promise.all(
-					userDetails.data.map(async (user) => {
-						if (user.image) {
-							user.image = await getDownloadableUrl(user.image)
-						}
-						return user
-					})
-				)
-
-				for (let user of userDetails.data) {
-					let firstChar = user.name.charAt(0)
-					firstChar = firstChar.toUpperCase()
-
-					if (!foundKeys[firstChar]) {
-						result.push({
-							key: firstChar,
-							values: [user],
-						})
-						foundKeys[firstChar] = result.length
-					} else {
-						let index = foundKeys[firstChar] - 1
-						result[index].values.push(user)
-					}
-				}
-
-				const sortedData = _.sortBy(result, 'key') || []
-
-				return resolve({
+			if (userDetails.count == 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_LIST',
 					result: {
-						data: sortedData,
+						data: [],
+						count: 0,
 					},
 				})
-			} catch (error) {
-				return reject(error)
 			}
-		} else {
-			try {
-				const apiUrl =
-					userBaseUrl +
-					endpoints.USERS_LIST +
-					'?type=' +
-					userType +
-					'&page=' +
-					pageNo +
-					'&limit=' +
-					pageSize +
-					'&search=' +
-					searchText
-				const userDetails = await requests.get(apiUrl, false, true)
 
-				return resolve(userDetails)
-			} catch (error) {
-				return reject(error)
+			await Promise.all(
+				userDetails.data.map(async (user) => {
+					if (user.image) {
+						user.image = await getDownloadableUrl(user.image)
+					}
+					return user
+				})
+			)
+
+			for (let user of userDetails.data) {
+				let firstChar = user.name.charAt(0)
+				firstChar = firstChar.toUpperCase()
+
+				if (!foundKeys[firstChar]) {
+					result.push({
+						key: firstChar,
+						values: [user],
+					})
+					foundKeys[firstChar] = result.length
+				} else {
+					let index = foundKeys[firstChar] - 1
+					result[index].values.push(user)
+				}
 			}
+
+			const sortedData = _.sortBy(result, 'key') || []
+
+			return resolve({
+				result: {
+					data: sortedData,
+				},
+			})
+		} catch (error) {
+			return reject(error)
 		}
 	})
 }
@@ -579,80 +565,96 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
  * @method listOrganization
  * @description Fetches organization details based on provided organization IDs, either from the database or an external API.
  *
- * This function retrieves details of organizations by their IDs. It can either query the database to fetch
- * organization details or call an external API to retrieve them. If `db` is `true`, the data is fetched from the
- * database, and if `db` is `false`, it calls an external API to get the data.
+ * This function retrieves details of organizations by their IDs. To fetch
+ * organization details an external API call will happen to the details
  *
  * @param {Array<string>} organizationIds - An array of organization IDs to fetch details for.
- * @param {boolean} [db=false] - Flag to determine whether to fetch data from the database or external API.
  * @returns {Promise<object>} - A promise that resolves to an object containing the organization details.
  *
  * @example
  * const organizationIds = ['org1', 'org2'];
- * listOrganization(organizationIds, true)
+ * listOrganization(organizationIds)
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
 
-const listOrganization = function (organizationIds = [], db = false) {
+const listOrganization = function (organizationIds = []) {
 	return new Promise(async (resolve, reject) => {
-		if (db) {
-			try {
-				// Fetch organization details
-				const filter = {
-					organization_id: {
-						[Op.in]: Array.from(organizationIds),
-					},
-				}
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				organizationIds,
+			},
+		}
 
-				const organizationDetails = await organisationExtensionQueries.findAll(filter, {
-					attributes: ['name', 'organization_id'],
-				})
-
-				let result = {
-					success: true,
-					data: {
-						result: organizationDetails,
-					},
-				}
-
-				return resolve({
-					responseCode: httpStatusCode.ok,
-					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
-					result: result,
-				})
-			} catch (error) {
-				return reject(error)
+		const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+		try {
+			request.get(apiUrl, options, callback)
+			let result = {
+				success: true,
 			}
-		} else {
-			const options = {
-				headers: {
-					'Content-Type': 'application/json',
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			function callback(err, data) {
+				if (err) {
+					result.success = false
+				} else {
+					response = JSON.parse(data.body)
+					result.data = response
+				}
+				return resolve(result)
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
+/**
+ * @method organizationList
+ * @description Fetches organization details based on provided organization IDs, either from the database or an external API.
+ *
+ * This function retrieves details of organizations by their IDs from the db
+ *
+ * @param {Array<string>} organizationIds - An array of organization IDs to fetch details for.
+ * @returns {Promise<object>} - A promise that resolves to an object containing the organization details.
+ *
+ * @example
+ * const organizationIds = ['org1', 'org2'];
+ * organizationList(organizationIds)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+
+const organizationList = function (organizationIds = []) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// Fetch organization details
+			const filter = {
+				organization_id: {
+					[Op.in]: Array.from(organizationIds),
 				},
-				form: {
-					organizationIds,
+			}
+
+			const organizationDetails = await organisationExtensionQueries.findAll(filter, {
+				attributes: ['name', 'organization_id'],
+			})
+
+			let result = {
+				success: true,
+				data: {
+					result: organizationDetails,
 				},
 			}
 
-			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
-			try {
-				request.get(apiUrl, options, callback)
-				let result = {
-					success: true,
-				}
-				function callback(err, data) {
-					if (err) {
-						result.success = false
-					} else {
-						response = JSON.parse(data.body)
-						result.data = response
-					}
-					return resolve(result)
-				}
-			} catch (error) {
-				return reject(error)
-			}
+			return resolve({
+				responseCode: httpStatusCode.ok,
+				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+				result: result,
+			})
+		} catch (error) {
+			return reject(error)
 		}
 	})
 }
@@ -794,4 +796,7 @@ module.exports = {
 	getListOfUserDetailsByEmail, // need to fix
 	getDownloadableUrl,
 	getUserDetailedList,
+	getUserDetails,
+	organizationList,
+	getOrgDetails,
 }

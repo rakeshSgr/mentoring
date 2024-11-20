@@ -646,7 +646,7 @@ module.exports = class MentorsHelper {
 				}
 			}
 
-			let mentorProfile = await userRequests.fetchUserDetails({ userId: id, db: true })
+			let mentorProfile = await userRequests.getUserDetails(id)
 			if (!mentorProfile.data.result) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,

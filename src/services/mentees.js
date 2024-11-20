@@ -41,7 +41,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userRequests.fetchUserDetails({ userId: id, db: true })
+		const menteeDetails = await userRequests.getUserDetails(id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
@@ -444,8 +444,8 @@ module.exports = class MenteesHelper {
 				})
 			}
 			const organizationName = menteeExtension
-				? (await userRequests.fetchOrgDetails({ organizationId: menteeExtension.organization_id, db: true }))
-						?.data?.result?.name
+				? (await userRequests.getOrgDetails({ organizationId: menteeExtension.organization_id }))?.data?.result
+						?.name
 				: ''
 			if (!isAMentor && menteeExtension.is_mentor == true) {
 				throw responses.failureResponse({
@@ -963,7 +963,7 @@ module.exports = class MenteesHelper {
 
 				if (organization_ids.length > 0) {
 					//get organization list
-					const organizationList = await userRequests.listOrganization(organization_ids, true)
+					const organizationList = await userRequests.organizationList(organization_ids)
 					if (organizationList.success && organizationList.data?.result?.length > 0) {
 						result.organizations = organizationList.data.result
 					}
