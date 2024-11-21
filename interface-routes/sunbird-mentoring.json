@@ -1,15 +1,781 @@
 {
 	"routes": [
 		{
+			"sourceRoute": "/scheduler/jobs/create",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "scheduler",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "none"
+			}
+		},
+		{
+			"sourceRoute": "/scheduler/jobs/updateDelay",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "scheduler",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "none"
+			}
+		},
+		{
+			"sourceRoute": "/scheduler/jobs/remove",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "scheduler",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "none"
+			}
+		},
+		{
+			"sourceRoute": "/scheduler/jobs/list",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "scheduler",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "none"
+			}
+		},
+		{
+			"sourceRoute": "/scheduler/jobs/purge",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "scheduler",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "none"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/account/login",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/account/logout",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/account/list",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"requiresCustomHandling": true,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/user/read",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/user/read/:id",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"requiresCustomHandling": true,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/user/update",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/user/share",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/user/share/:id",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/user-role/list",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/user-role/default",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/form/create",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/form/read",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/form/read/:id",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/form/update",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/form/update/:id",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/cloud-services/file/getSignedUrl",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/cloud-services/file/getDownloadableUrl",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/create",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/update",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/update/:id",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/list",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"requiresCustomHandling": true,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/create",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/update",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/update/:id",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/read",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/delete",
+			"type": "DELETE",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity-type/delete/:id",
+			"type": "DELETE",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/create",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/update",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/update/:id",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/delete",
+			"type": "DELETE",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/delete/:id",
+			"type": "DELETE",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/read",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/entity/read/:id",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/org-admin/inheritEntityType",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/read",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"requiresCustomHandling": true,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/cloud-services/file/getSampleCSV",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/notification/template",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/notification/template/:id",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/notification/template",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/account/search",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			],
+			"rateLimit": {
+				"type": "internal"
+			}
+		},
+		{
+			"sourceRoute": "/user/v1/organization/addRelatedOrg/:org_id",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/removeRelatedOrg/:org_id",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/account/sessions",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/account/validateUserSession",
+			"type": "POST",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"service": "user",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+
+		{
+			"sourceRoute": "/interface/v1/profile/read",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"service": "mentoring",
+			"inSequence": false,
+			"orchestrated": false,
+			"responseMessage": "User Profile Fetched Successfully.",
+			"requiresCustomHandling": true,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring",
+					"targetBody": [],
+					"responseBody": []
+				}
+			]
+		},
+		{
 			"sourceRoute": "/mentoring/v1/role-permission-mapping/list",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -17,12 +783,13 @@
 			"sourceRoute": "/mentoring/v1/cloud-services/getSignedUrl",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -30,12 +797,13 @@
 			"sourceRoute": "/mentoring/v1/cloud-services/getDownloadableUrl",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -43,12 +811,13 @@
 			"sourceRoute": "/mentoring/v1/entity/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -56,12 +825,13 @@
 			"sourceRoute": "/mentoring/v1/entity/read",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -69,12 +839,13 @@
 			"sourceRoute": "/mentoring/v1/entity/list",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -82,12 +853,13 @@
 			"sourceRoute": "/mentoring/v1/entity/read/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -95,12 +867,13 @@
 			"sourceRoute": "/mentoring/v1/entity/update",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -108,12 +881,13 @@
 			"sourceRoute": "/mentoring/v1/entity/update/:id",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -121,12 +895,13 @@
 			"sourceRoute": "/mentoring/v1/entity/delete",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -134,12 +909,13 @@
 			"sourceRoute": "/mentoring/v1/entity/delete/:id",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -147,12 +923,13 @@
 			"sourceRoute": "/mentoring/v1/form/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -160,12 +937,13 @@
 			"sourceRoute": "/mentoring/v1/form/read",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -173,12 +951,13 @@
 			"sourceRoute": "/mentoring/v1/form/read/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -186,12 +965,13 @@
 			"sourceRoute": "/mentoring/v1/form/update",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -199,12 +979,13 @@
 			"sourceRoute": "/mentoring/v1/form/update/:id",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -212,12 +993,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -225,12 +1007,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/read",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -238,12 +1021,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/update",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -251,12 +1035,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/update/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -264,12 +1049,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/delete",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -277,12 +1063,13 @@
 			"sourceRoute": "/mentoring/v1/entity-type/delete/:id",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -290,12 +1077,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -303,12 +1091,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/details",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -316,12 +1105,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/details/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -329,12 +1119,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/share",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -342,12 +1133,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/share/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -355,12 +1147,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/enroll",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -368,12 +1161,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/enroll/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -381,12 +1175,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/unEnroll",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -394,12 +1189,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/unEnroll/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -407,12 +1203,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/start",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -420,12 +1217,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/start/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -433,12 +1231,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/update",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -446,12 +1245,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/update/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -459,12 +1259,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/update/:id",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -472,12 +1273,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/feedback",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -485,12 +1287,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/feedback/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -498,12 +1301,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/updateRecordingUrl",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -511,12 +1315,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/updateRecordingUrl/:id",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -524,12 +1329,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/completed",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -537,12 +1343,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/completed/:id",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -550,12 +1357,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/completed",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -563,12 +1371,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/completed/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -576,12 +1385,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/getRecording",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -589,12 +1399,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/getRecording/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -602,12 +1413,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/sessions",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -615,12 +1427,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/joinSession",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -628,12 +1441,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/joinSession/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -641,12 +1455,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/homeFeed",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -654,12 +1469,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/reports",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -667,12 +1483,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/profile",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -680,12 +1497,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -693,12 +1511,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/update",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -706,12 +1525,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/getMenteeExtension/",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -719,12 +1539,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/deleteMenteeExtension",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -732,12 +1553,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/reports",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -745,12 +1567,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/profile",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -758,12 +1581,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/profile/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -771,12 +1595,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/upcomingSessions",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -784,12 +1609,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/upcomingSessions/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -797,12 +1623,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/share",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -810,12 +1637,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/share/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -823,12 +1651,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -836,12 +1665,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/update",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -849,12 +1679,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/getMentorExtension",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -862,12 +1693,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/deleteMentorExtension",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -875,12 +1707,13 @@
 			"sourceRoute": "/mentoring/v1/feedback/submit",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -888,12 +1721,13 @@
 			"sourceRoute": "/mentoring/v1/feedback/submit/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -901,12 +1735,13 @@
 			"sourceRoute": "/mentoring/v1/feedback/forms",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -914,12 +1749,13 @@
 			"sourceRoute": "/mentoring/v1/feedback/forms/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -927,12 +1763,13 @@
 			"sourceRoute": "/mentoring/v1/questions/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -940,12 +1777,13 @@
 			"sourceRoute": "/mentoring/v1/questions/update",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -953,12 +1791,13 @@
 			"sourceRoute": "/mentoring/v1/questions/update/:id",
 			"type": "PUT",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -966,12 +1805,13 @@
 			"sourceRoute": "/mentoring/v1/questions/read",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -979,12 +1819,13 @@
 			"sourceRoute": "/mentoring/v1/questions/read/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -992,12 +1833,13 @@
 			"sourceRoute": "/mentoring/v1/question-set/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1005,12 +1847,13 @@
 			"sourceRoute": "/mentoring/v1/question-set/update",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1018,12 +1861,13 @@
 			"sourceRoute": "/mentoring/v1/question-set/update/:id",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1031,12 +1875,13 @@
 			"sourceRoute": "/mentoring/v1/question-set/read",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1044,12 +1889,13 @@
 			"sourceRoute": "/mentoring/v1/question-set/read/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1057,12 +1903,13 @@
 			"sourceRoute": "/mentoring/v1/users/pendingFeedbacks",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1070,12 +1917,13 @@
 			"sourceRoute": "/mentoring/v1/users/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1083,12 +1931,13 @@
 			"sourceRoute": "/mentoring/v1/issues/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1096,12 +1945,13 @@
 			"sourceRoute": "/mentoring/v1/platform/config",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1109,12 +1959,13 @@
 			"sourceRoute": "/mentoring/v1/admin/userDelete",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1122,12 +1973,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/inheritEntityType",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1135,12 +1987,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/roleChange",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1151,12 +2004,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/setOrgPolicies",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1164,12 +2018,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/getOrgPolicies",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1177,12 +2032,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/deactivateUpcomingSession",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1193,12 +2049,13 @@
 			"sourceRoute": "/mentoring/v1/organization/update",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1206,12 +2063,13 @@
 			"sourceRoute": "/mentoring/v1/organization/eventListener",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1222,12 +2080,13 @@
 			"sourceRoute": "/mentoring/v1/admin/triggerPeriodicViewRefresh",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1235,12 +2094,13 @@
 			"sourceRoute": "/mentoring/v1/admin/triggerViewRebuild",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1248,12 +2108,13 @@
 			"sourceRoute": "/mentoring/v1/admin/triggerPeriodicViewRefreshInternal",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1264,12 +2125,13 @@
 			"sourceRoute": "/mentoring/v1/admin/triggerViewRebuildInternal",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1280,12 +2142,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1293,12 +2156,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/createdSessions",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1306,12 +2170,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/details",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1319,12 +2184,13 @@
 			"sourceRoute": "/mentoring/v1/mentors/details/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1332,12 +2198,13 @@
 			"sourceRoute": "/mentoring/v1/profile/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1345,12 +2212,13 @@
 			"sourceRoute": "/mentoring/v1/profile/read",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1358,12 +2226,13 @@
 			"sourceRoute": "/mentoring/v1/profile/update",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1371,12 +2240,27 @@
 			"sourceRoute": "/mentoring/v1/notification/template",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/mentoring/v1/notification/template",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"service": "mentoring",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1384,12 +2268,13 @@
 			"sourceRoute": "/mentoring/v1/notification/template/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1397,12 +2282,27 @@
 			"sourceRoute": "/mentoring/v1/notification/template",
 			"type": "PATCH",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/mentoring/v1/notification/template/:id",
+			"type": "PATCH",
+			"priority": "MUST_HAVE",
+			"service": "mentoring",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1410,12 +2310,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/updateRelatedOrgs",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1426,12 +2327,13 @@
 			"sourceRoute": "/mentoring/v1/org-admin/updateOrganization",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
@@ -1442,12 +2344,13 @@
 			"sourceRoute": "/mentoring/v1/manage-sessions/createdSessions",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1455,12 +2358,13 @@
 			"sourceRoute": "/mentoring/v1/manage-sessions/downloadSessions",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1468,12 +2372,13 @@
 			"sourceRoute": "/mentoring/v1/mentees/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1481,12 +2386,13 @@
 			"sourceRoute": "/mentoring/v1/profile/filterList",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1494,12 +2400,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/enrolledMentees/:id",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1507,12 +2414,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/enrolledMentees",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1520,12 +2428,13 @@
 			"sourceRoute": "/mentoring/v1/permissions/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1533,12 +2442,13 @@
 			"sourceRoute": "/mentoring/v1/permissions/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1546,12 +2456,13 @@
 			"sourceRoute": "/mentoring/v1/permissions/update/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1559,12 +2470,13 @@
 			"sourceRoute": "/mentoring/v1/permissions/delete/:id",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1572,12 +2484,13 @@
 			"sourceRoute": "/mentoring/v1/modules/create",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1585,12 +2498,13 @@
 			"sourceRoute": "/mentoring/v1/modules/update/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1598,12 +2512,13 @@
 			"sourceRoute": "/mentoring/v1/modules/list",
 			"type": "GET",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1611,12 +2526,13 @@
 			"sourceRoute": "/mentoring/v1/modules/delete/:id",
 			"type": "DELETE",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1624,12 +2540,13 @@
 			"sourceRoute": "/mentoring/v1/role-permission-mapping/create/:role_id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1637,12 +2554,13 @@
 			"sourceRoute": "/mentoring/v1/role-permission-mapping/delete/:role_id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1650,12 +2568,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/addMentees",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1663,12 +2582,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/addMentees/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1676,12 +2596,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/removeMentees",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1689,12 +2610,13 @@
 			"sourceRoute": "/mentoring/v1/sessions/removeMentees/:id",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			]
 		},
@@ -1702,252 +2624,20 @@
 			"sourceRoute": "/mentoring/v1/sessions/bulkUpdateMentorNames",
 			"type": "POST",
 			"priority": "MUST_HAVE",
+			"service": "mentoring",
 			"inSequence": false,
 			"orchestrated": false,
 			"targetPackages": [
 				{
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
+					"packageName": "sunbird-mentoring"
 				}
 			],
 			"rateLimit": {
 				"type": "internal"
 			}
 		},
-		{
-			"sourceRoute": "/mentoring/v1/sessions/bulkSessionCreate",
-			"type": "POST",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/sessions/getSampleCSV",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/org-admin/uploadSampleCSV",
-			"type": "POST",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/create",
-			"type": "POST",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/update",
-			"type": "PATCH",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/update/:id",
-			"type": "PATCH",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/delete",
-			"type": "DELETE",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/delete/:id",
-			"type": "DELETE",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/read",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/read/:id",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/isAvailable",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/isAvailable/:id",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/availability/users",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/default-rule/create",
-			"type": "POST",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/default-rule/read",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/default-rule/read/:id",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/default-rule/update/:id",
-			"type": "PATCH",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/default-rule/delete/:id",
-			"type": "DELETE",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
+
 		{
 			"sourceRoute": "/interface/v1/account/create",
 			"type": "POST",
@@ -1957,8 +2647,9 @@
 			"responseMessage": "Account Created Successfully",
 			"targetPackages": [
 				{
-					"basePackageName": "user",
-					"packageName": "elevate-user",
+					"service": "user",
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -1972,8 +2663,9 @@
 					]
 				},
 				{
+					"service": "mentoring",
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -1997,8 +2689,9 @@
 			"responseMessage": "Profile Updated Successfully",
 			"targetPackages": [
 				{
-					"basePackageName": "user",
-					"packageName": "elevate-user",
+					"service": "user",
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2020,8 +2713,9 @@
 					]
 				},
 				{
+					"service": "mentoring",
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2053,8 +2747,9 @@
 			"responseMessage": "Entity type fetched successfully",
 			"targetPackages": [
 				{
-					"basePackageName": "user",
-					"packageName": "elevate-user",
+					"service": "user",
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2064,8 +2759,9 @@
 					]
 				},
 				{
+					"service": "mentoring",
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2085,14 +2781,16 @@
 			"responseMessage": "User logged in successfully.",
 			"targetPackages": [
 				{
-					"basePackageName": "user",
-					"packageName": "elevate-user",
+					"service": "user",
+					"basePackageName": "mentoring",
+					"packageName": "sunbird-user",
 					"targetBody": [],
 					"responseBody": []
 				},
 				{
+					"service": "mentoring",
 					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2105,32 +2803,6 @@
 			"rateLimit": {
 				"type": "public-low"
 			}
-		},
-		{
-			"sourceRoute": "/mentoring/v1/notification/template",
-			"type": "GET",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
-		},
-		{
-			"sourceRoute": "/mentoring/v1/notification/template/:id",
-			"type": "PATCH",
-			"priority": "MUST_HAVE",
-			"inSequence": false,
-			"orchestrated": false,
-			"targetPackages": [
-				{
-					"basePackageName": "mentoring",
-					"packageName": "elevate-mentoring"
-				}
-			]
 		}
 	]
 }

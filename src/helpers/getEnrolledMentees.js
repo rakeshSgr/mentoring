@@ -29,7 +29,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		}
 		let [enrolledUsers, attendeesAccounts] = await Promise.all([
 			menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
-			userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
+			userRequests.getUserDetailedList(menteeIds).then((result) => result.result),
 		])
 
 		enrolledUsers.forEach((user) => {
