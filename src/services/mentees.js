@@ -602,14 +602,10 @@ module.exports = class MenteesHelper {
 				organizationIds.push(element.organization_id)
 			})
 			const organizationDetails = await organisationExtensionQueries.findAll({
-				[Op.and]: [
-					{
-						organization_id: {
-							[Op.in]: [...organizationIds],
-						},
-					},
-					associatedAdditionalFilter,
-				],
+					
+				organization_id: {
+					[Op.in]: [...organizationIds],
+				}
 			},
 			{
 				attributes: ['name', 'organization_id'],
