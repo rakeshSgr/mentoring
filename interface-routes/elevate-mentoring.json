@@ -2136,7 +2136,7 @@
             "sourceRoute": "/interface/v1/mentors/details/:id",
             "type": "GET",
             "priority": "MUST_HAVE",
-            "inSequence": false,
+            "inSequence": true,
             "orchestrated": true,
             "responseMessage": "Profile fetched successfully.",
             "targetPackages": [
@@ -2158,7 +2158,7 @@
             "sourceRoute": "/interface/v1/profile/read",
             "type": "GET",
             "priority": "MUST_HAVE",
-            "inSequence": false,
+            "inSequence": true,
             "orchestrated": true,
             "responseMessage": "Profile fetched successfully.",
             "targetPackages": [
