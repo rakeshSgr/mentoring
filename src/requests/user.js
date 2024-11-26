@@ -732,8 +732,9 @@ const getUserDetailedList = function (userIds) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Fetch user details
+			console.log("-----------------",userIds);
 			const userDetails = await menteeQueries.getAllUsersByIds(userIds)
-
+                        console.log("----------------- userDetails ===============",userDetails);
 			// Extract unique organization IDs and create a mapping for organization details
 			const organizationIds = new Set()
 			const orgDetails = {}
