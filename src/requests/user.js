@@ -755,6 +755,7 @@ const getUserDetailedList = function (userIds) {
 			const organizationDetails = await organisationExtensionQueries.findAll(filter, {
 				attributes: ['name', 'organization_id'],
 			})
+			console.log("organizationDetails -------",organizationDetails);
 
 			// Map organization details for quick access
 			organizationDetails.forEach((org) => {
@@ -772,6 +773,8 @@ const getUserDetailedList = function (userIds) {
 				}
 				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
 			})
+			
+			console.log("------------------ userDetails     ---------------------- ",userDetails);
 
 			const response = {
 				result: userDetails,
