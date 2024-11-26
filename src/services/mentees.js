@@ -601,10 +601,20 @@ module.exports = class MenteesHelper {
 			mentorDetails.forEach((element) => {
 				organizationIds.push(element.organization_id)
 			})
-
-			const organizationDetails = await organisationExtensionQueries.findAll(organizationIds, {
+			const organizationDetails = await organisationExtensionQueries.findAll({
+				[Op.and]: [
+					{
+						organization_id: {
+							[Op.in]: [...organizationIds],
+						},
+					},
+					associatedAdditionalFilter,
+				],
+			},
+			{
 				attributes: ['name', 'organization_id'],
 			})
+			
 
 			// Map mentor names to sessions
 			sessions.forEach((session) => {
