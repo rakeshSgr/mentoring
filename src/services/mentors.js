@@ -261,10 +261,12 @@ module.exports = class MentorsHelper {
 
 				let mentorDetails = await userRequests.getUserDetailedList(userIds)
 				mentorDetails = mentorDetails.result
+				console.log("mentorDetails.result",mentorDetails.result);
 
 				for (let i = 0; i < session.length; i++) {
 					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
-					session[i].mentor_name = mentorDetails[mentorIndex].name
+					session[i].mentor_name = "";
+					// session[i].mentor_name = mentorDetails[mentorIndex].name
 					session[i].organization = mentorDetails[mentorIndex].organization
 				}
 
