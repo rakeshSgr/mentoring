@@ -2175,7 +2175,7 @@
 					"responseBody": [
 						{
 							"sourceField": "permissions",
-							"targetField": "user.permissions[]"
+							"targetField": "permissions[]"
 						}
 					]
                 }

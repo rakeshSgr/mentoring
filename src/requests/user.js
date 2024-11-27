@@ -767,6 +767,7 @@ const getUserDetailedList = function (userIds) {
 
 			// Enrich user details with roles and organization info
 			userDetails.map(async (user) => {
+				user.email = await emailEncryption.decrypt(user.email)
 				if (user.image) {
 					user.image = await getDownloadableUrl(user.image).result
 				}
@@ -778,6 +779,7 @@ const getUserDetailedList = function (userIds) {
 
 				return user
 			})
+			console.log('userDetails--------------------', userDetails)
 
 			const response = {
 				result: userDetails,

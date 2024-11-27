@@ -3,7 +3,6 @@ const menteeExtensionQueries = require('@database/queries/userExtension')
 const userRequests = require('@requests/user')
 const entityTypeService = require('@services/entity-type')
 const { Parser } = require('@json2csv/plainjs')
-const emailEncryption = require('@utils/emailEncryption')
 
 exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 	try {
@@ -71,9 +70,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 		// Merge arrays based on user_id and id
 		const mergedUserArray = enrolledUsers.map(async (user) => {
-			user.email = await emailEncryption.decrypt(user.email)
 			const matchingUserDetails = attendeesAccounts.find((details) => details.user_id === user.user_id)
-
 			// Merge properties from user and matchingUserDetails
 
 			return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
