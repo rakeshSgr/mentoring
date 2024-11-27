@@ -775,6 +775,7 @@ const getUserDetailedList = function (userIds) {
 					user.user_roles.push({ title: common.MENTOR_ROLE })
 				}
 				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+
 				return user
 			})
 

@@ -2169,7 +2169,7 @@
 					"responseBody": [
 						{
 							"sourceField": "permissions",
-							"targetField": "permissions[]"
+							"targetField": "user.permissions[]"
 						}
 					]
                 },
@@ -2177,12 +2177,7 @@
                     "basePackageName": "user",
                     "packageName": "elevate-user",
                     "targetBody": [],
-					"responseBody": [
-						{
-							"sourceField": "permissions",
-							"targetField": "permissions[]"
-						}
-					]
+					"responseBody": []
                 }
             ]
         }
