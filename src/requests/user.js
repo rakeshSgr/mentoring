@@ -766,19 +766,21 @@ const getUserDetailedList = function (userIds) {
 			})
 
 			// Enrich user details with roles and organization info
-			userDetails.map(async (user) => {
-				user.email = await emailEncryption.decrypt(user.email)
-				if (user.image) {
-					user.image = await getDownloadableUrl(user.image).result
-				}
-				user.user_roles = [{ title: common.MENTEE_ROLE }]
-				if (user.is_mentor) {
-					user.user_roles.push({ title: common.MENTOR_ROLE })
-				}
-				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+			await Promise.all(
+				userDetails.map(async function (user) {
+					user.email = await emailEncryption.decrypt(user.email)
+					if (user.image) {
+						user.image = await getDownloadableUrl(user.image).result
+					}
+					user.user_roles = [{ title: common.MENTEE_ROLE }]
+					if (user.is_mentor) {
+						user.user_roles.push({ title: common.MENTOR_ROLE })
+					}
+					user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
 
-				return user
-			})
+					return user
+				})
+			)
 			console.log('userDetails--------------------', userDetails)
 
 			const response = {
