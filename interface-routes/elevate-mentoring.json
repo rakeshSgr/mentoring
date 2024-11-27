@@ -2144,7 +2144,12 @@
                     "basePackageName": "mentoring",
                     "packageName": "elevate-mentoring",
                     "targetBody": [],
-                    "responseBody": []
+                    "responseBody": [
+						{
+							"sourceField": "user_roles",
+							"targetField": "mentoring.user_roles[]"
+						}
+					]
                 },
                 {
                     "basePackageName": "user",
@@ -2166,7 +2171,12 @@
                     "basePackageName": "user",
                     "packageName": "elevate-user",
                     "targetBody": [],
-					"responseBody": []
+					"responseBody": [
+						{
+							"sourceField": "permissions",
+							"targetField": "permissions[]"
+						}
+					]
                 },
 				{
                     "basePackageName": "mentoring",
@@ -2176,6 +2186,10 @@
 						{
 							"sourceField": "permissions",
 							"targetField": "permissions[]"
+						},
+						{
+							"sourceField": "user_roles",
+							"targetField": "mentoring.user_roles[]"
 						}
 					]
                 }
