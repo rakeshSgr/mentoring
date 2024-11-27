@@ -2175,6 +2175,10 @@
 						{
 							"sourceField": "permissions",
 							"targetField": "permissions[]"
+						},
+						{
+							"sourceField": "user_roles",
+							"targetField": "user_roles[]"
 						}
 					]
                 },
