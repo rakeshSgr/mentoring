@@ -2166,13 +2166,23 @@
                     "basePackageName": "mentoring",
                     "packageName": "elevate-mentoring",
                     "targetBody": [],
-                    "responseBody": []
+					"responseBody": [
+						{
+							"sourceField": "permissions",
+							"targetField": "permissions[]"
+						}
+					]
                 },
                 {
                     "basePackageName": "user",
                     "packageName": "elevate-user",
                     "targetBody": [],
-                    "responseBody": []
+					"responseBody": [
+						{
+							"sourceField": "permissions",
+							"targetField": "permissions[]"
+						}
+					]
                 }
             ]
         }
