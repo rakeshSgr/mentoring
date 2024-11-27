@@ -732,9 +732,13 @@ const getUserDetailedList = function (userIds) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Fetch user details
-			console.log("-----------------",userIds);
+			if (userIds.length == 0) {
+				return resolve({
+					result: [],
+				})
+			}
 			const userDetails = await menteeQueries.getAllUsersByIds(userIds)
-                        console.log("----------------- userDetails ===============",userDetails);
+
 			// Extract unique organization IDs and create a mapping for organization details
 			const organizationIds = new Set()
 			const orgDetails = {}
@@ -755,7 +759,7 @@ const getUserDetailedList = function (userIds) {
 			const organizationDetails = await organisationExtensionQueries.findAll(filter, {
 				attributes: ['name', 'organization_id'],
 			})
-			console.log("organizationDetails -------",organizationDetails);
+			console.log('organizationDetails -------', organizationDetails)
 
 			// Map organization details for quick access
 			organizationDetails.forEach((org) => {
@@ -773,8 +777,6 @@ const getUserDetailedList = function (userIds) {
 				}
 				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
 			})
-			
-			console.log("------------------ userDetails     ---------------------- ",userDetails);
 
 			const response = {
 				result: userDetails,
