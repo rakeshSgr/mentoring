@@ -759,7 +759,6 @@ const getUserDetailedList = function (userIds) {
 			const organizationDetails = await organisationExtensionQueries.findAll(filter, {
 				attributes: ['name', 'organization_id'],
 			})
-			console.log('organizationDetails -------', organizationDetails)
 
 			// Map organization details for quick access
 			organizationDetails.forEach((org) => {
@@ -767,7 +766,7 @@ const getUserDetailedList = function (userIds) {
 			})
 
 			// Enrich user details with roles and organization info
-			userDetails.forEach(async (user) => {
+			userDetails.map(async (user) => {
 				if (user.image) {
 					user.image = await getDownloadableUrl(user.image).result
 				}
@@ -776,6 +775,7 @@ const getUserDetailedList = function (userIds) {
 					user.user_roles.push({ title: common.MENTOR_ROLE })
 				}
 				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+				return user
 			})
 
 			const response = {

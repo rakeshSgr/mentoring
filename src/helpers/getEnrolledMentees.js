@@ -70,7 +70,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 		// Merge arrays based on user_id and id
 		const mergedUserArray = enrolledUsers.map((user) => {
-			const matchingUserDetails = attendeesAccounts.find((details) => details.id === user.user_id)
+			const matchingUserDetails = attendeesAccounts.find((details) => details.user_id === user.user_id)
 
 			// Merge properties from user and matchingUserDetails
 
