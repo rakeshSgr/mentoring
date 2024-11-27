@@ -2163,6 +2163,12 @@
             "responseMessage": "Profile fetched successfully.",
             "targetPackages": [
                 {
+                    "basePackageName": "user",
+                    "packageName": "elevate-user",
+                    "targetBody": [],
+					"responseBody": []
+                },
+				{
                     "basePackageName": "mentoring",
                     "packageName": "elevate-mentoring",
                     "targetBody": [],
@@ -2172,12 +2178,6 @@
 							"targetField": "user.permissions[]"
 						}
 					]
-                },
-                {
-                    "basePackageName": "user",
-                    "packageName": "elevate-user",
-                    "targetBody": [],
-					"responseBody": []
                 }
             ]
         }
