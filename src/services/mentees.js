@@ -41,7 +41,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userRequests.getUserDetails(id)
+		const menteeDetails = await userRequests.fetchUserDetails({ userId: id })
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
@@ -601,16 +601,16 @@ module.exports = class MenteesHelper {
 			mentorDetails.forEach((element) => {
 				organizationIds.push(element.organization_id)
 			})
-			const organizationDetails = await organisationExtensionQueries.findAll({
-					
-				organization_id: {
-					[Op.in]: [...organizationIds],
+			const organizationDetails = await organisationExtensionQueries.findAll(
+				{
+					organization_id: {
+						[Op.in]: [...organizationIds],
+					},
+				},
+				{
+					attributes: ['name', 'organization_id'],
 				}
-			},
-			{
-				attributes: ['name', 'organization_id'],
-			})
-			
+			)
 
 			// Map mentor names to sessions
 			sessions.forEach((session) => {
