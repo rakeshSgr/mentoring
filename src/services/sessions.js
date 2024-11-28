@@ -2708,7 +2708,7 @@ module.exports = class SessionsHelper {
 					user: {
 						id,
 						name: userDetail.name,
-						email: await emailEncryption.decrypt(userDetail.email),
+						email: userDetail.email,
 						organization_id,
 						org_name: orgDetails.name,
 					},

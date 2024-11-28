@@ -260,10 +260,13 @@ module.exports = class MentorsHelper {
 				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
 				let mentorDetails = await userRequests.getUserDetailedList(userIds)
+
 				mentorDetails = mentorDetails.result
+				//console.log("mentorDetails.result",mentorDetails.result);
 
 				for (let i = 0; i < session.length; i++) {
-					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
+					let mentorIndex = mentorDetails.findIndex((x) => x.user_id === session[i].mentor_id)
+					console.log(session[i].mentor_id, 'mentorIndex', mentorIndex)
 					session[i].mentor_name = mentorDetails[mentorIndex].name
 					session[i].organization = mentorDetails[mentorIndex].organization
 				}

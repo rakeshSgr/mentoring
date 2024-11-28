@@ -732,6 +732,11 @@ const getUserDetailedList = function (userIds) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Fetch user details
+			if (userIds.length == 0) {
+				return resolve({
+					result: [],
+				})
+			}
 			const userDetails = await menteeQueries.getAllUsersByIds(userIds)
 
 			// Extract unique organization IDs and create a mapping for organization details
@@ -761,16 +766,22 @@ const getUserDetailedList = function (userIds) {
 			})
 
 			// Enrich user details with roles and organization info
-			userDetails.forEach(async (user) => {
-				if (user.image) {
-					user.image = await getDownloadableUrl(user.image).result
-				}
-				user.user_roles = [{ title: common.MENTEE_ROLE }]
-				if (user.is_mentor) {
-					user.user_roles.push({ title: common.MENTOR_ROLE })
-				}
-				user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
-			})
+			await Promise.all(
+				userDetails.map(async function (user) {
+					user.email = await emailEncryption.decrypt(user.email)
+					if (user.image) {
+						user.image = await getDownloadableUrl(user.image).result
+					}
+					user.user_roles = [{ title: common.MENTEE_ROLE }]
+					if (user.is_mentor) {
+						user.user_roles.push({ title: common.MENTOR_ROLE })
+					}
+					user.organization = orgDetails[user.organization_id] || null // Handle potential missing org
+
+					return user
+				})
+			)
+			console.log('userDetails--------------------', userDetails)
 
 			const response = {
 				result: userDetails,

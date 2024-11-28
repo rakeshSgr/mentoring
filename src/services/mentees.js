@@ -38,9 +38,11 @@ module.exports = class MenteesHelper {
 	 * @method
 	 * @name profile
 	 * @param {String} userId - user id.
+	 * @param {String} orgId - organization id.
+	 * @param {String} roles - user roles.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(id, orgId) {
+	static async read(id, orgId, roles) {
 		const menteeDetails = await userRequests.getUserDetails(id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
@@ -69,7 +71,7 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const menteePermissions = await permissions.getPermissions(menteeDetails.data.result.user_roles)
+		const menteePermissions = await permissions.getPermissions(roles)
 		if (!Array.isArray(menteeDetails.data.result.permissions)) {
 			menteeDetails.data.result.permissions = []
 		}
@@ -601,10 +603,16 @@ module.exports = class MenteesHelper {
 			mentorDetails.forEach((element) => {
 				organizationIds.push(element.organization_id)
 			})
-
-			const organizationDetails = await organisationExtensionQueries.findAll(organizationIds, {
-				attributes: ['name', 'organization_id'],
-			})
+			const organizationDetails = await organisationExtensionQueries.findAll(
+				{
+					organization_id: {
+						[Op.in]: [...organizationIds],
+					},
+				},
+				{
+					attributes: ['name', 'organization_id'],
+				}
+			)
 
 			// Map mentor names to sessions
 			sessions.forEach((session) => {
@@ -1322,11 +1330,12 @@ module.exports = class MenteesHelper {
 			userDetails.result = userDetails.result
 				.map((value) => {
 					// Map over each value in the values array of the current group
-					const user_id = value.id
+					const user_id = value.user_id
 					// Check if extensionDataMap has an entry with the key equal to the user_id
 					if (extensionDataMap.has(user_id)) {
 						const newItem = extensionDataMap.get(user_id)
 						value = { ...value, ...newItem }
+						value.id = user_id
 						delete value.user_id
 						delete value.mentor_visibility
 						delete value.mentee_visibility
