@@ -38,9 +38,11 @@ module.exports = class MenteesHelper {
 	 * @method
 	 * @name profile
 	 * @param {String} userId - user id.
+	 * @param {String} orgId - organization id.
+	 * @param {String} roles - user roles.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(id, orgId) {
+	static async read(id, orgId, roles) {
 		const menteeDetails = await userRequests.fetchUserDetails({ userId: id })
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
@@ -69,7 +71,7 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const menteePermissions = await permissions.getPermissions(menteeDetails.data.result.user_roles)
+		const menteePermissions = await permissions.getPermissions(roles)
 		if (!Array.isArray(menteeDetails.data.result.permissions)) {
 			menteeDetails.data.result.permissions = []
 		}
