@@ -1330,11 +1330,12 @@ module.exports = class MenteesHelper {
 			userDetails.result = userDetails.result
 				.map((value) => {
 					// Map over each value in the values array of the current group
-					const user_id = value.id
+					const user_id = value.user_id
 					// Check if extensionDataMap has an entry with the key equal to the user_id
 					if (extensionDataMap.has(user_id)) {
 						const newItem = extensionDataMap.get(user_id)
 						value = { ...value, ...newItem }
+						value.id = user_id
 						delete value.user_id
 						delete value.mentor_visibility
 						delete value.mentee_visibility
