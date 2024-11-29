@@ -18,4 +18,5 @@ module.exports = {
 	REMOVE_SCHEDULED_JOB: 'jobs/remove', // Remove scheduled job endpoint
 	ORGANIZATION_LIST: 'v1/organization/list',
 	VALIDATE_SESSIONS: 'v1/account/validateUserSession',
+	DOWNLOAD_IMAGE_URL: 'v1/cloud-services/file/getDownloadableUrl',
 }
