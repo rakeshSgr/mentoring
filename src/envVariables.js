@@ -91,7 +91,7 @@ let enviromentVariables = {
 	},
 	BIG_BLUE_BUTTON_URL: {
 		message: 'Required big blue button url',
-		optional: process.env.DEFAULT_MEETING_SERVICE === 'OFF' ? true : false,
+		optional: process.env.DEFAULT_MEETING_SERVICE === 'BBB' ? false : true,
 	},
 	MEETING_END_CALLBACK_EVENTS: {
 		message: 'Required meeting end callback events',
@@ -99,7 +99,7 @@ let enviromentVariables = {
 	},
 	BIG_BLUE_BUTTON_SECRET_KEY: {
 		message: 'Required big blue button secret key',
-		optional: process.env.DEFAULT_MEETING_SERVICE === 'OFF' ? true : false,
+		optional: process.env.DEFAULT_MEETING_SERVICE === 'BBB' ? false : true,
 	},
 	RECORDING_READY_CALLBACK_URL: {
 		message: 'Required recording ready callback url',
@@ -137,14 +137,14 @@ let enviromentVariables = {
 		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
 		default: 'user_issue_reported',
 	},
-	BIB_BLUE_BUTTON_BASE_URL: {
+	BIG_BLUE_BUTTON_BASE_URL: {
 		message: 'Big blue button base url',
-		optional: process.env.DEFAULT_MEETING_SERVICE === 'OFF' ? true : false,
+		optional: process.env.DEFAULT_MEETING_SERVICE === 'BBB' ? false : true,
 		default: '/bigbluebutton/',
 	},
 	BIG_BLUE_BUTTON_SESSION_END_URL: {
 		message: 'Big blue button session end url.',
-		optional: process.env.DEFAULT_MEETING_SERVICE === 'OFF' ? true : false,
+		optional: process.env.DEFAULT_MEETING_SERVICE === 'BBB' ? false : true,
 	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
@@ -168,7 +168,7 @@ let enviromentVariables = {
 	SESSION_MENTEE_LIMIT: {
 		message: 'Required session mentee limit',
 		optional: true,
-		default: 7,
+		default: 20,
 	},
 	SCHEDULER_SERVICE_HOST: {
 		message: 'Required scheduler service host',
@@ -343,13 +343,11 @@ let enviromentVariables = {
 	},
 	EMAIL_ID_ENCRYPTION_KEY: {
 		message: 'Required Email ID Encryption Key',
-		optional: true,
-		default: '9bbf4698e081176b4e38c3f04f9c0cff6ae80b1960e5ac868cc234ac8537aa66',
+		optional: false,
 	},
 	EMAIL_ID_ENCRYPTION_IV: {
 		message: 'Required Email ID Encryption IV',
-		optional: true,
-		default: 'a390328e496f025249a88384f318a536',
+		optional: false,
 	},
 	EMAIL_ID_ENCRYPTION_ALGORITHM: {
 		message: 'Required Email ID Encryption Algorithm',
