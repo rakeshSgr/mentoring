@@ -143,7 +143,7 @@ module.exports = class OrgAdminService {
 		try {
 			// Get mentee_extension data
 			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id, '', true)
-			if (updateData.email) updateData.email = updateData.email.toLowerCase()
+			if (updateData.email) delete updateData.email
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return responses.failureResponse({
