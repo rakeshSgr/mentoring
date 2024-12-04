@@ -89,7 +89,13 @@ module.exports = class Mentees {
 	async read(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsService.read(req.decodedToken.id, req.decodedToken.organization_id)
+				return await mentorsService.read(
+					req.decodedToken.id,
+					req.decodedToken.organization_id,
+					'',
+					'',
+					req.decodedToken.roles
+				)
 			}
 			return await menteesService.read(
 				req.decodedToken.id,

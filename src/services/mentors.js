@@ -701,7 +701,7 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-			const mentorPermissions = await permissions.getPermissions(mentorProfile.user_roles)
+			const mentorPermissions = await permissions.getPermissions(roles)
 			if (!Array.isArray(mentorProfile.permissions)) {
 				mentorProfile.permissions = []
 			}
