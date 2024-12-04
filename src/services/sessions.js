@@ -191,7 +191,11 @@ module.exports = class SessionsHelper {
 			}
 
 			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
-			const userDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck, ['name'], true)
+			const userDetails = await mentorExtensionQueries.getMentorExtension(
+				mentorIdToCheck,
+				['name', 'email'],
+				true
+			)
 			if (userDetails && userDetails.name) {
 				bodyData.mentor_name = userDetails.name
 			}
