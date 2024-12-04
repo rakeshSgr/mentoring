@@ -680,7 +680,7 @@ module.exports = class SessionsHelper {
 				sessionAttendees.map((attendee) => {
 					for (let index = 0; index < attendeesAccounts.result.length; index++) {
 						const element = attendeesAccounts.result[index]
-						if (element.id == attendee.mentee_id) {
+						if (element.user_id == attendee.mentee_id) {
 							attendee.attendeeEmail = element.email
 							attendee.attendeeName = element.name
 							break
@@ -2515,7 +2515,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			const menteeDetails = menteeAccounts.result.map((element) => ({
-				id: element.id,
+				id: element.user_id,
 				email: element.email,
 				name: element.name,
 			}))
