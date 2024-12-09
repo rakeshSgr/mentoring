@@ -655,7 +655,7 @@ const organizationList = function (organizationIds = []) {
 			return resolve({
 				responseCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
-				result: result,
+				result,
 			})
 		} catch (error) {
 			return reject(error)
@@ -786,7 +786,6 @@ const getUserDetailedList = function (userIds) {
 					return user
 				})
 			)
-			console.log('userDetails--------------------', userDetails)
 
 			const response = {
 				result: userDetails,
