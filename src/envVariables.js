@@ -191,8 +191,7 @@ let enviromentVariables = {
 	},
 	DEFAULT_ORG_ID: {
 		message: 'Default organization ID',
-		optional: true,
-		default: 1,
+		optional: false,
 	},
 	MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE: {
 		message: 'Required email template name for mentee session cancellation',
@@ -311,23 +310,23 @@ let enviromentVariables = {
 	},
 	CLOUD_STORAGE_PROVIDER: {
 		message: 'Require cloud storage provider, in azure,aws, gcloud,oci and s3',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_SECRET: {
 		message: 'Require client storage provider identity',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_BUCKETNAME: {
 		message: 'Require client storage bucket name',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_BUCKET_TYPE: {
 		message: 'Require storage bucket type',
-		optional: true,
+		optional: false,
 	},
 	PUBLIC_ASSET_BUCKETNAME: {
 		message: 'Require asset storage bucket name',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_REGION: {
 		message: 'Require storage region',
@@ -367,7 +366,7 @@ let enviromentVariables = {
 	SEESION_MANAGER_AND_MENTEE_LIMIT: {
 		message: 'Required Mentees Limit for Session',
 		optional: true,
-		default: '6',
+		default: '21',
 	},
 	DEFAULT_SESSION_VISIBILITY_POLICY: {
 		message: 'Required Default Session Visibility Policy',
