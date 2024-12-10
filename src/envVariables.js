@@ -139,7 +139,7 @@ let enviromentVariables = {
 	},
 	BIG_BLUE_BUTTON_BASE_URL: {
 		message: 'Big blue button base url',
-		optional: process.env.DEFAULT_MEETING_SERVICE === 'BBB' ? false : true,
+		optional: true,
 		default: '/bigbluebutton/',
 	},
 	BIG_BLUE_BUTTON_SESSION_END_URL: {
