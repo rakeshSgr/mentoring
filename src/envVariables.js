@@ -128,7 +128,8 @@ let enviromentVariables = {
 
 	DEFAULT_MEETING_SERVICE: {
 		message: 'Required default meeting service',
-		optional: false,
+		optional: true,
+		default: 'OFF',
 	},
 	SESSION_EDIT_WINDOW_MINUTES: {
 		message: 'Required session edit window timeout',
