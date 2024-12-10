@@ -125,6 +125,7 @@ let enviromentVariables = {
 		message: 'Required disable log level',
 		optional: false,
 	},
+
 	DEFAULT_MEETING_SERVICE: {
 		message: 'Required default meeting service',
 		optional: false,
