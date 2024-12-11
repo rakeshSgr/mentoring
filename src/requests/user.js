@@ -645,17 +645,13 @@ const organizationList = function (organizationIds = []) {
 				attributes: ['name', 'organization_id'],
 			})
 
-			let result = {
+			return resolve({
+				responseCode: httpStatusCode.ok,
+				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				success: true,
 				data: {
 					result: organizationDetails,
 				},
-			}
-
-			return resolve({
-				responseCode: httpStatusCode.ok,
-				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
-				result: result,
 			})
 		} catch (error) {
 			return reject(error)
@@ -786,7 +782,6 @@ const getUserDetailedList = function (userIds) {
 					return user
 				})
 			)
-			console.log('userDetails--------------------', userDetails)
 
 			const response = {
 				result: userDetails,

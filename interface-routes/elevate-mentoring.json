@@ -2180,6 +2180,7 @@
 							"sourceField": "user_roles",
 							"targetField": "user_roles[]"
 						}
+						
 					]
                 },
 				{
@@ -2194,6 +2195,10 @@
 						{
 							"sourceField": "user_roles",
 							"targetField": "mentoring.user_roles[]"
+						},
+						{
+							"sourceField": "user_id",
+							"targetField": "id"
 						}
 					]
                 }
