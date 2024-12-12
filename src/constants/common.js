@@ -119,6 +119,8 @@ module.exports = {
 	getDefaultOrgPolicies: defaultOrgPolicies,
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
+	All: 'All',
+	SYSTEM: 'SYSTEM',
 	ASSOCIATED: 'ASSOCIATED',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',

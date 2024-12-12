@@ -1,0 +1,26 @@
+const reportService = require('@services/reports')
+
+module.exports = class Reports {
+	/**
+	 * Report filter list
+	 * @method
+	 * @name reportFilterList
+	 * @param {Object} req - request data.
+	 * @param {String} req.decodedToken.token - user token.
+	 * @returns {JSON} - filter list.
+	 */
+
+	async reportFilterList(req) {
+		try {
+			const reportFilterList = await reportService.getReportFilterList(
+				req.query.organization ? req.query.organization : 'false',
+				req.query.entity_types ? req.query.entity_types : '',
+				req.query.filter_type ? req.query.filter_type : '',
+				req.decodedToken
+			)
+			return reportFilterList
+		} catch (error) {
+			return error
+		}
+	}
+}
