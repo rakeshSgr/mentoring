@@ -156,7 +156,6 @@ let enviromentVariables = {
 		optional: true,
 		default: true,
 	},
-
 	DEFAULT_MEETING_SERVICE: {
 		message: 'Required default meeting service',
 		optional: true,
