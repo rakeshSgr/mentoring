@@ -1026,7 +1026,7 @@ module.exports = class UserInviteHelper {
 	static async fetchMentorIds(sessionCreationOutput) {
 		for (const item of sessionCreationOutput) {
 			const mentorIdPromise = item.mentor_id
-			if (!isNaN(mentorIdPromise)) {
+			if (!isNaN(mentorIdPromise) && mentorIdPromise) {
 				const mentorId = await menteeExtensionQueries.getMenteeExtension(mentorIdPromise, ['email'])
 				if (!mentorId) throw createUnauthorizedResponse('USER_NOT_FOUND')
 				item.mentor_id = mentorId.email
