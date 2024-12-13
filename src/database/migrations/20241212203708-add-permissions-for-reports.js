@@ -9,7 +9,7 @@ module.exports = {
 					code: 'reports_filter_permission',
 					module: 'reports',
 					request_type: ['GET'],
-					api_path: '/mentoring/v1/reports/reportFilterList',
+					api_path: '/mentoring/v1/reports/filterList',
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),

@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			title: {
 				type: DataTypes.STRING,
+				unique: true,
 			},
 			created_at: {
 				type: DataTypes.DATE,

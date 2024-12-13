@@ -10,7 +10,7 @@ module.exports = class Reports {
 	 * @returns {JSON} - filter list.
 	 */
 
-	async reportFilterList(req) {
+	async filterList(req) {
 		try {
 			const reportFilterList = await reportService.getReportFilterList(
 				req.query.organization ? req.query.organization : 'false',

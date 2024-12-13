@@ -31,7 +31,7 @@ module.exports = {
 				{
 					title: 'mentee',
 					label: 'Mentee',
-					status: 'INACTIVE',
+					status: 'ACTIVE',
 					scope: 'PUBLIC',
 					organization_id: '1',
 					created_at: new Date(),

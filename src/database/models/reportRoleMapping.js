@@ -10,8 +10,8 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			report_id: {
-				type: DataTypes.INTEGER,
+			report_code: {
+				type: DataTypes.STRING(255),
 				allowNull: false,
 			},
 			role_title: {

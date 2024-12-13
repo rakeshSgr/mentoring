@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
 			code: {
 				type: DataTypes.STRING(255),
 				allowNull: false,
+				unique: true,
 			},
 			title: {
 				type: DataTypes.STRING(255),
