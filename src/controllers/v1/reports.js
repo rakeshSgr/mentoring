@@ -12,8 +12,7 @@ module.exports = class Reports {
 
 	async filterList(req) {
 		try {
-			const reportFilterList = await reportService.getReportFilterList(
-				req.query.organization ? req.query.organization : 'false',
+			const reportFilterList = await reportService.getFilterList(
 				req.query.entity_types ? req.query.entity_types : '',
 				req.query.filter_type ? req.query.filter_type : '',
 				req.decodedToken
