@@ -44,6 +44,26 @@ module.exports = {
 					updated_at: new Date(),
 					created_by: 0,
 				},
+				{
+					role_title: common.MENTEE_ROLE,
+					permission_id: await getPermissionId('reports', ['GET'], '/mentoring/v1/reports/filterList'),
+					module: 'reports',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/reports/filterList',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_title: common.MENTOR_ROLE,
+					permission_id: await getPermissionId('reports', ['GET'], '/mentoring/v1/reports/filterList'),
+					module: 'reports',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/reports/filterList',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
 			]
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)
 		} catch (error) {

@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			report_id: {
+			report_code: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},

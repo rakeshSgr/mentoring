@@ -10,7 +10,7 @@ module.exports = {
 				primaryKey: true,
 				type: Sequelize.INTEGER,
 			},
-			report_id: {
+			report_code: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},

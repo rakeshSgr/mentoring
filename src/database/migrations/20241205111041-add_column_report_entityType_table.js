@@ -8,7 +8,7 @@ module.exports = {
 			defaultValue: false,
 		})
 
-		await queryInterface.sequelize.query('UPDATE entity_types SET report = false;')
+		await queryInterface.sequelize.query('UPDATE entity_types SET report_filter = false;')
 	},
 	async down(queryInterface, Sequelize) {
 		await queryInterface.removeColumn('entity_types', 'report_filter')
