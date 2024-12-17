@@ -24,7 +24,7 @@ module.exports = class ReportsHelper {
 			}
 
 			const filter_type = filterType !== '' ? filterType : common.MENTOR_ROLE
-			const report_filter = reportFilter !== '' ? reportFilter : true
+			const report_filter = reportFilter
 
 			let organization_ids = []
 			const organizations = await getOrgIdAndEntityTypes.getOrganizationIdBasedOnPolicy(

@@ -192,7 +192,6 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 				organization_id: {
 					[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
 				},
-				report_filter: !report_filter ? false : report_filter,
 			}
 			let entityTypes = []
 			if (entity_types) {
@@ -201,7 +200,9 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 					[Op.in]: entityTypes,
 				}
 			}
-
+			if (report_filter) {
+				filter.report_filter = report_filter
+			}
 			if (modelName) {
 				filter.model_names = { [Op.contains]: [modelName] }
 			}
