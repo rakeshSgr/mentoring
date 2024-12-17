@@ -8,9 +8,7 @@ module.exports = {
 			const replacements = { report_filter: true }
 
 			const entityTypesToUpdate = [
-				{ value: 'medium', label: 'Medium' },
 				{ value: 'type', label: 'Type' },
-				{ value: 'recommended_for', label: 'Recommended For' },
 				{ value: 'categories', label: 'Categories' },
 			]
 
