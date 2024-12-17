@@ -177,7 +177,13 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '', modelName) {
+	static async getEntityTypeWithEntitiesBasedOnOrg(
+		organization_ids,
+		entity_types,
+		defaultOrgId = '',
+		modelName,
+		report_filter
+	) {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
@@ -186,8 +192,8 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 				organization_id: {
 					[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
 				},
+				report_filter: !report_filter ? false : report_filter,
 			}
-
 			let entityTypes = []
 			if (entity_types) {
 				entityTypes = entity_types.split(',')

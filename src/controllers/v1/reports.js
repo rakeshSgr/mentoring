@@ -15,7 +15,8 @@ module.exports = class Reports {
 			const reportFilterList = await reportService.getFilterList(
 				req.query.entity_types ? req.query.entity_types : '',
 				req.query.filter_type ? req.query.filter_type : '',
-				req.decodedToken
+				req.decodedToken,
+				req.query.report_filter ? req.query.report_filter : ''
 			)
 			return reportFilterList
 		} catch (error) {

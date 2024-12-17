@@ -17,13 +17,14 @@ module.exports = class ReportsHelper {
 	 * @param {Boolean} queryParams - queryParams
 	 * @returns {JSON} - Report filter list.
 	 */
-	static async getFilterList(entity_type, filterType, tokenInformation) {
+	static async getFilterList(entity_type, filterType, tokenInformation, reportFilter) {
 		try {
 			let result = {
 				entity_types: {},
 			}
 
 			const filter_type = filterType !== '' ? filterType : common.MENTOR_ROLE
+			const report_filter = reportFilter !== '' ? reportFilter : true
 
 			let organization_ids = []
 			const organizations = await getOrgIdAndEntityTypes.getOrganizationIdBasedOnPolicy(
@@ -52,7 +53,8 @@ module.exports = class ReportsHelper {
 						organization_ids,
 						entity_type,
 						defaultOrgId ? defaultOrgId : '',
-						modelName
+						modelName,
+						report_filter
 					)
 
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
