@@ -182,16 +182,14 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 		entity_types,
 		defaultOrgId = '',
 		modelName,
-		report_filter
+		filter = {}
 	) {
 		try {
-			let filter = {
-				status: common.ACTIVE_STATUS,
-				allow_filtering: true,
-				has_entities: true,
-				organization_id: {
-					[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
-				},
+			filter.status = common.ACTIVE_STATUS
+			filter.allow_filtering = true
+			filter.has_entities = true
+			filter.organization_id = {
+				[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
 			}
 			let entityTypes = []
 			if (entity_types) {
@@ -199,9 +197,6 @@ module.exports = class OrganizationAndEntityTypePolicyHelper {
 				filter.value = {
 					[Op.in]: entityTypes,
 				}
-			}
-			if (report_filter) {
-				filter.report_filter = report_filter
 			}
 			if (modelName) {
 				filter.model_names = { [Op.contains]: [modelName] }
