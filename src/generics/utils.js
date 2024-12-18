@@ -704,6 +704,51 @@ function convertExpiryTimeToSeconds(expiryTime) {
 	}
 }
 
+function convertEntitiesForFilter(entityTypes) {
+	const result = {}
+
+	entityTypes.forEach((entityType) => {
+		const key = entityType.value
+
+		if (!result[key]) {
+			result[key] = []
+		}
+
+		const newObj = {
+			id: entityType.id,
+			label: entityType.label,
+			value: entityType.value,
+			parent_id: entityType.parent_id,
+			organization_id: entityType.organization_id,
+			entities: entityType.entities || [],
+		}
+
+		result[key].push(newObj)
+	})
+	return result
+}
+
+function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) {
+	let result = {}
+
+	for (let key in data) {
+		let countWithParentId = 0
+		let countOfEachKey = data[key].length
+		data[key].forEach((obj) => {
+			if (obj.parent_id !== null && obj.organization_id != defaultOrgId) {
+				countWithParentId++
+			}
+		})
+
+		let outputArray = data[key]
+		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1 && !doNotRemoveDefaultOrg) {
+			outputArray = data[key].filter((obj) => !(obj.organization_id === defaultOrgId && obj.parent_id === null))
+		}
+
+		result[key] = outputArray
+	}
+	return result
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -751,4 +796,6 @@ module.exports = {
 	validateProfileData,
 	validateAndBuildFilters,
 	convertExpiryTimeToSeconds,
+	convertEntitiesForFilter,
+	filterEntitiesBasedOnParent,
 }
