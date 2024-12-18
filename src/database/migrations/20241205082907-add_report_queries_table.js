@@ -35,12 +35,6 @@ module.exports = {
 				defaultValue: Sequelize.fn('NOW'),
 			},
 		})
-
-		// Add an index on `report_id` to improve query performance
-		await queryInterface.addIndex('report_queries', {
-			fields: ['report_id'],
-			name: 'idx_report_queries_report_id',
-		})
 	},
 
 	async down(queryInterface, Sequelize) {
