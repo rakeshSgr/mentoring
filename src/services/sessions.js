@@ -999,7 +999,10 @@ module.exports = class SessionsHelper {
 			)
 
 			if (isInvited || sessionDetails.is_assigned) {
-				sessionDetails.manager_name = mentorExtension.name
+				const managerDetails = await menteeExtensionQueries.getMenteeExtension(sessionDetails.created_by, [
+					'name',
+				])
+				sessionDetails.manager_name = managerDetails.name
 			}
 
 			const orgDetails = await organisationExtensionQueries.findOne(
