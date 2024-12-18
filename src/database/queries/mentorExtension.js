@@ -87,7 +87,7 @@ module.exports = class MentorExtensionQueries {
 			} else {
 				mentor = await MentorExtension.findOne(queryOptions)
 			}
-			if (mentor.email) {
+			if (mentor && mentor.email) {
 				mentor.email = await emailEncryption.decrypt(mentor.email.toLowerCase())
 			}
 			return mentor
