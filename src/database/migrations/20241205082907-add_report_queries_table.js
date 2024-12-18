@@ -11,7 +11,7 @@ module.exports = {
 				type: Sequelize.INTEGER,
 			},
 			report_code: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			query: {
