@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 				autoIncrement: true,
 			},
 			report_code: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			query: {

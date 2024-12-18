@@ -11,7 +11,7 @@ module.exports = {
 				type: Sequelize.INTEGER,
 			},
 			report_code: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			query: {
@@ -36,10 +36,10 @@ module.exports = {
 			},
 		})
 
-		// Add an index on `report_id` to improve query performance
+		// Add an index on `report_code` to improve query performance
 		await queryInterface.addIndex('report_queries', {
-			fields: ['report_id'],
-			name: 'idx_report_queries_report_id',
+			fields: ['report_code'],
+			name: 'idx_report_queries_report_code',
 		})
 	},
 
