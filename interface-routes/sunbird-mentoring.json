@@ -2649,7 +2649,7 @@
 				{
 					"service": "user",
 					"basePackageName": "mentoring",
-					"packageName": "sunbird-user",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2691,7 +2691,7 @@
 				{
 					"service": "user",
 					"basePackageName": "mentoring",
-					"packageName": "sunbird-user",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2749,7 +2749,7 @@
 				{
 					"service": "user",
 					"basePackageName": "mentoring",
-					"packageName": "sunbird-user",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": [
 						{
@@ -2783,7 +2783,7 @@
 				{
 					"service": "user",
 					"basePackageName": "mentoring",
-					"packageName": "sunbird-user",
+					"packageName": "sunbird-mentoring",
 					"targetBody": [],
 					"responseBody": []
 				},
@@ -2813,8 +2813,9 @@
             "responseMessage": "Profile fetched successfully.",
             "targetPackages": [
                 {
-                    "basePackageName": "mentoring",
-                    "packageName": "elevate-mentoring",
+                    "service": "mentoring",
+					"basePackageName": "mentoring",
+                    "packageName": "sunbird-mentoring",
                     "targetBody": [],
                     "responseBody": [
 						{
@@ -2824,8 +2825,9 @@
 					]
                 },
                 {
-                    "basePackageName": "user",
-                    "packageName": "elevate-user",
+					"service": "user",
+					"basePackageName": "mentoring",
+                    "packageName": "sunbird-mentoring",
                     "targetBody": [],
                     "responseBody": []
                 }
@@ -2840,8 +2842,9 @@
             "responseMessage": "Profile fetched successfully.",
             "targetPackages": [
                 {
-                    "basePackageName": "user",
-                    "packageName": "elevate-user",
+                    "service": "user",
+					"basePackageName": "mentoring",
+                    "packageName": "sunbird-mentoring",
                     "targetBody": [],
 					"responseBody": [
 						{
@@ -2856,7 +2859,8 @@
 					]
                 },
 				{
-                    "basePackageName": "mentoring",
+					"service": "mentoring",
+					"basePackageName": "mentoring",
                     "packageName": "elevate-mentoring",
                     "targetBody": [],
 					"responseBody": [
