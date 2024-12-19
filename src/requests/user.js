@@ -645,6 +645,12 @@ const organizationList = function (organizationIds = []) {
 				attributes: ['name', 'organization_id'],
 			})
 
+			if (organizationDetails && organizationDetails.length > 0) {
+				organizationDetails.map((orgInfo) => {
+					orgInfo.id = orgInfo.organization_id
+				})
+			}
+
 			return resolve({
 				responseCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
