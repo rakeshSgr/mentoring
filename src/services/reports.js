@@ -7,6 +7,12 @@ const mentorQueries = require('@database/queries/mentorExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const utils = require('@generics/utils')
 const getOrgIdAndEntityTypes = require('@helpers/getOrgIdAndEntityTypewithEntitiesBasedOnPolicy')
+const reportMappingQueries = require('@database/queries/reportRoleMapping')
+const reportQueryQueries = require('@database/queries/reportQueries')
+const reportsQueries = require('@database/queries/reports')
+const reportTypeQueries = require('@database/queries/reportTypes')
+const { sequelize } = require('@database/models')
+const { isNull } = require('lodash')
 
 module.exports = class ReportsHelper {
 	/**
@@ -95,6 +101,90 @@ module.exports = class ReportsHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'REPORT_FILTER_FETCHED_SUCCESSFULLY',
 				result,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get report data for reports
+	 * @method
+	 * @name getReportData
+	 * @param {String} tokenInformation - token information
+	 * @param {Boolean} queryParams - queryParams
+	 * @returns {JSON} - Report Data list.
+	 */
+	static async getReportData(
+		userId,
+		reportCode,
+		reportRole,
+		startDate,
+		endDate,
+		sessionType,
+		entityType,
+		sortColumn,
+		sortType
+	) {
+		try {
+			let reportDataResult = {}
+
+			// Check if the user has permission to access the report
+			const checkReportPermission = await reportMappingQueries.findReportRoleMappingByReportCode(reportCode)
+			if (!checkReportPermission || checkReportPermission.dataValues.role_title !== reportRole) {
+				return responses.failureResponse({
+					message: 'REPORT_CODE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get the report configuration and type
+			const getReportConfigAndType = await reportsQueries.findReportByCode(reportCode)
+			const getReportTypeTitle = await reportTypeQueries.findReportTypeById(
+				getReportConfigAndType.dataValues.report_type_id
+			)
+			reportDataResult.report_type = getReportTypeTitle.dataValues.title
+			reportDataResult.config = getReportConfigAndType.dataValues.config
+
+			// Fetch the dynamic query based on report code
+			const getReportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
+
+			let query = getReportQuery.query
+			//	let updatedsortType = sortType.replace(/''/g, "")
+
+			query = query.replace(/\${sort_type}/g, sortType ? sortType.toUpperCase() : 'ASC')
+			// Replace dynamic placeholders in the query with actual values only if the corresponding variable exists
+			const result = await sequelize.query(query, {
+				replacements: {
+					userId: userId != '' ? userId : null,
+					start_date: startDate != '' ? startDate : null,
+					end_date: endDate != '' ? endDate : null,
+					entity_type: entityType ? `{${entityType}}` : null,
+					session_type: sessionType != '' ? utils.convertToTitleCase(sessionType) : null,
+					sort_column: sortColumn != '' ? sortColumn : null,
+					sort_type: sortType != '' ? sortType : null,
+				},
+				type: sequelize.QueryTypes.SELECT,
+			})
+
+			// Flatten the result data and add to the reportDataResult object
+			if (result && result.length > 0) {
+				// Assuming the result contains an array with one object, we can flatten it
+				const flattenedResult = { ...result }
+
+				// Adding other fields to the flattened object
+				reportDataResult = {
+					...reportDataResult,
+					reportData: flattenedResult,
+				}
+			}
+
+			// Return the response with the modified reportDataResult
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'REPORT_DATA_SUCCESSFULLY_FETCHED',
+				result: reportDataResult,
 			})
 		} catch (error) {
 			return error

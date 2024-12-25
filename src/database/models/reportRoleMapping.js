@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			role_title: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			created_at: {
@@ -30,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			deleted_at: {
 				type: DataTypes.DATE,
-				defaultValue: DataTypes.NOW,
 			},
 		},
 		{

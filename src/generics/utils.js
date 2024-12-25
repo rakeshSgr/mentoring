@@ -749,6 +749,10 @@ function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) 
 	}
 	return result
 }
+
+function convertToTitleCase(str) {
+	return str.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -798,4 +802,5 @@ module.exports = {
 	convertExpiryTimeToSeconds,
 	convertEntitiesForFilter,
 	filterEntitiesBasedOnParent,
+	convertToTitleCase,
 }
