@@ -153,7 +153,7 @@ module.exports = class ReportsHelper {
 			let query = getReportQuery.query
 			//	let updatedsortType = sortType.replace(/''/g, "")
 
-			query = query.replace(/\${sort_type}/g, sortType ? sortType.toUpperCase() : 'ASC')
+			query = query.replace(/\${sort_type}/g, sortType ? sortType.toUpperCase() : null)
 			// Replace dynamic placeholders in the query with actual values only if the corresponding variable exists
 			const result = await sequelize.query(query, {
 				replacements: {
