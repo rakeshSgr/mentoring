@@ -141,10 +141,7 @@ module.exports = class ReportsHelper {
 
 			// Get the report configuration and type
 			const getReportConfigAndType = await reportsQueries.findReportByCode(reportCode)
-			const getReportTypeTitle = await reportTypeQueries.findReportTypeById(
-				getReportConfigAndType.dataValues.report_type_id
-			)
-			reportDataResult.report_type = getReportTypeTitle.dataValues.title
+			reportDataResult.report_type = getReportConfigAndType.dataValues.report_type_title
 			reportDataResult.config = getReportConfigAndType.dataValues.config
 
 			// Fetch the dynamic query based on report code

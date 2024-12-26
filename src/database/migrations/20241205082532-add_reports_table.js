@@ -22,9 +22,9 @@ module.exports = {
 			description: {
 				type: Sequelize.TEXT,
 			},
-			report_type_id: {
+			report_type_title: {
 				allowNull: false,
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 			},
 			config: {
 				type: Sequelize.JSONB,
