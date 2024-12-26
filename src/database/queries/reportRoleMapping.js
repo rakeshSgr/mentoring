@@ -46,7 +46,6 @@ module.exports = class ReportRoleMappingQueries {
 		try {
 			const deletedRows = await ReportRoleMapping.destroy({
 				where: { id },
-				force: true, // Hard delete
 			})
 			return deletedRows
 		} catch (error) {
