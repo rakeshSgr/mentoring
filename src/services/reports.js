@@ -117,12 +117,14 @@ module.exports = class ReportsHelper {
 	 */
 	static async getReportData(
 		userId,
+		page,
+		limit,
 		reportCode,
 		reportRole,
 		startDate,
 		endDate,
 		sessionType,
-		entityType,
+		entitiesValue,
 		sortColumn,
 		sortType
 	) {
@@ -148,32 +150,35 @@ module.exports = class ReportsHelper {
 			const getReportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
 
 			let query = getReportQuery.query
-			//	let updatedsortType = sortType.replace(/''/g, "")
 
-			query = query.replace(/\${sort_type}/g, sortType ? sortType.toUpperCase() : null)
+			let offset = common.getPaginationOffset(page, limit)
+
+			// Replace :sort_type with 'ASC' (without quotes)
+			const defaultSortType = 'ASC'
+			query = sortType ? query.replace(/:sort_type/g, sortType) : query.replace(/:sort_type/g, defaultSortType)
+
 			// Replace dynamic placeholders in the query with actual values only if the corresponding variable exists
 			const result = await sequelize.query(query, {
 				replacements: {
-					userId: userId != '' ? userId : null,
-					start_date: startDate != '' ? startDate : null,
-					end_date: endDate != '' ? endDate : null,
-					entity_type: entityType ? `{${entityType}}` : null,
-					session_type: sessionType != '' ? utils.convertToTitleCase(sessionType) : null,
-					sort_column: sortColumn != '' ? sortColumn : null,
-					sort_type: sortType != '' ? sortType : null,
+					userId: userId !== '' ? userId : null,
+					start_date: startDate !== '' ? startDate : null,
+					end_date: endDate !== '' ? endDate : null,
+					entities_value: entitiesValue ? `{${entitiesValue}}` : null,
+					session_type: sessionType !== '' ? utils.convertToTitleCase(sessionType) : null,
+					limit: limit !== '' ? limit : common.pagination.DEFAULT_LIMIT,
+					offset: offset,
+					sort_column: sortColumn || '',
 				},
 				type: sequelize.QueryTypes.SELECT,
 			})
 
 			// Flatten the result data and add to the reportDataResult object
 			if (result && result.length > 0) {
-				// Assuming the result contains an array with one object, we can flatten it
-				const flattenedResult = { ...result }
-
-				// Adding other fields to the flattened object
+				const flattenedResult = { ...result[0] }
+				const flattenedTableResult = [...result]
 				reportDataResult = {
 					...reportDataResult,
-					reportData: flattenedResult,
+					data: reportDataResult.report_type !== common.REPORT_TABLE ? flattenedResult : flattenedTableResult,
 				}
 			}
 
