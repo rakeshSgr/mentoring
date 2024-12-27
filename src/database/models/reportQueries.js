@@ -32,7 +32,6 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			deleted_at: {
 				type: DataTypes.DATE,
-				defaultValue: DataTypes.NOW,
 			},
 		},
 		{
@@ -51,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
 	// Define associations
 	ReportQuery.associate = (models) => {
 		ReportQuery.belongsTo(models.Report, {
-			foreignKey: 'report_id',
+			foreignKey: 'report_code',
 			as: 'report',
 		})
 	}

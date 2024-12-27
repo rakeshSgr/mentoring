@@ -32,6 +32,7 @@ module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
 		DEFAULT_PAGE_SIZE: 100,
+		DEFAULT_LIMIT: 5,
 	},
 	getPaginationOffset,
 	DELETE_METHOD: 'DELETE',
@@ -117,6 +118,7 @@ module.exports = {
 
 	// Default organization policies
 	getDefaultOrgPolicies: defaultOrgPolicies,
+	REPORT_TABLE: 'table',
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
 	All: 'All',

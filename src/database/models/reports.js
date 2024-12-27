@@ -22,8 +22,8 @@ module.exports = (sequelize, DataTypes) => {
 			description: {
 				type: DataTypes.TEXT,
 			},
-			report_type_id: {
-				type: DataTypes.INTEGER,
+			report_type_title: {
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			config: {
@@ -44,7 +44,6 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			deleted_at: {
 				type: DataTypes.DATE,
-				defaultValue: DataTypes.NOW,
 			},
 		},
 		{

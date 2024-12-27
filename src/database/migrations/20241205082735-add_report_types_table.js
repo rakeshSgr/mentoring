@@ -7,11 +7,11 @@ module.exports = {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
-				primaryKey: true,
 				type: Sequelize.INTEGER,
 			},
 			title: {
 				type: Sequelize.STRING,
+				primaryKey: true,
 				unique: true,
 			},
 			created_at: {
@@ -26,7 +26,6 @@ module.exports = {
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
-				defaultValue: Sequelize.fn('NOW'),
 			},
 		})
 	},

@@ -16,7 +16,7 @@ module.exports = {
 			},
 			role_title: {
 				allowNull: false,
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 			},
 			created_at: {
 				allowNull: false,
@@ -30,7 +30,6 @@ module.exports = {
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
-				defaultValue: Sequelize.fn('NOW'),
 			},
 		})
 	},
