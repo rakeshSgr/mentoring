@@ -38,6 +38,7 @@ module.exports = class Reports {
 		try {
 			const reportData = await reportService.getReportData(
 				req.decodedToken.id,
+				req.decodedToken.organization_id,
 				req.query.pageNo ? req.query.pageNo : common.pagination.DEFAULT_PAGE_NO,
 				req.query.Limit ? req.query.Limit : common.pagination.DEFAULT_LIMIT,
 				req.query.report_code,
@@ -48,6 +49,8 @@ module.exports = class Reports {
 				req.query.entities_value,
 				req.query.sort_column ? req.query.sort_column : '',
 				req.query.sort_type ? req.query.sort_type : '',
+				req.query.search_column ? req.query.search_column : '',
+				req.query.search_value ? req.query.search_value : '',
 				req.query.download_csv ? req.query.download_csv : false
 			)
 			return reportData
