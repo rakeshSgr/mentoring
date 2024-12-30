@@ -6,7 +6,7 @@ module.exports = {
 		try {
 			const permissionsData = [
 				{
-					code: 'reports_filter_permission',
+					code: 'reports_data_permission',
 					module: 'reports',
 					request_type: ['GET'],
 					api_path: '/mentoring/v1/reports/reportData',

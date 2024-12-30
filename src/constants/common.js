@@ -144,6 +144,7 @@ module.exports = {
 	BACK_OFF_RETRY_QUEUE: 600000,
 	tempFolderForBulkUpload: 'public/invites',
 	sessionOutputFile: 'output-session-creation',
+	reportOutputFile: 'output-report-data',
 	csvExtension: '.csv',
 	responseType: 'stream',
 	azureBlobType: 'BlockBlob',
