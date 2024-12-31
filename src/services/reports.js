@@ -133,14 +133,13 @@ module.exports = class ReportsHelper {
 		sortColumn,
 		sortType,
 		searchColumn,
-		searchValue
+		searchValue,
+		downloadCsv
 	) {
 		try {
-			let reportDataResult = {}
-
-			// Check report permissions
-			const checkReportPermission = await reportMappingQueries.findReportRoleMappingByReportCode(reportCode)
-			if (!checkReportPermission || checkReportPermission.dataValues.role_title !== reportRole) {
+			// Validate report permissions
+			const reportPermission = await reportMappingQueries.findReportRoleMappingByReportCode(reportCode)
+			if (!reportPermission || reportPermission.dataValues.role_title !== reportRole) {
 				return responses.failureResponse({
 					message: 'REPORT_CODE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -148,25 +147,31 @@ module.exports = class ReportsHelper {
 				})
 			}
 
-			// Fetch report configuration and type
+			// Fetch report configuration
 			const reportConfig = await reportsQueries.findReportByCode(reportCode)
-			reportDataResult = {
+			const reportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
+			if (!reportConfig || !reportQuery) {
+				return responses.failureResponse({
+					message: 'REPORT_CONFIG_OR_QUERY_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const reportDataResult = {
 				report_type: reportConfig.dataValues.report_type_title,
 				config: reportConfig.dataValues.config,
 			}
 
-			// Fetch report query
-			const reportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
-			let query = reportQuery.query
-
-			// Replace placeholders
+			// Prepare query replacements
+			const defaultLimit = common.pagination.DEFAULT_LIMIT
 			const replacements = {
 				userId: userId || null,
 				start_date: startDate || null,
 				end_date: endDate || null,
 				entities_value: entitiesValue ? `{${entitiesValue}}` : null,
 				session_type: sessionType ? utils.convertToTitleCase(sessionType) : null,
-				limit: limit || common.pagination.DEFAULT_LIMIT,
+				limit: limit || defaultLimit,
 				offset: common.getPaginationOffset(page, limit),
 				sort_column: sortColumn || '',
 				sort_type: sortType || 'ASC',
@@ -174,26 +179,35 @@ module.exports = class ReportsHelper {
 				search_value: searchValue || null,
 			}
 
-			query = query.replace(/:sort_type/g, replacements.sort_type)
+			const noPaginationReplacements = {
+				...replacements,
+				limit: null,
+				offset: null,
+				search_column: null,
+				search_value: null,
+			}
 
-			// Execute the main query
-			const result = await sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT })
+			// Replace sort type placeholder in query
+			let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
 
-			// Remove LIMIT and OFFSET from the query
-			const removeLimitAndOffset = (sql) => sql.replace(/\s*LIMIT\s+\S+\s+OFFSET\s+\S+/, '')
-			const resultWithoutPagination = await sequelize.query(removeLimitAndOffset(query), {
-				replacements,
-				type: sequelize.QueryTypes.SELECT,
-			})
+			// Execute query with pagination
+			const [result, resultWithoutPagination] = await Promise.all([
+				sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT }),
+				sequelize.query(utils.removeLimitAndOffset(query), {
+					replacements: noPaginationReplacements,
+					type: sequelize.QueryTypes.SELECT,
+				}),
+			])
 
 			// Process query results
 			if (result?.length) {
-				const flattenedResult = { ...result[0] }
-				reportDataResult.data =
-					reportDataResult.report_type === common.REPORT_TABLE ? [...result] : flattenedResult
+				reportDataResult.data = reportDataResult.report_type === common.REPORT_TABLE ? result : { ...result[0] }
+			} else {
+				reportDataResult.data = common.report_session_message
 			}
 
-			if (resultWithoutPagination?.length) {
+			// Handle CSV download
+			if (resultWithoutPagination?.length && downloadCsv === 'true') {
 				const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
 				reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
 			}
@@ -204,8 +218,12 @@ module.exports = class ReportsHelper {
 				result: reportDataResult,
 			})
 		} catch (error) {
-			console.error('Error in getReportData:', error)
-			throw error
+			return responses.failureResponse({
+				message: 'INTERNAL_SERVER_ERROR',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'SERVER_ERROR',
+				error: error.message,
+			})
 		}
 	}
 

@@ -51,7 +51,7 @@ module.exports = class Reports {
 				req.query.sort_type ? req.query.sort_type : '',
 				req.query.search_column ? req.query.search_column : '',
 				req.query.search_value ? req.query.search_value : '',
-				req.query.download_csv ? req.query.download_csv : false
+				req.query.download_csv ? req.query.download_csv : 'false'
 			)
 			return reportData
 		} catch (error) {

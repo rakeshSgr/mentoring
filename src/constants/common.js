@@ -167,6 +167,7 @@ module.exports = {
 		BBB_PLATFORM_VALUES: ['bigbluebutton', 'bbb'],
 		GOOGLE_MEET_VALUES: ['googlemeet', 'gmeet'],
 	},
+	report_session_message: 'No sessions',
 	SESSION: 'session',
 	PLATFORMS_REGEX: /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/,
 	ZOOM_REGEX: /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/,

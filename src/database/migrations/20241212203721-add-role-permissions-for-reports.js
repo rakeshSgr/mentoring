@@ -35,7 +35,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_title: common.ADMIN_ROLE,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('reports', ['GET'], '/mentoring/v1/reports/filterList'),
 					module: 'reports',
 					request_type: ['GET'],
