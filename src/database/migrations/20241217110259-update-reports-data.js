@@ -189,12 +189,6 @@ module.exports = {
 							sort: true,
 						},
 						{
-							key: 'session_rating',
-							label: 'Session Rating',
-							filter: false,
-							sort: false,
-						},
-						{
 							key: 'mentor_rating',
 							label: 'Mentor Rating',
 							filter: true,
@@ -254,25 +248,19 @@ module.exports = {
 						{
 							key: 'number_of_mentoring_sessions',
 							label: 'Number of Mentoring Sessions',
-							filter: false,
+							filter: true,
 							sort: true,
 						},
 						{
 							key: 'hours_of_mentoring_sessions',
 							label: 'Hours of Mentoring Sessions',
-							filter: false,
+							filter: true,
 							sort: true,
 						},
 						{
 							key: 'avg_mentor_rating',
 							label: 'Avg Mentor Rating',
-							filter: false,
-							sort: true,
-						},
-						{
-							key: 'avg_session_rating',
-							label: 'Avg Session Rating',
-							filter: false,
+							filter: true,
 							sort: true,
 						},
 					],
