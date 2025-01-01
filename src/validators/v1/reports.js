@@ -25,8 +25,6 @@ module.exports = {
 		req.checkQuery('report_role')
 			.notEmpty()
 			.withMessage('report_role is required')
-			.isIn(['mentee', 'mentor', 'admin']) // Update roles as per your use case
-			.withMessage('report_role is invalid')
 			.matches(/^[a-z_]+$/)
 			.withMessage('report_role is invalid, must not contain spaces')
 
@@ -71,12 +69,7 @@ module.exports = {
 			.matches(/^[a-z_]+$/)
 			.withMessage('search_column is invalid, must not contain spaces')
 
-		req.checkQuery('search_value')
-			.optional()
-			.isString()
-			.withMessage('search_value must be a string')
-			.matches(/^[a-z_]+$/)
-			.withMessage('search_value is invalid, must not contain spaces')
+		req.checkQuery('search_value').optional().isString().withMessage('search_value must be a string')
 
 		req.checkQuery('download_csv')
 			.optional()

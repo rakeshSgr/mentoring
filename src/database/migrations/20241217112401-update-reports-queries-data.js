@@ -434,7 +434,78 @@ module.exports = {
 			},
 			{
 				report_code: 'session_manger_session_details',
-				query: '',
+				query: `SELECT 
+                subquery.mentor_name AS "Mentor Name",
+                subquery."Number of Mentoring Sessions",
+                subquery."Hours of Mentoring Sessions",
+                subquery."Avg Mentor Rating"
+            FROM (
+                SELECT 
+                    s.mentor_name,
+                    COUNT(*) OVER (PARTITION BY so.user_id) AS "Number of Mentoring Sessions",
+                    CASE 
+                        -- If the total hours is a whole number, remove the decimal (e.g., 1.0 -> 1)
+                        WHEN ROUND(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0) = FLOOR(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0)
+                        THEN CAST(FLOOR(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0) AS TEXT)  -- Removes .0 for whole numbers
+                        ELSE CAST(ROUND(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0, 1) AS TEXT)  -- Keeps decimals for non-whole numbers
+                    END AS "Hours of Mentoring Sessions",
+                    COALESCE(CAST(ue.rating ->> 'average' AS NUMERIC), 0) AS "Avg Mentor Rating" 
+                FROM 
+                    public.sessions AS s
+                JOIN 
+                    public.session_ownerships AS so
+                ON 
+                    s.id = so.session_id
+                LEFT JOIN 
+                    public.user_extensions AS ue
+                ON 
+                    so.user_id = ue.user_id -- Join user_extension based on user_id
+                WHERE 
+                    s.created_by = :userId -- Replace with dynamic session manager's ID
+                    AND so.type = 'MENTOR' -- Filter for sessions where ownership is 'MENTOR' (individual mentor)
+                    AND so.user_id IS NOT NULL -- Ensure that the mentor has a valid ID
+                    AND s.started_at IS NOT NULL
+                    AND s.completed_at IS NOT NULL
+                    AND s.start_date > :start_date -- Optional: Replace with dynamic start date in epoch format
+                    AND s.end_date < :end_date -- Optional: Replace with dynamic end date in epoch format
+                    AND (:entities_value IS NULL OR s.categories = :entities_value)
+                    AND (
+                    CASE 
+                        WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
+                        WHEN :session_type = 'PUBLIC' THEN s.type = 'PUBLIC'
+                        WHEN :session_type = 'PRIVATE' THEN s.type = 'PRIVATE'
+                        ELSE TRUE
+                    END
+                )
+                GROUP BY 
+                    so.user_id, 
+                    s.created_by, 
+                    s.mentor_name, 
+                    COALESCE(CAST(ue.rating ->> 'average' AS NUMERIC), 0)
+            ) AS subquery
+            WHERE 
+                (
+                    :search_column IS NULL -- If no filter is applied
+                    OR (
+                        LENGTH(:search_value) >= 1 AND 
+                        CAST(
+                            CASE 
+                                WHEN :search_column = 'number_of_mentoring_sessions' THEN CAST(subquery."Number of Mentoring Sessions" AS TEXT)
+                                WHEN :search_column = 'avg_mentor_rating' THEN CAST(subquery."Avg Mentor Rating" AS TEXT)
+                                WHEN :search_column = 'hours_of_mentoring_sessions' THEN subquery."Hours of Mentoring Sessions"
+                            END AS TEXT
+                        ) = :search_value -- Dynamic filter based on the parameter (e.g., '0.6')
+                    )
+                )
+            ORDER BY 
+                CASE 
+                    WHEN :sort_column = 'number_of_mentoring_sessions' THEN CAST(subquery."Number of Mentoring Sessions" AS TEXT)
+                    WHEN :sort_column = 'avg_mentor_rating' THEN CAST(subquery."Avg Mentor Rating" AS TEXT)
+                    WHEN :sort_column = 'hours_of_mentoring_sessions' THEN subquery."Hours of Mentoring Sessions"
+                    ELSE CAST(subquery."Number of Mentoring Sessions" AS TEXT)
+                END :sort_type
+            LIMIT :limit OFFSET :offset;
+            `,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
