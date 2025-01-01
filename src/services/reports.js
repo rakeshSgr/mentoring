@@ -19,12 +19,14 @@ const fileUploadPath = require('@helpers/uploadFileToCloud')
 
 module.exports = class ReportsHelper {
 	/**
-	 * Get entityTypes for reports
+	 * Get Entity Types for Reports
 	 * @method
-	 * @name getReportFilterList
-	 * @param {String} tokenInformation - token information
-	 * @param {Boolean} queryParams - queryParams
-	 * @returns {JSON} - Report filter list.
+	 * @name getFilterList
+	 * @param {String} entity_type - Type of entity to filter (e.g., user, organization, session).
+	 * @param {String} filterType - Type of filter to apply (e.g., date, role, status).
+	 * @param {Object} tokenInformation - Decoded token containing user and organization details.
+	 * @param {String} reportFilter - Specific report filter criteria.
+	 * @returns {Object} - JSON object containing the report filter list.
 	 */
 	static async getFilterList(entity_type, filterType, tokenInformation, reportFilter) {
 		try {
@@ -114,9 +116,22 @@ module.exports = class ReportsHelper {
 	 * Get report data for reports
 	 * @method
 	 * @name getReportData
-	 * @param {String} tokenInformation - token information
-	 * @param {Boolean} queryParams - queryParams
-	 * @returns {JSON} - Report Data list.
+	 * @param {String} userId - ID of the user requesting the report.
+	 * @param {String} orgId - ID of the organization.
+	 * @param {Number} page - Page number for pagination.
+	 * @param {Number} limit - Number of items per page.
+	 * @param {String} reportCode - Code identifying the report type.
+	 * @param {String} reportRole - Role associated with the report access.
+	 * @param {String} startDate - Start date for filtering the data (format: YYYY-MM-DD).
+	 * @param {String} endDate - End date for filtering the data (format: YYYY-MM-DD).
+	 * @param {String} sessionType - Type of session to filter (e.g., online, offline).
+	 * @param {Array} entitiesValue - List of entity values for filtering.
+	 * @param {String} sortColumn - Column name to sort the data.
+	 * @param {String} sortType - Sorting order (asc/desc).
+	 * @param {String} searchColumn - Column name to search within.
+	 * @param {String} searchValue - Value to search for.
+	 * @param {Boolean} downloadCsv - Flag to indicate if the data should be downloaded as a CSV file.
+	 * @returns {Object} - JSON object containing the report data list.
 	 */
 
 	static async getReportData(
@@ -133,14 +148,13 @@ module.exports = class ReportsHelper {
 		sortColumn,
 		sortType,
 		searchColumn,
-		searchValue
+		searchValue,
+		downloadCsv
 	) {
 		try {
-			let reportDataResult = {}
-
-			// Check report permissions
-			const checkReportPermission = await reportMappingQueries.findReportRoleMappingByReportCode(reportCode)
-			if (!checkReportPermission || checkReportPermission.dataValues.role_title !== reportRole) {
+			// Validate report permissions
+			const reportPermission = await reportMappingQueries.findReportRoleMappingByReportCode(reportCode)
+			if (!reportPermission || reportPermission.dataValues.role_title !== reportRole) {
 				return responses.failureResponse({
 					message: 'REPORT_CODE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -148,54 +162,70 @@ module.exports = class ReportsHelper {
 				})
 			}
 
-			// Fetch report configuration and type
+			// Fetch report configuration
 			const reportConfig = await reportsQueries.findReportByCode(reportCode)
-			reportDataResult = {
+			const reportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
+			if (!reportConfig || !reportQuery) {
+				return responses.failureResponse({
+					message: 'REPORT_CONFIG_OR_QUERY_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const reportDataResult = {
 				report_type: reportConfig.dataValues.report_type_title,
 				config: reportConfig.dataValues.config,
 			}
 
-			// Fetch report query
-			const reportQuery = await reportQueryQueries.findReportQueryByCode(reportCode)
-			let query = reportQuery.query
-
-			// Replace placeholders
+			// Prepare query replacements
+			const defaultLimit = common.pagination.DEFAULT_LIMIT
 			const replacements = {
 				userId: userId || null,
 				start_date: startDate || null,
 				end_date: endDate || null,
 				entities_value: entitiesValue ? `{${entitiesValue}}` : null,
 				session_type: sessionType ? utils.convertToTitleCase(sessionType) : null,
-				limit: limit || common.pagination.DEFAULT_LIMIT,
+				limit: limit || defaultLimit,
 				offset: common.getPaginationOffset(page, limit),
 				sort_column: sortColumn || '',
-				sort_type: sortType || 'ASC',
+				sort_type: sortType.toUpperCase() || 'ASC',
 				search_column: searchColumn || null,
 				search_value: searchValue || null,
 			}
 
-			query = query.replace(/:sort_type/g, replacements.sort_type)
+			const noPaginationReplacements = {
+				...replacements,
+				limit: null,
+				offset: null,
+				search_column: null,
+				search_value: null,
+			}
 
-			// Execute the main query
-			const result = await sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT })
+			// Replace sort type placeholder in query
+			let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
 
-			// Remove LIMIT and OFFSET from the query
-			const removeLimitAndOffset = (sql) => sql.replace(/\s*LIMIT\s+\S+\s+OFFSET\s+\S+/, '')
-			const resultWithoutPagination = await sequelize.query(removeLimitAndOffset(query), {
-				replacements,
-				type: sequelize.QueryTypes.SELECT,
-			})
+			// Execute query with pagination
+			const [result, resultWithoutPagination] = await Promise.all([
+				sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT }),
+				sequelize.query(utils.removeLimitAndOffset(query), {
+					replacements: noPaginationReplacements,
+					type: sequelize.QueryTypes.SELECT,
+				}),
+			])
 
 			// Process query results
 			if (result?.length) {
-				const flattenedResult = { ...result[0] }
-				reportDataResult.data =
-					reportDataResult.report_type === common.REPORT_TABLE ? [...result] : flattenedResult
+				reportDataResult.data = reportDataResult.report_type === common.REPORT_TABLE ? result : { ...result[0] }
+			} else {
+				reportDataResult.data = common.report_session_message
 			}
 
-			if (resultWithoutPagination?.length) {
+			// Handle CSV download
+			if (resultWithoutPagination?.length && downloadCsv === 'true') {
 				const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
 				reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
+				utils.clearFile(outputFilePath)
 			}
 
 			return responses.successResponse({
@@ -204,8 +234,12 @@ module.exports = class ReportsHelper {
 				result: reportDataResult,
 			})
 		} catch (error) {
-			console.error('Error in getReportData:', error)
-			throw error
+			return responses.failureResponse({
+				message: 'INTERNAL_SERVER_ERROR',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'SERVER_ERROR',
+				error: error.message,
+			})
 		}
 	}
 

@@ -97,101 +97,82 @@ module.exports = {
 			{
 				report_code: 'mentee_session_details',
 				query: `SELECT 
-        s.title AS "Session Title",
-        ue.name AS "Sessions Created By",
-        s.mentor_name AS "Mentor Name",
-        TO_TIMESTAMP(s.start_date)::DATE AS "Date of Session", 
-        s.type AS "Session Type",
-        s.categories AS "Category",
-        CASE 
-                WHEN sa.joined_at IS NOT NULL THEN 'Yes'
+                s.title AS "Session Title",
+                ue.name AS "Sessions Created By",
+                s.mentor_name AS "Mentor Name",
+                TO_TIMESTAMP(s.start_date)::DATE AS "Date of Session", 
+                s.type AS "Session Type",
+                ARRAY_TO_STRING(s.categories, ', ') AS "Categories", -- Converts array to a comma-separated string
+                ARRAY_TO_STRING(s.recommended_for, ', ') AS "Recommended for",
+                CASE 
+                    WHEN sa.joined_at IS NOT NULL THEN 'Yes'
                     ELSE 'No'
                 END AS "Session Attended",
-        TO_CHAR(
-            INTERVAL '1 second' * EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))),
-            'HH24:MI:SS'
-        ) AS "Duration of Sessions Attended in minutes (at setup time)"
-    FROM public.session_attendees AS sa
-    JOIN public.sessions AS s ON sa.session_id = s.id
-    LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id 
-    WHERE 
-        (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
-        AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
-        AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
-        AND (CASE 
-        WHEN :entities_value IS NOT NULL THEN 
-            (s.categories = :entities_value OR s.categories IS NULL)
-        ELSE TRUE 
-    END)
-        AND (
-            CASE 
-                WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
-                WHEN :session_type = 'PUBLIC' THEN s.type = 'PUBLIC'
-                WHEN :session_type = 'PRIVATE' THEN s.type = 'PRIVATE'
-                ELSE TRUE
-            END
-        )
-        AND (
-            CASE 
-                WHEN :search_column IS NOT NULL AND :search_value IS NOT NULL AND LENGTH(:search_value) >= 3 THEN
-                    CAST(CASE 
-                        WHEN :search_column = 'session_title' THEN s.title
-                        WHEN :search_column = 'sessions_created_by' THEN ue.name
-                        WHEN :search_column = 'mentor_name' THEN s.mentor_name
-                        WHEN :search_column = 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
-                        WHEN :search_column = 'session_type' THEN s.type
-                        WHEN :search_column = 'category' THEN 
-                            CASE 
-                                WHEN :search_value = ANY(s.categories) THEN :search_value
-                                ELSE NULL
-                            END
-                        WHEN :search_column = 'duration_of_sessions_attended' THEN TO_CHAR(
-                            INTERVAL '1 second' * EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))),
-                            'HH24:MI:SS'
-                        )
-                    END AS TEXT) ILIKE '%' || :search_value || '%'
-                ELSE TRUE -- Default behavior when search is not valid
-            END
-        )
-        AND (
-            CASE 
-                WHEN :search_column = 'Session Attended' AND :search_value = 'Yes' THEN sa.joined_at IS NOT NULL
-                WHEN :search_column = 'Session Attended' AND :search_value = 'No' THEN sa.joined_at IS NULL
-                ELSE TRUE 
-            END
-        )
-    ORDER BY
-        CASE 
-            WHEN :sort_column = 'session_title' THEN s.title
-            WHEN :sort_column = 'sessions_created_by' THEN ue.name -- Sort by creator_name
-            WHEN :sort_column = 'mentor_name' THEN s.mentor_name
-            ELSE NULL
-        END :sort_type NULLS LAST,
-    
-        CASE 
-            WHEN :sort_column = 'date_of_session' THEN TO_TIMESTAMP(s.start_date)::DATE
-            ELSE NULL
-        END :sort_type NULLS LAST,
-    
-        CASE 
-            WHEN :sort_column = 'duration_of_sessions_attended' THEN 
-                TO_CHAR(
-                    INTERVAL '1 second' * EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))),
-                    'HH24:MI:SS'
+                ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60) AS "Duration of Sessions Attended - min (at setup time)"
+            FROM public.session_attendees AS sa
+            JOIN public.sessions AS s ON sa.session_id = s.id
+            LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id 
+            WHERE 
+                (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
+                AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
+                AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
+                AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
+                AND (
+                    CASE 
+                        WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
+                        WHEN :session_type = 'PUBLIC' THEN s.type = 'PUBLIC'
+                        WHEN :session_type = 'PRIVATE' THEN s.type = 'PRIVATE'
+                        ELSE TRUE
+                    END
                 )
-            ELSE NULL
-        END :sort_type NULLS LAST,
-    
-        CASE 
-            WHEN :sort_column = 'session_type' THEN s.type
-            ELSE NULL
-        END :sort_type NULLS LAST,
-    
-        CASE 
-            WHEN :sort_column = 'category' THEN s.categories
-            ELSE NULL
-        END :sort_type NULLS LAST
-        LIMIT :limit OFFSET :offset;`,
+                AND (
+                :search_column IS NULL OR (
+                    LENGTH(:search_value) >= 1 AND 
+                    CAST(
+                        CASE 
+                            WHEN :search_column = 'sessions_created_by' THEN ue.name
+                            WHEN :search_column = 'mentor_name' THEN s.mentor_name
+                            WHEN :search_column = 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
+                            WHEN :search_column = 'session_type' THEN s.type
+                            WHEN :search_column = 'categories' THEN 
+                                CASE 
+                                    WHEN :search_value = ANY(s.categories) THEN :search_value -- Check if the search value is present in the array
+                                    ELSE NULL
+                                END
+                            WHEN :search_column = 'recommended_for' THEN 
+                                CASE 
+                                    WHEN :search_value = ANY(s.recommended_for) THEN :search_value -- Check if the search value is present in the array
+                                    ELSE NULL
+                                END
+                            WHEN :search_column = 'duration_of_sessions_attended' THEN ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT
+                            WHEN :search_column = 'session_attended' THEN 
+                                CASE 
+                                    WHEN :search_value = 'Yes' AND sa.joined_at IS NOT NULL THEN 'Yes'
+                                    WHEN :search_value = 'No' AND sa.joined_at IS NULL THEN 'No'
+                                    ELSE NULL
+                                END
+                        END AS TEXT
+                    ) ILIKE '%' || :search_value || '%'
+                )
+            )
+            ORDER BY
+                CASE :sort_column
+                    WHEN 'sessions_created_by' THEN ue.name
+                    WHEN 'mentor_name' THEN s.mentor_name
+                    WHEN 'duration_of_sessions_attended' THEN 
+                        ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT
+                    WHEN 'session_type' THEN s.type
+                    WHEN 'session_attended' THEN 
+                        CASE 
+                            WHEN sa.joined_at IS NOT NULL THEN 'Yes'
+                            ELSE 'No'
+                        END
+                    WHEN 'categories' THEN ARRAY_TO_STRING(s.categories, ', ') 
+                    WHEN 'recommended_for' THEN ARRAY_TO_STRING(s.recommended_for, ', ')
+                    WHEN 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
+                    ELSE NULL
+                END :sort_type NULLS LAST
+            LIMIT :limit OFFSET :offset;`,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -298,13 +279,12 @@ module.exports = {
                     WHEN s.started_at IS NOT NULL THEN 'Yes'
                     ELSE 'No'
                 END AS "Session Conducted",
-                TO_CHAR(
-                    INTERVAL '1 second' * EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))),
-                    'HH24:MI:SS'
-                ) AS "Duration of Sessions Attended - min (at setup time)"
+                ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60) AS "Duration of Sessions Attended - min (at setup time)",
+                f.response AS "Mentor Rating"
             FROM public.session_attendees AS sa
             JOIN public.sessions AS s ON sa.session_id = s.id
             LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id
+            LEFT JOIN public.feedbacks AS f ON s.id = f.session_id
             WHERE 
                 (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
                 AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
@@ -320,51 +300,39 @@ module.exports = {
                 )
                 AND (
                     CASE 
-                        WHEN :search_column IS NOT NULL AND :search_value IS NOT NULL AND LENGTH(:search_value) >= 3 THEN
-                            CAST(CASE 
-                                WHEN :search_column = 'session_title' THEN s.title
+                        WHEN :search_column IS NOT NULL AND :search_value IS NOT NULL AND LENGTH(:search_value) >= 1 THEN
+                            CAST(CASE
                                 WHEN :search_column = 'sessions_created_by' THEN ue.name
                                 WHEN :search_column = 'mentor_name' THEN s.mentor_name
                                 WHEN :search_column = 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
                                 WHEN :search_column = 'session_type' THEN s.type
-                                WHEN :search_column = 'category' THEN 
+                                WHEN :search_column = 'duration_of_sessions_attended' THEN
+                                    ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT
+                                WHEN :search_column = 'mentor_rating' THEN f.response::TEXT
+                                WHEN :search_column = 'session_conducted' THEN 
                                 CASE 
-                                WHEN :search_value = ANY(s.categories) THEN :search_value
-                                ELSE NULL
+                                    WHEN :search_value = 'Yes' AND sa.joined_at IS NOT NULL THEN 'Yes'
+                                    WHEN :search_value = 'No' AND sa.joined_at IS NULL THEN 'No'
+                                    ELSE NULL
                                 END
-                                WHEN :search_column = 'duration_of_sessions_attended' THEN TO_CHAR(
-                                    INTERVAL '1 second' * EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))),
-                                    'HH24:MI:SS'
-                                )
                             END AS TEXT) ILIKE '%' || :search_value || '%'
                         ELSE TRUE -- Default behavior when search is not valid
                     END
                 )
-AND (
-        CASE 
-            WHEN :search_column = 'Session Conducted' AND :search_value = 'Yes' THEN s.started_at IS NOT NULL
-            WHEN :search_column = 'Session Conducted' AND :search_value = 'No' THEN s.started_at IS NULL
-            ELSE TRUE -- Default behavior for other cases
-        END
-    )
             ORDER BY
                 CASE 
-                    WHEN :sort_column = 'session_title' THEN s.title
-                    WHEN :sort_column = 'sessions_created_by' THEN ue.name 
+                    WHEN :sort_column = 'sessions_created_by' THEN ue.name
                     WHEN :sort_column = 'mentor_name' THEN s.mentor_name
-                    ELSE NULL
-                END :sort_type NULLS LAST,
-                CASE 
-                    WHEN :sort_column = 'date_of_session' THEN TO_TIMESTAMP(s.start_date)::DATE
-                    ELSE NULL
-                END :sort_type NULLS LAST,
-                CASE 
-                    WHEN :sort_column = 'duration_of_sessions_attended' THEN 
-                        EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60
-                    ELSE NULL
-                END :sort_type NULLS LAST,
-                CASE 
+                    WHEN :sort_column = 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
                     WHEN :sort_column = 'session_type' THEN s.type
+                    WHEN :sort_column = 'duration_of_sessions_attended' THEN 
+                        ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT
+                    WHEN :sort_column = 'mentor_rating' THEN f.response::TEXT
+                    WHEN :sort_column = 'session_conducted' THEN 
+                        CASE 
+                            WHEN s.started_at IS NOT NULL THEN 'Yes'
+                            ELSE 'No'
+                        END
                     ELSE NULL
                 END :sort_type NULLS LAST
             LIMIT :limit OFFSET :offset;`,

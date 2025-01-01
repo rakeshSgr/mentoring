@@ -753,6 +753,11 @@ function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) 
 function convertToTitleCase(str) {
 	return str.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
 }
+
+function removeLimitAndOffset(sql) {
+	return sql.replace(/\s*LIMIT\s+\S+\s+OFFSET\s+\S+/, '')
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -803,4 +808,5 @@ module.exports = {
 	convertEntitiesForFilter,
 	filterEntitiesBasedOnParent,
 	convertToTitleCase,
+	removeLimitAndOffset,
 }
