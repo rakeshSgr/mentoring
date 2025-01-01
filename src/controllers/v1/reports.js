@@ -3,12 +3,16 @@ const reportService = require('@services/reports')
 
 module.exports = class Reports {
 	/**
-	 * Report filter list
+	 * Get Report Filter List
 	 * @method
-	 * @name reportFilterList
-	 * @param {Object} req - request data.
-	 * @param {String} req.query.decodedToken.token - user token.
-	 * @returns {JSON} - filter list.
+	 * @name filterList
+	 * @param {Object} req - Request object containing query parameters and token information.
+	 * @param {Object} req.query - Query parameters from the request.
+	 * @param {String} [req.query.entity_types=''] - Types of entities to filter (optional).
+	 * @param {String} [req.query.filter_type=''] - Type of filter to apply (optional).
+	 * @param {Object} req.decodedToken - Decoded user token object.
+	 * @param {String} [req.query.report_filter=''] - Specific report filter criteria (optional).
+	 * @returns {Object} - JSON object containing the filter list.
 	 */
 
 	async filterList(req) {
@@ -26,12 +30,27 @@ module.exports = class Reports {
 	}
 
 	/**
-	 * Get Report config
+	 * Get Report Configuration
 	 * @method
-	 * @name reportFilterList
-	 * @param {Object} req - request data.
-	 * @param {String} req.query.decodedToken - user token.
-	 * @returns {JSON} - filter list.
+	 * @name reportData
+	 * @param {Object} req - Request data object.
+	 * @param {Object} req.query - Query parameters.
+	 * @param {String} req.query.decodedToken.id - User ID from the decoded token.
+	 * @param {String} req.query.decodedToken.organization_id - Organization ID from the decoded token.
+	 * @param {Number} [req.query.pageNo=1] - Page number for pagination (default is 1).
+	 * @param {Number} [req.query.Limit=10] - Number of items per page (default is 10).
+	 * @param {String} req.query.report_code - Code for the report type.
+	 * @param {String} [req.query.report_role='mentee'] - User role for the report (default is "mentee").
+	 * @param {String} [req.query.start_date=''] - Start date for filtering the report (format: YYYY-MM-DD).
+	 * @param {String} [req.query.end_date=''] - End date for filtering the report (format: YYYY-MM-DD).
+	 * @param {String} [req.query.session_type='all'] - Session type to filter (e.g., "online", "offline").
+	 * @param {Array} req.query.entities_value - List of entity values for filtering.
+	 * @param {String} [req.query.sort_column=''] - Column name to sort the data.
+	 * @param {String} [req.query.sort_type=''] - Sorting order ("asc" or "desc").
+	 * @param {String} [req.query.search_column=''] - Column name to search within.
+	 * @param {String} [req.query.search_value=''] - Value to search for in the specified column.
+	 * @param {Boolean} [req.query.download_csv=false] - Flag to indicate if the report should be downloaded as a CSV file.
+	 * @returns {Object} - Report data in JSON format.
 	 */
 
 	async reportData(req) {

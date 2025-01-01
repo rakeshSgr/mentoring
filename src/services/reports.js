@@ -19,12 +19,14 @@ const fileUploadPath = require('@helpers/uploadFileToCloud')
 
 module.exports = class ReportsHelper {
 	/**
-	 * Get entityTypes for reports
+	 * Get Entity Types for Reports
 	 * @method
-	 * @name getReportFilterList
-	 * @param {String} tokenInformation - token information
-	 * @param {Boolean} queryParams - queryParams
-	 * @returns {JSON} - Report filter list.
+	 * @name getFilterList
+	 * @param {String} entity_type - Type of entity to filter (e.g., user, organization, session).
+	 * @param {String} filterType - Type of filter to apply (e.g., date, role, status).
+	 * @param {Object} tokenInformation - Decoded token containing user and organization details.
+	 * @param {String} reportFilter - Specific report filter criteria.
+	 * @returns {Object} - JSON object containing the report filter list.
 	 */
 	static async getFilterList(entity_type, filterType, tokenInformation, reportFilter) {
 		try {
@@ -114,9 +116,22 @@ module.exports = class ReportsHelper {
 	 * Get report data for reports
 	 * @method
 	 * @name getReportData
-	 * @param {String} tokenInformation - token information
-	 * @param {Boolean} queryParams - queryParams
-	 * @returns {JSON} - Report Data list.
+	 * @param {String} userId - ID of the user requesting the report.
+	 * @param {String} orgId - ID of the organization.
+	 * @param {Number} page - Page number for pagination.
+	 * @param {Number} limit - Number of items per page.
+	 * @param {String} reportCode - Code identifying the report type.
+	 * @param {String} reportRole - Role associated with the report access.
+	 * @param {String} startDate - Start date for filtering the data (format: YYYY-MM-DD).
+	 * @param {String} endDate - End date for filtering the data (format: YYYY-MM-DD).
+	 * @param {String} sessionType - Type of session to filter (e.g., online, offline).
+	 * @param {Array} entitiesValue - List of entity values for filtering.
+	 * @param {String} sortColumn - Column name to sort the data.
+	 * @param {String} sortType - Sorting order (asc/desc).
+	 * @param {String} searchColumn - Column name to search within.
+	 * @param {String} searchValue - Value to search for.
+	 * @param {Boolean} downloadCsv - Flag to indicate if the data should be downloaded as a CSV file.
+	 * @returns {Object} - JSON object containing the report data list.
 	 */
 
 	static async getReportData(
@@ -174,7 +189,7 @@ module.exports = class ReportsHelper {
 				limit: limit || defaultLimit,
 				offset: common.getPaginationOffset(page, limit),
 				sort_column: sortColumn || '',
-				sort_type: sortType || 'ASC',
+				sort_type: sortType.toUpperCase() || 'ASC',
 				search_column: searchColumn || null,
 				search_value: searchValue || null,
 			}
@@ -210,6 +225,7 @@ module.exports = class ReportsHelper {
 			if (resultWithoutPagination?.length && downloadCsv === 'true') {
 				const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
 				reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
+				utils.clearFile(outputFilePath)
 			}
 
 			return responses.successResponse({
