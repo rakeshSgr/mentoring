@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'ACTIVE',
 			},
 			scope: {
 				type: DataTypes.STRING,

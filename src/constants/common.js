@@ -87,6 +87,7 @@ module.exports = {
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',
+	BAR_CHART: 'bar_chart',
 	jobsToCreate: [
 		{
 			jobId: 'mentoring_session_one_hour_',

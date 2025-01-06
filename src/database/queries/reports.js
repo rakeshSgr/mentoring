@@ -9,22 +9,9 @@ module.exports = class ReportQueries {
 		}
 	}
 
-	static async findReportById(id) {
+	static async findReportById(title) {
 		try {
-			return await Report.findByPk(id)
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async findAllReports(filter, attributes, options = {}) {
-		try {
-			const reports = await Report.findAndCountAll({
-				where: filter,
-				attributes,
-				...options,
-			})
-			return reports
+			return await Report.findByPk(title)
 		} catch (error) {
 			throw error
 		}
@@ -45,7 +32,7 @@ module.exports = class ReportQueries {
 	static async deleteReportById(id) {
 		try {
 			const deletedRows = await Report.destroy({
-				where: { id },
+				where: { id: id },
 			})
 			return deletedRows
 		} catch (error) {

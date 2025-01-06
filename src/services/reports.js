@@ -149,7 +149,8 @@ module.exports = class ReportsHelper {
 		sortType,
 		searchColumn,
 		searchValue,
-		downloadCsv
+		downloadCsv,
+		groupBy
 	) {
 		try {
 			// Validate report permissions
@@ -178,54 +179,93 @@ module.exports = class ReportsHelper {
 				config: reportConfig.dataValues.config,
 			}
 
-			// Prepare query replacements
-			const defaultLimit = common.pagination.DEFAULT_LIMIT
-			const replacements = {
-				userId: userId || null,
-				start_date: startDate || null,
-				end_date: endDate || null,
-				entities_value: entitiesValue ? `{${entitiesValue}}` : null,
-				session_type: sessionType ? utils.convertToTitleCase(sessionType) : null,
-				limit: limit || defaultLimit,
-				offset: common.getPaginationOffset(page, limit),
-				sort_column: sortColumn || '',
-				sort_type: sortType.toUpperCase() || 'ASC',
-				search_column: searchColumn || null,
-				search_value: searchValue || null,
-			}
+			// Handle BAR_CHART report type with groupBy
+			if (reportConfig.dataValues.report_type_title === common.BAR_CHART && groupBy) {
+				const listOfDates = await utils.getAllEpochDates(startDate, endDate, groupBy)
 
-			const noPaginationReplacements = {
-				...replacements,
-				limit: null,
-				offset: null,
-				search_column: null,
-				search_value: null,
-			}
+				// Initialize the array to store results
+				const dateRangeResults = []
 
-			// Replace sort type placeholder in query
-			let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
+				for (let dateRange of listOfDates) {
+					const replacements = {
+						userId: userId || null,
+						entities_value: entitiesValue ? `{${entitiesValue}}` : null,
+						session_type: sessionType ? utils.convertToTitleCase(sessionType) : null,
+						start_date: dateRange.start_date || null,
+						end_date: dateRange.end_date || null,
+					}
 
-			// Execute query with pagination
-			const [result, resultWithoutPagination] = await Promise.all([
-				sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT }),
-				sequelize.query(utils.removeLimitAndOffset(query), {
-					replacements: noPaginationReplacements,
-					type: sequelize.QueryTypes.SELECT,
-				}),
-			])
+					let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
 
-			// Process query results
-			if (result?.length) {
-				reportDataResult.data = reportDataResult.report_type === common.REPORT_TABLE ? result : { ...result[0] }
+					// Execute query with the current date range
+					const result = await sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT })
+
+					// Create a dynamic object to store the result for the date range
+					const dateRangeResult = {}
+
+					// Dynamically assign values to the dateRangeResult
+					const resultData = result?.[0] || {}
+					Object.keys(resultData).forEach((key) => {
+						dateRangeResult[key] = resultData[key] || 0
+					})
+
+					// Push the dynamically created result into the results array
+					dateRangeResults.push(dateRangeResult)
+				}
+
+				// Now dateRangeResults will contain dynamically structured data without start_date and end_date
+				reportDataResult.data = dateRangeResults
 			} else {
-				reportDataResult.data = common.report_session_message
-			}
+				// Prepare query replacements for the report
+				const defaultLimit = common.pagination.DEFAULT_LIMIT
+				const replacements = {
+					userId: userId || null,
+					start_date: startDate || null,
+					end_date: endDate || null,
+					entities_value: entitiesValue ? `{${entitiesValue}}` : null,
+					session_type: sessionType ? utils.convertToTitleCase(sessionType) : null,
+					limit: limit || defaultLimit,
+					offset: common.getPaginationOffset(page, limit),
+					sort_column: sortColumn || '',
+					sort_type: sortType.toUpperCase() || 'ASC',
+					search_column: searchColumn || null,
+					search_value: searchValue || null,
+				}
 
-			// Handle CSV download
-			if (resultWithoutPagination?.length && downloadCsv === 'true') {
-				const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
-				reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
-				utils.clearFile(outputFilePath)
+				const noPaginationReplacements = {
+					...replacements,
+					limit: null,
+					offset: null,
+					search_column: null,
+					search_value: null,
+				}
+
+				// Replace sort type placeholder in query
+				let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
+
+				// Execute query with pagination
+				const [result, resultWithoutPagination] = await Promise.all([
+					sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT }),
+					sequelize.query(utils.removeLimitAndOffset(query), {
+						replacements: noPaginationReplacements,
+						type: sequelize.QueryTypes.SELECT,
+					}),
+				])
+
+				// Process query results
+				if (result?.length) {
+					reportDataResult.data =
+						reportDataResult.report_type === common.REPORT_TABLE ? result : { ...result[0] }
+				} else {
+					reportDataResult.data = common.report_session_message
+				}
+
+				// Handle CSV download
+				if (resultWithoutPagination?.length && downloadCsv === 'true') {
+					const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
+					reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
+					utils.clearFile(outputFilePath)
+				}
 			}
 
 			return responses.successResponse({
@@ -240,6 +280,91 @@ module.exports = class ReportsHelper {
 				responseCode: 'SERVER_ERROR',
 				error: error.message,
 			})
+		}
+	}
+
+	static async createReport(data) {
+		try {
+			// Attempt to create a new report directly
+			const reportCreation = await reportsQueries.createReport(data)
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'REPORT_CREATED_SUCCESS',
+				result: reportCreation?.dataValues,
+			})
+		} catch (error) {
+			// Handle unique constraint violation error
+			if (error.name === 'SequelizeUniqueConstraintError') {
+				return responses.failureResponse({
+					message: 'REPORT_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return responses.failureResponse({
+				message: 'REPORT_CREATION_FAILED',
+				statusCode: httpStatusCode.internalServerError,
+				responseCode: 'SERVER_ERROR',
+			})
+		}
+	}
+
+	static async getReportById(id) {
+		try {
+			const readReport = await reportsQueries.findReportById(id)
+			if (!readReport) {
+				return responses.failureResponse({
+					message: 'REPORT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'REPORT_FETCHED_SUCCESSFULLY',
+				result: readReport.dataValues,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async updateReport(filter, updateData) {
+		try {
+			const updatedReport = await reportsQueries.updateReport(filter, updateData)
+			if (!updatedReport) {
+				return responses.failureResponse({
+					message: 'REPORT_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'REPORT_UPATED_SUCCESSFULLY',
+				result: updatedReport.dataValues,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async deleteReportById(id) {
+		try {
+			const deletedRows = await reportsQueries.deleteReportById(id)
+			if (deletedRows === 0) {
+				return responses.failureResponse({
+					message: 'REPORT_DELETION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'REPORT_DELETED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			return error
 		}
 	}
 

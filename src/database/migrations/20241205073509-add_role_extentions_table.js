@@ -21,6 +21,7 @@ module.exports = {
 			status: {
 				allowNull: false,
 				type: Sequelize.STRING,
+				defaultValue: 'ACTIVE',
 			},
 			scope: {
 				allowNull: false,

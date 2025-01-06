@@ -70,9 +70,47 @@ module.exports = class Reports {
 				req.query.sort_type ? req.query.sort_type : '',
 				req.query.search_column ? req.query.search_column : '',
 				req.query.search_value ? req.query.search_value : '',
-				req.query.download_csv ? req.query.download_csv : 'false'
+				req.query.download_csv ? req.query.download_csv : 'false',
+				req.query.group_by ? req.query.group_by : 'month'
 			)
 			return reportData
+		} catch (error) {
+			return error
+		}
+	}
+
+	async create(req) {
+		try {
+			const createReport = await reportService.createReport(req.body)
+			return createReport
+		} catch (error) {
+			return error
+		}
+	}
+
+	async getReportById(req) {
+		try {
+			const getReportById = await reportService.getReportById(req.query.id)
+			return getReportById
+		} catch (error) {
+			return error
+		}
+	}
+
+	async update(req) {
+		try {
+			const filter = { id: req.params.id }
+			const updatedReport = await reportService.updateReport(filter, req.body)
+			return updatedReport
+		} catch (error) {
+			return error
+		}
+	}
+
+	async delete(req) {
+		try {
+			const deleteReport = await reportService.deleteReportById(req.query.id)
+			return deleteReport
 		} catch (error) {
 			return error
 		}

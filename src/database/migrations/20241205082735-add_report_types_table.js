@@ -28,6 +28,10 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
+
+		await queryInterface.addIndex('report_types', ['title'], {
+			unique: true, // This ensures that `title` remains unique and optimized
+		})
 	},
 
 	async down(queryInterface, Sequelize) {

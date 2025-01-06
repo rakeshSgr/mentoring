@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			report_code: {
 				type: DataTypes.STRING,
+				primaryKey: true,
 				allowNull: false,
 			},
 			query: {
@@ -19,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: 'ACTIVE',
 			},
 			created_at: {
 				type: DataTypes.DATE,
