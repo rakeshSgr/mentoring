@@ -223,7 +223,7 @@ module.exports = {
 				title: 'Total number of sessions created vs Total number of sessions conducted',
 				description:
 					'Total number of sessions created by session manager vs Total number of sessions conducted by session manager',
-				report_type_title: 'table',
+				report_type_title: 'bar_chart',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				config: '{}',

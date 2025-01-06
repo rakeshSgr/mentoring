@@ -76,4 +76,88 @@ module.exports = {
 			.isIn(['true', 'false'])
 			.withMessage('download_csv must be "true" or "false"')
 	},
+
+	create: (req) => {
+		req.checkBody('code')
+			.notEmpty()
+			.withMessage('code field is empty')
+			.matches(/^[a-z_]+$/)
+			.withMessage('code should not contain any spaces')
+
+		req.checkBody('title')
+			.notEmpty()
+			.withMessage('title field is empty')
+			.matches(/^[a-z_]+$/)
+			.withMessage('title should not contain any spaces')
+
+		req.checkBody('description').notEmpty().withMessage('description field is empty')
+
+		req.checkBody('report_type_title')
+			.notEmpty()
+			.withMessage('report_type_title field is required')
+			.matches(/^[a-z_]+$/)
+			.withMessage('report_type_title should not contain any spaces')
+
+		req.checkBody('config')
+			.notEmpty('config field is required')
+			.withMessage()
+			.custom((value) => {
+				try {
+					JSON.parse(value)
+					return true
+				} catch (e) {
+					throw new Error('config should be a valid JSON object')
+				}
+			})
+
+		req.checkBody('organization_id').optional().notEmpty().isInt().withMessage('organization_id field is empty')
+	},
+
+	getReportById: (req) => {
+		req.checkQuery('id').notEmpty().withMessage('id is required')
+	},
+
+	update: (req) => {
+		req.checkQuery('id').notEmpty().withMessage('id is required')
+
+		req.checkBody('code')
+			.optional()
+			.notEmpty()
+			.withMessage('code field is empty')
+			.matches(/^[a-z_]+$/)
+			.withMessage('code should not contain any spaces')
+
+		req.checkBody('title')
+			.optional()
+			.notEmpty()
+			.withMessage('title field is empty')
+			.matches(/^[a-z_]+$/)
+			.withMessage('title should not contain any spaces')
+
+		req.checkBody('description').optional().notEmpty().withMessage('description field is empty')
+
+		req.checkBody('report_type_title')
+			.optional()
+			.notEmpty()
+			.withMessage('report_type_title field is empty')
+			.matches(/^[a-z_]+$/)
+			.withMessage('report_type_title should not contain any spaces')
+
+		req.checkBody('config')
+			.optional()
+			.custom((value) => {
+				try {
+					JSON.parse(value)
+					return true
+				} catch (e) {
+					throw new Error('config should be a valid JSON object')
+				}
+			})
+
+		req.checkBody('organization_id').optional().notEmpty().isInt().withMessage('organization_id field is empty')
+	},
+
+	delete: (req) => {
+		req.checkQuery('id').notEmpty().withMessage('id is required')
+	},
 }

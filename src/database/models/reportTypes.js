@@ -33,6 +33,12 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'report_types',
 			freezeTableName: true,
 			paranoid: true, // Enables soft delete handling via deleted_at
+			indexes: [
+				{
+					unique: true,
+					fields: ['title'],
+				},
+			],
 		}
 	)
 

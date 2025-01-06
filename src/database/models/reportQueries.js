@@ -7,11 +7,11 @@ module.exports = (sequelize, DataTypes) => {
 			id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			report_code: {
 				type: DataTypes.STRING,
+				primaryKey: true,
 				allowNull: false,
 			},
 			query: {
@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: 'ACTIVE',
 			},
 			created_at: {
 				type: DataTypes.DATE,

@@ -69,27 +69,36 @@ module.exports = {
 			{
 				report_code: 'split_of_sessions_enrolled_and_attended_by_user',
 				query: `SELECT 
-        COUNT(CASE WHEN sa.type = 'ENROLLED' AND s.type = 'PUBLIC' THEN 1 END) AS total_sessions_enrolled_public,
-        COUNT(CASE WHEN sa.type = 'ENROLLED' AND s.type = 'PRIVATE' THEN 1 END) AS total_sessions_enrolled_private,
-        COUNT(CASE WHEN sa.joined_at IS NOT NULL AND s.type = 'PUBLIC' THEN 1 END) AS total_sessions_attended_public,
-        COUNT(CASE WHEN sa.joined_at IS NOT NULL AND s.type = 'PRIVATE' THEN 1 END) AS total_sessions_attended_private
-    FROM public.session_attendees AS sa
-    JOIN public.sessions AS s
-    ON sa.session_id = s.id
-    WHERE 
-    (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
-    AND sa.joined_at IS NOT NULL 
-    AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
-    AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
-    AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
-    AND (
-        CASE 
-            WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
-            WHEN :session_type = 'Public' THEN s.type = 'PUBLIC'
-            WHEN :session_type = 'Private' THEN s.type = 'PRIVATE'
-            ELSE TRUE
-        END
-    );`,
+                :start_date AS startDate,
+                :end_date AS endDate,
+                -- Count sessions based on the session_type condition
+                COUNT(CASE 
+                        WHEN sa.type = 'ENROLLED' 
+                            AND (
+                                :session_type = 'All' 
+                                OR ( :session_type = 'Public' AND s.type = 'PUBLIC' ) 
+                                OR ( :session_type = 'Private' AND s.type = 'PRIVATE' )
+                            )
+                        THEN 1 
+                    END) AS session_enrolled,
+        
+                COUNT(CASE 
+                        WHEN sa.joined_at IS NOT NULL
+                            AND (
+                                :session_type = 'All' 
+                                OR ( :session_type = 'Public' AND s.type = 'PUBLIC' ) 
+                                OR ( :session_type = 'Private' AND s.type = 'PRIVATE' )
+                            )
+                        THEN 1 
+                    END) AS session_attended
+            FROM public.session_attendees AS sa
+            JOIN public.sessions AS s
+            ON sa.session_id = s.id
+            WHERE 
+            (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
+            AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
+            AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
+            AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END);`,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -242,27 +251,49 @@ module.exports = {
 			},
 			{
 				report_code: 'split_of_sessions_conducted',
-				query: `SELECT
-                COUNT(*) FILTER (WHERE so.type = 'CREATOR' AND s.type = 'PUBLIC') AS public_sessions_created,
-                COUNT(*) FILTER (WHERE so.type = 'CREATOR' AND s.type = 'PRIVATE') AS private_sessions_created,
-                COUNT(*) FILTER (WHERE so.type = 'MENTOR' AND s.type = 'PUBLIC' AND s.status = 'COMPLETED') AS public_sessions_conducted,
-                COUNT(*) FILTER (WHERE so.type = 'MENTOR' AND s.type = 'PRIVATE' AND s.status = 'COMPLETED') AS private_sessions_conducted
-            FROM
+				query: `SELECT 
+                :start_date AS startDate,
+                :end_date AS endDate,
+            
+                -- Count session_created (sum of public and private created sessions)
+                COUNT(CASE 
+                        WHEN so.type = 'CREATOR' 
+                            AND (
+                                :session_type = 'All' 
+                                OR (:session_type = 'Public' AND s.type = 'PUBLIC')
+                                OR (:session_type = 'Private' AND s.type = 'PRIVATE')
+                            )
+                        THEN 1
+                    END) AS session_created,
+            
+                -- Count sessions_conducted (sum of public and private conducted sessions)
+                COUNT(CASE 
+                        WHEN so.type = 'MENTOR' 
+                            AND s.status = 'COMPLETED'
+                            AND (
+                                :session_type = 'All' 
+                                OR (:session_type = 'Public' AND s.type = 'PUBLIC')
+                                OR (:session_type = 'Private' AND s.type = 'PRIVATE')
+                            )
+                        THEN 1
+                    END) AS sessions_conducted
+            FROM 
                 public.session_ownerships AS so
-            JOIN
-                public.sessions AS s ON so.session_id = s.id
-            WHERE
-                (:userId IS NOT NULL AND so.user_id = :userId)
-                AND (:start_date IS NOT NULL AND s.start_date > :start_date)
-                AND (:end_date IS NOT NULL AND s.end_date < :end_date)
+            JOIN 
+                public.sessions AS s 
+                ON so.session_id = s.id
+            WHERE 
+                (:userId IS NOT NULL AND so.user_id = :userId OR :userId IS NULL)
+                AND (s.start_date > :start_date OR :start_date IS NULL)
+                AND (s.end_date < :end_date OR :end_date IS NULL)
                 AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
-                AND (so.type IN ('CREATOR', 'MENTOR')) --Added this to only include creator and mentor types
-                AND (CASE
-                        WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
-                        WHEN :session_type = 'Public' THEN s.type = 'PUBLIC'
-                        WHEN :session_type = 'Private' THEN s.type = 'PRIVATE'
-                        ELSE TRUE
-                    END);`,
+                AND (so.type IN ('CREATOR', 'MENTOR')) 
+                AND (
+                    :session_type = 'All' 
+                    OR :session_type = 'Public' 
+                    OR :session_type = 'Private'
+                );
+            `,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -408,26 +439,43 @@ module.exports = {
 			{
 				report_code: 'split_of_sessions_created_and_conducted',
 				query: `SELECT
-                COUNT(*) FILTER (WHERE so.type = 'CREATOR' AND s.type = 'PUBLIC') AS public_sessions_created,
-                COUNT(*) FILTER (WHERE so.type = 'CREATOR' AND s.type = 'PRIVATE') AS private_sessions_created,
-                COUNT(*) FILTER (WHERE so.type = 'MENTOR' AND s.type = 'PUBLIC' AND s.status = 'COMPLETED') AS public_sessions_conducted,
-                COUNT(*) FILTER (WHERE so.type = 'MENTOR' AND s.type = 'PRIVATE' AND s.status = 'COMPLETED') AS private_sessions_conducted
+                :start_date AS startDate,
+                :end_date AS endDate,
+            
+                -- Count session_created (sum of public and private created sessions based on session_type)
+                COUNT(*) FILTER (WHERE so.type = 'CREATOR' 
+                    AND (
+                        :session_type = 'All' 
+                        OR (:session_type = 'Public' AND s.type = 'PUBLIC')
+                        OR (:session_type = 'Private' AND s.type = 'PRIVATE')
+                    )
+                ) AS session_created,
+            
+                -- Count sessions_conducted (sum of public and private conducted sessions based on session_type)
+                COUNT(*) FILTER (WHERE so.type = 'MENTOR' 
+                    AND s.status = 'COMPLETED'
+                    AND (
+                        :session_type = 'All' 
+                        OR (:session_type = 'Public' AND s.type = 'PUBLIC')
+                        OR (:session_type = 'Private' AND s.type = 'PRIVATE')
+                    )
+                ) AS sessions_conducted
             FROM
                 public.session_ownerships AS so
             JOIN
                 public.sessions AS s ON so.session_id = s.id
             WHERE
-                (:userId IS NOT NULL AND so.user_id = :userId)
-                AND (:start_date IS NOT NULL AND s.start_date > :start_date)
-                AND (:end_date IS NOT NULL AND s.end_date < :end_date)
+                (:userId IS NOT NULL AND so.user_id = :userId OR :userId IS NULL)
+                AND (:start_date IS NOT NULL AND s.start_date > :start_date OR :start_date IS NULL)
+                AND (:end_date IS NOT NULL AND s.end_date < :end_date OR :end_date IS NULL)
                 AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
-                AND (so.type IN ('CREATOR', 'MENTOR')) --Added this to only include creator and mentor types
-                AND (CASE
-                        WHEN :session_type = 'All' THEN s.type IN ('PUBLIC', 'PRIVATE')
-                        WHEN :session_type = 'Public' THEN s.type = 'PUBLIC'
-                        WHEN :session_type = 'Private' THEN s.type = 'PRIVATE'
-                        ELSE TRUE
-                    END);`,
+                AND (so.type IN ('CREATOR', 'MENTOR'))
+                AND (
+                    :session_type = 'All' 
+                    OR :session_type = 'Public' 
+                    OR :session_type = 'Private'
+                );
+            `,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),

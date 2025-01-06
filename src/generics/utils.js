@@ -758,6 +758,98 @@ function removeLimitAndOffset(sql) {
 	return sql.replace(/\s*LIMIT\s+\S+\s+OFFSET\s+\S+/, '')
 }
 
+function calculateStartOfWeek(startDate) {
+	const dayOfWeek = startDate.getDay()
+	const startOfWeek = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfWeek.setDate(startDate.getDate() - dayOfWeek)
+	startOfWeek.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfWeek
+}
+
+function calculateEndOfWeek(startOfWeek) {
+	const endOfWeek = new Date(startOfWeek)
+	endOfWeek.setDate(startOfWeek.getDate() + 6) // Saturday
+	endOfWeek.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfWeek
+}
+
+function calculateStartOfMonth(startDate) {
+	const startOfMonth = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfMonth.setFullYear(startDate.getFullYear(), startDate.getMonth(), 1) // First day of the month
+	startOfMonth.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfMonth
+}
+
+function calculateEndOfMonth(startOfMonth) {
+	const endOfMonth = new Date(startOfMonth)
+	endOfMonth.setMonth(startOfMonth.getMonth() + 1)
+	endOfMonth.setDate(0) // Last day of the current month
+	endOfMonth.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfMonth
+}
+
+function calculateStartOfDay(startDate) {
+	const startOfDay = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfDay.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfDay
+}
+
+function calculateEndOfDay(startOfDay) {
+	const endOfDay = new Date(startOfDay)
+	endOfDay.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfDay
+}
+
+function getEpochDates(startDateEpoch, option) {
+	const startDate = new Date(startDateEpoch * 1000) // Convert epoch seconds to Date object
+
+	let fromDateEpoch, toDateEpoch
+
+	switch (option) {
+		case 'week':
+			const startOfWeek = calculateStartOfWeek(startDate)
+			const endOfWeek = calculateEndOfWeek(startOfWeek)
+			fromDateEpoch = Math.floor(startOfWeek.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfWeek.getTime() / 1000) // Convert to seconds
+			break
+
+		case 'month':
+			const startOfMonth = calculateStartOfMonth(startDate)
+			const endOfMonth = calculateEndOfMonth(startOfMonth)
+			fromDateEpoch = Math.floor(startOfMonth.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfMonth.getTime() / 1000) // Convert to seconds
+			break
+
+		case 'day':
+			const startOfDay = calculateStartOfDay(startDate)
+			const endOfDay = calculateEndOfDay(startOfDay)
+			fromDateEpoch = Math.floor(startOfDay.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfDay.getTime() / 1000) // Convert to seconds
+			break
+	}
+
+	return {
+		start_date: fromDateEpoch,
+		end_date: toDateEpoch,
+	}
+}
+
+function getAllEpochDates(startDateEpoch, endDateEpoch, option) {
+	const dateArray = []
+	let currentStartDate = startDateEpoch
+
+	// Loop until we reach the end date
+	while (currentStartDate <= endDateEpoch) {
+		const { start_date, end_date } = getEpochDates(currentStartDate, option)
+		dateArray.push({ start_date, end_date })
+
+		// Move the currentStartDate to the next interval (week, month, or day)
+		currentStartDate = end_date + 1 // Increment by 1 second to move to next interval
+	}
+
+	return dateArray
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -809,4 +901,5 @@ module.exports = {
 	filterEntitiesBasedOnParent,
 	convertToTitleCase,
 	removeLimitAndOffset,
+	getAllEpochDates,
 }

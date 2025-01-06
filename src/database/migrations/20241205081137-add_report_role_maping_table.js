@@ -7,15 +7,16 @@ module.exports = {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
-				primaryKey: true,
 				type: Sequelize.INTEGER,
 			},
 			report_code: {
 				allowNull: false,
+				primaryKey: true,
 				type: Sequelize.STRING,
 			},
 			role_title: {
 				allowNull: false,
+				primaryKey: true,
 				type: Sequelize.STRING,
 			},
 			created_at: {
@@ -31,6 +32,10 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
+		})
+		await queryInterface.addIndex('report_role_mapping', {
+			fields: ['report_code'],
+			name: 'idx_report_role_mapping_report_code',
 		})
 	},
 
