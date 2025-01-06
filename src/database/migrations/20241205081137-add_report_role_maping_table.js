@@ -33,6 +33,10 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
+		await queryInterface.addIndex('report_role_mapping', {
+			fields: ['report_code'],
+			name: 'idx_report_role_mapping_report_code',
+		})
 	},
 
 	async down(queryInterface, Sequelize) {
