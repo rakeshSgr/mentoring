@@ -850,6 +850,36 @@ function getAllEpochDates(startDateEpoch, endDateEpoch, option) {
 	return dateArray
 }
 
+const generateFilters = (data) => {
+	const filters = {}
+	for (const key in data[0]) {
+		const uniqueValues = [...new Set(data.map((item) => item[key]))]
+		filters[key] = uniqueValues
+	}
+	return filters
+}
+
+const mapEntityTypesToData = (data, entityTypes) => {
+	return data.map((item) => {
+		const newItem = { ...item }
+		entityTypes.forEach((entityType) => {
+			const key = entityType.value
+			if (newItem[key]) {
+				const values = newItem[key].split(',').map((val) => val.trim())
+				const mappedValues = values
+					.map((value) => {
+						const entity = entityType.entities.find((e) => e.value === value)
+						return entity ? entity.label : value
+					})
+					.join(', ')
+
+				newItem[key] = mappedValues
+			}
+		})
+		return newItem
+	})
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -902,4 +932,6 @@ module.exports = {
 	convertToTitleCase,
 	removeLimitAndOffset,
 	getAllEpochDates,
+	generateFilters,
+	mapEntityTypesToData,
 }

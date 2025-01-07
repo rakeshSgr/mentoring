@@ -150,7 +150,9 @@ module.exports = class ReportsHelper {
 		searchColumn,
 		searchValue,
 		downloadCsv,
-		groupBy
+		groupBy,
+		filterColumn,
+		filterValue
 	) {
 		try {
 			// Validate report permissions
@@ -173,15 +175,15 @@ module.exports = class ReportsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			const columnConfig = reportConfig.dataValues.config
 			const reportDataResult = {
 				report_type: reportConfig.dataValues.report_type_title,
-				config: reportConfig.dataValues.config,
+				config: columnConfig,
 			}
 
 			// Handle BAR_CHART report type with groupBy
 			if (reportConfig.dataValues.report_type_title === common.BAR_CHART && groupBy) {
-				const listOfDates = await utils.getAllEpochDates(startDate, endDate, groupBy)
+				const listOfDates = await utils.getAllEpochDates(startDate, endDate, groupBy.toLowerCase())
 
 				// Initialize the array to store results
 				const dateRangeResults = []
@@ -230,14 +232,20 @@ module.exports = class ReportsHelper {
 					sort_type: sortType.toUpperCase() || 'ASC',
 					search_column: searchColumn || null,
 					search_value: searchValue || null,
+					filter_column: filterColumn || null,
+					filter_value: filterValue || null,
 				}
 
 				const noPaginationReplacements = {
 					...replacements,
 					limit: null,
 					offset: null,
-					search_column: null,
-					search_value: null,
+					sort_column: sortColumn || '',
+					sort_type: sortType.toUpperCase() || 'ASC',
+					search_column: searchColumn || null,
+					search_value: searchValue || null,
+					filter_column: filterColumn || null,
+					filter_value: filterValue || null,
 				}
 
 				// Replace sort type placeholder in query
@@ -257,12 +265,101 @@ module.exports = class ReportsHelper {
 					reportDataResult.data =
 						reportDataResult.report_type === common.REPORT_TABLE ? result : { ...result[0] }
 				} else {
-					reportDataResult.data = common.report_session_message
+					reportDataResult.data = []
+					reportDataResult.message = common.report_session_message
 				}
 
 				// Handle CSV download
 				if (resultWithoutPagination?.length && downloadCsv === 'true') {
-					const outputFilePath = await this.generateAndUploadCSV(resultWithoutPagination, userId, orgId)
+					const defaultOrgId = await getDefaultOrgId()
+					if (!defaultOrgId)
+						return responses.failureResponse({
+							message: 'DEFAULT_ORG_ID_NOT_SET',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					const sessionModelName = await sessionQueries.getModelName()
+					const generateFilters = (data) => {
+						const filters = {}
+						for (const key in data[0]) {
+							const uniqueValues = [...new Set(data.map((item) => item[key]))]
+							filters[key] = uniqueValues
+						}
+						return filters
+					}
+
+					const entityTypeValues = 'categories,recommended_for'
+					let entityTypeFilters = await getOrgIdAndEntityTypes.getEntityTypeWithEntitiesBasedOnOrg(
+						orgId,
+						entityTypeValues,
+						defaultOrgId ? defaultOrgId : '',
+						sessionModelName
+					)
+
+					const filtersEntity = entityTypeFilters.result.reduce((acc, item) => {
+						acc[item.value] = item.entities
+						return acc
+					}, {})
+
+					reportDataResult.filters = generateFilters(resultWithoutPagination)
+					delete reportDataResult.filters.categories
+					delete reportDataResult.filters.recommended_for
+
+					reportDataResult.filters.categories = filtersEntity.categories
+					reportDataResult.filters.recommended_for = filtersEntity.recommended_for
+
+					let entityTypesData = await getOrgIdAndEntityTypes.getEntityTypeWithEntitiesBasedOnOrg(
+						orgId,
+						'',
+						defaultOrgId ? defaultOrgId : '',
+						sessionModelName
+					)
+
+					// Function to map EntityTypes to data
+					const mapEntityTypesToData = (data, entityTypes) => {
+						return data.map((item) => {
+							const newItem = { ...item }
+
+							// Loop through EntityTypes to check for matching keys
+							entityTypes.forEach((entityType) => {
+								const key = entityType.value
+
+								// If the key exists in the data item
+								if (newItem[key]) {
+									const values = newItem[key].split(',').map((val) => val.trim())
+
+									// Map values to corresponding entity labels
+									const mappedValues = values
+										.map((value) => {
+											const entity = entityType.entities.find((e) => e.value === value)
+											return entity ? entity.label : value
+										})
+										.join(', ')
+
+									newItem[key] = mappedValues
+								}
+							})
+
+							return newItem
+						})
+					}
+
+					// Process the data
+					const transformedData = mapEntityTypesToData(resultWithoutPagination, entityTypesData.result)
+
+					const keyToLabelMap = Object.fromEntries(columnConfig.columns.map(({ key, label }) => [key, label]))
+
+					// Transform objects in the array
+					const transformedResult = transformedData.map((item) =>
+						Object.fromEntries(
+							Object.entries(item).map(([key, value]) => [
+								keyToLabelMap[key] || key, // Use label if key exists, otherwise retain original key
+								value,
+							])
+						)
+					)
+
+					const outputFilePath = await this.generateAndUploadCSV(transformedResult, userId, orgId)
 					reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
 					utils.clearFile(outputFilePath)
 				}

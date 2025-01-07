@@ -71,7 +71,9 @@ module.exports = class Reports {
 				req.query.search_column ? req.query.search_column : '',
 				req.query.search_value ? req.query.search_value : '',
 				req.query.download_csv ? req.query.download_csv : 'false',
-				req.query.group_by ? req.query.group_by : 'month'
+				req.query.group_by ? req.query.group_by : 'month',
+				req.query.filter_column,
+				req.query.filter_value
 			)
 			return reportData
 		} catch (error) {

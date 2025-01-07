@@ -123,7 +123,7 @@ module.exports = {
             LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id 
             WHERE 
                 -- Filter by mentee ID if provided
-                (sa.mentee_id = :userId OR :userId IS NULL)
+                (sa.mentee_id = :userId OR :userId IS NULL) 
                 -- Filter by start date if provided
                 AND (s.start_date > :start_date OR :start_date IS NULL)
                 -- Filter by end date if provided
@@ -136,38 +136,40 @@ module.exports = {
                     OR :session_type = 'Public' AND s.type = 'PUBLIC'
                     OR :session_type = 'Private' AND s.type = 'PRIVATE'
                 )
-                -- Search logic for recommended_for or specific columns
-                AND (
-                    :search_column IS NULL OR (
-                        LENGTH(:search_value) >= 1 AND 
-                        (
-                            -- Search within specific columns
-                            (
-                                :search_column = 'sessions_title' AND s.title ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'sessions_created_by' AND ue.name ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'mentor_name' AND s.mentor_name ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'date_of_session' AND TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD') ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'session_type' AND s.type ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'categories' AND ARRAY_TO_STRING(s.categories, ', ') ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'recommended_for' AND ARRAY_TO_STRING(s.recommended_for, ', ') ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'duration_of_sessions_attended' AND 
-                                ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT ILIKE '%' || :search_value || '%'
-                            ) OR (
-                                :search_column = 'session_attended' AND (
-                                    (:search_value = 'Yes' AND sa.joined_at IS NOT NULL)
-                                    OR (:search_value = 'No' AND sa.joined_at IS NULL)
-                                )
-                            )
+                -- Filter by a specific column and value
+                AND (:filter_column IS NULL OR 
+                (
+                    (:filter_column = 'sessions_title' AND s.title = :filter_value)
+                    OR (:filter_column = 'sessions_created_by' AND ue.name = :filter_value)
+                    OR (:filter_column = 'mentor_name' AND s.mentor_name = :filter_value)
+                    OR (:filter_column = 'date_of_session' AND TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD') = :filter_value)
+                    OR (:filter_column = 'session_type' AND s.type = :filter_value)
+                    OR (:filter_column = 'categories' AND ARRAY_TO_STRING(s.categories, ', ') = :filter_value)
+                    OR (:filter_column = 'recommended_for' AND ARRAY_TO_STRING(s.recommended_for, ', ') = :filter_value)
+                    OR (:filter_column = 'session_attended' AND 
+                        ((:filter_value = 'Yes' AND sa.joined_at IS NOT NULL) OR (:filter_value = 'No' AND sa.joined_at IS NULL)))
+                )
+            )
+                -- Dynamic search for specific columns
+                AND (:search_column IS NULL OR 
+                (
+                    LENGTH(:search_value) >= 1 AND 
+                    (
+                        (:search_column = 'sessions_title' AND s.title ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'sessions_created_by' AND ue.name ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'mentor_name' AND s.mentor_name ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'date_of_session' AND TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD') ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'session_type' AND s.type ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'categories' AND ARRAY_TO_STRING(s.categories, ', ') ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'recommended_for' AND ARRAY_TO_STRING(s.recommended_for, ', ') ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'duration_of_sessions_attended' AND 
+                            ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60)::TEXT ILIKE '%' || :search_value || '%')
+                        OR (:search_column = 'session_attended' AND 
+                            ((:search_value = 'Yes' AND sa.joined_at IS NOT NULL) OR (:search_value = 'No' AND sa.joined_at IS NULL))
                         )
                     )
                 )
+            )
             ORDER BY
                 -- Ordering logic based on column priority
                 CASE 
@@ -187,7 +189,8 @@ module.exports = {
                     WHEN :sort_column = 'date_of_session' THEN TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD')
                     ELSE NULL
                 END :sort_type NULLS LAST
-            LIMIT :limit OFFSET :offset;`,
+            LIMIT :limit OFFSET :offset;
+            `,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -334,6 +337,26 @@ module.exports = {
                         ELSE TRUE
                     END
                 )
+AND (
+    CASE WHEN :filter_column IS NOT NULL THEN
+        (
+             (:filter_column = 'sessions_created_by' AND ue.name = :filter_value)
+            OR (:filter_column = 'mentor_name' AND s.mentor_name = :filter_value)
+            OR (:filter_column = 'date_of_session' AND TO_CHAR(TO_TIMESTAMP(s.start_date)::DATE, 'YYYY-MM-DD') = :filter_value)
+            OR (:filter_column = 'session_type' AND s.type = :filter_value)
+            OR (:filter_column = 'duration_of_sessions_attended' AND ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60) = :filter_value)
+            OR (:filter_column = 'mentor_rating' AND f.response = :filter_value)
+            OR (:filter_column = 'number_of_mentees' AND s.seats_limit - s.seats_remaining = :filter_value)
+            OR (:filter_column = 'session_conducted' AND 
+                (
+                    (:filter_value = 'Yes' AND s.started_at IS NOT NULL) 
+                    OR (:filter_value = 'No' AND s.started_at IS NULL)
+                )
+            )
+        )
+    ELSE TRUE 
+    END
+)
                 AND (
                     CASE 
                         WHEN :search_column IS NOT NULL AND :search_value IS NOT NULL AND LENGTH(:search_value) >= 1 THEN
@@ -476,7 +499,6 @@ module.exports = {
                 AND (:start_date IS NOT NULL AND s.start_date > :start_date OR :start_date IS NULL)
                 AND (:end_date IS NOT NULL AND s.end_date < :end_date OR :end_date IS NULL)
                 AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
-                AND (so.type IN ('CREATOR', 'MENTOR'))
                 AND (
                     :session_type = 'All' 
                     OR :session_type = 'Public' 
@@ -540,8 +562,22 @@ module.exports = {
             ) AS subquery
             WHERE 
                 (
-                    :search_column IS NULL -- If no filter is applied
-                    OR (
+                    :filter_column IS NULL OR 
+                    (
+                        LENGTH(:filter_value) >= 1 AND 
+                        CAST(
+                            CASE 
+                                WHEN :filter_column = 'mentor_name' THEN CAST(subquery."mentor_name" AS TEXT)
+                                WHEN :filter_column = 'number_of_mentoring_sessions' THEN CAST(subquery."number_of_mentoring_sessions" AS TEXT)
+                                WHEN :filter_column = 'avg_mentor_rating' THEN CAST(subquery."avg_mentor_rating" AS TEXT)
+                                WHEN :filter_column = 'hours_of_mentoring_sessions' THEN subquery."hours_of_mentoring_sessions"
+                            END AS TEXT
+                        ) = :filter_value -- Dynamic filter based on the parameter (e.g., '0.6')
+                    )
+                )
+                AND (
+                    :search_column IS NULL OR 
+                    (
                         LENGTH(:search_value) >= 1 AND 
                         CAST(
                             CASE 
