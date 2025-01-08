@@ -320,12 +320,12 @@ module.exports = {
                 END AS "session_conducted",
                 ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60) AS "duration_of_sessions_attended_in_minutes",
                 f.response AS "mentor_rating"
-            FROM public.session_attendees AS sa
-            JOIN public.sessions AS s ON sa.session_id = s.id
+            FROM public.session_ownerships AS so
+            JOIN public.sessions AS s ON so.session_id = s.id
             LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id
             LEFT JOIN public.feedbacks AS f ON s.id = f.session_id
             WHERE 
-                (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
+                (CASE WHEN :userId IS NOT NULL THEN so.user_id = :userId ELSE TRUE END)
                 AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
                 AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
                 AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
@@ -371,8 +371,8 @@ AND (
                                 WHEN :search_column = 'mentor_rating' THEN f.response::TEXT
                                 WHEN :search_column = 'session_conducted' THEN 
                                 CASE 
-                                    WHEN :search_value = 'Yes' AND sa.joined_at IS NOT NULL THEN 'Yes'
-                                    WHEN :search_value = 'No' AND sa.joined_at IS NULL THEN 'No'
+                                    WHEN :search_value = 'Yes' AND s.started_at IS NOT NULL THEN 'Yes'
+                                    WHEN :search_value = 'No' AND s.started_at IS NULL THEN 'No'
                                     ELSE NULL
                                 END
                             END AS TEXT) ILIKE '%' || :search_value || '%'
