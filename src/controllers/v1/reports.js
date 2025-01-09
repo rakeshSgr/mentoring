@@ -55,6 +55,43 @@ module.exports = class Reports {
 
 	async reportData(req) {
 		try {
+			// Initialize filter and search arrays
+			let filter_column = []
+			let filter_value = []
+			let search_column = []
+			let search_value = []
+
+			// Check if req.body exists and process filters
+			if (
+				req.body &&
+				req.body.filters &&
+				typeof req.body.filters === 'object' &&
+				Object.keys(req.body.filters).length > 0
+			) {
+				Object.entries(req.body.filters).forEach(([key, value]) => {
+					if (key && Array.isArray(value)) {
+						filter_column.push([key]) // Add the key as a column
+						filter_value.push(value) // Add the value
+					}
+				})
+			}
+
+			// Check if req.body exists and process search
+			if (
+				req.body &&
+				req.body.search &&
+				typeof req.body.search === 'object' &&
+				Object.keys(req.body.search).length > 0
+			) {
+				Object.entries(req.body.search).forEach(([key, value]) => {
+					if (key && Array.isArray(value)) {
+						search_column.push([key]) // Add the key as a column
+						search_value.push(value) // Add the value
+					}
+				})
+			}
+
+			// Call the report service with the transformed data
 			const reportData = await reportService.getReportData(
 				req.decodedToken.id,
 				req.decodedToken.organization_id,
@@ -68,12 +105,12 @@ module.exports = class Reports {
 				req.query.entities_value,
 				req.query.sort_column,
 				req.query.sort_type ? req.query.sort_type : '',
-				req.body.search_column,
-				req.body.search_value,
+				search_column.length > 0 ? search_column : undefined, // Pass search_column only if it's not empty
+				search_value.length > 0 ? search_value : undefined, // Pass search_value only if it's not empty
 				req.query.download_csv ? req.query.download_csv : 'false',
 				req.query.group_by ? req.query.group_by : 'month',
-				req.body.filter_column,
-				req.body.filter_value
+				filter_column.length > 0 ? filter_column : undefined, // Pass filter_column only if it's not empty
+				filter_value.length > 0 ? filter_value : undefined // Pass filter_value only if it's not empty
 			)
 			return reportData
 		} catch (error) {
