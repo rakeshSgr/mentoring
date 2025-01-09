@@ -147,12 +147,12 @@ module.exports = class ReportsHelper {
 		entitiesValue,
 		sortColumn,
 		sortType,
-		searchColumn,
-		searchValue,
+		searchColumns,
+		searchValues,
 		downloadCsv,
 		groupBy,
-		filterColumn,
-		filterValue
+		filterColumns,
+		filterValues
 	) {
 		try {
 			// Validate report permissions
@@ -230,10 +230,6 @@ module.exports = class ReportsHelper {
 					offset: common.getPaginationOffset(page, limit),
 					sort_column: sortColumn || '',
 					sort_type: sortType.toUpperCase() || 'ASC',
-					search_column: searchColumn || null,
-					search_value: searchValue || null,
-					filter_column: filterColumn || null,
-					filter_value: filterValue || null,
 				}
 
 				const noPaginationReplacements = {
@@ -242,15 +238,54 @@ module.exports = class ReportsHelper {
 					offset: null,
 					sort_column: sortColumn || '',
 					sort_type: sortType.toUpperCase() || 'ASC',
-					search_column: searchColumn || null,
-					search_value: searchValue || null,
-					filter_column: filterColumn || null,
-					filter_value: filterValue || null,
+				}
+
+				let query = reportQuery.query
+				if (reportConfig.dataValues.report_type_title === common.REPORT_TABLE) {
+					query = reportQuery.query.replace(';', '') // Base query for report table
+					const columnMappings = await utils.extractColumnMappings(query)
+
+					// Generate dynamic WHERE conditions for filters
+					if (filterColumns && filterValues) {
+						const filterConditions = await utils.getDynamicFilterCondition(
+							Object.fromEntries(filterColumns.map((col, idx) => [col, filterValues[idx]])),
+							columnMappings,
+							query,
+							columnConfig.columns
+						)
+						if (filterConditions) {
+							query += filterConditions
+						}
+					}
+
+					// Generate dynamic WHERE conditions for search
+					if (searchColumns && searchValues) {
+						const searchConditions = await utils.getDynamicSearchCondition(
+							Object.fromEntries(searchColumns.map((col, idx) => [col, searchValues[idx]])),
+							columnMappings,
+							query,
+							columnConfig.columns
+						)
+						if (searchConditions) {
+							query += searchConditions
+						}
+					}
+
+					// Add sorting
+					if (sortColumn && columnMappings[sortColumn]) {
+						query += ` ORDER BY 
+						CASE 
+						  WHEN :sort_column = '${sortColumn}' THEN ${columnMappings[sortColumn]}
+						  ELSE NULL
+						END ${sortType} NULLS LAST`
+					}
+
+					// Add pagination
+					query += ` LIMIT :limit OFFSET :offset;`
 				}
 
 				// Replace sort type placeholder in query
-				let query = reportQuery.query.replace(/:sort_type/g, replacements.sort_type)
-
+				query = query.replace(/:sort_type/g, replacements.sort_type)
 				// Execute query with pagination
 				const [result, resultWithoutPagination] = await Promise.all([
 					sequelize.query(query, { replacements, type: sequelize.QueryTypes.SELECT }),
@@ -371,12 +406,7 @@ module.exports = class ReportsHelper {
 				result: reportDataResult,
 			})
 		} catch (error) {
-			return responses.failureResponse({
-				message: 'INTERNAL_SERVER_ERROR',
-				statusCode: httpStatusCode.internal_server_error,
-				responseCode: 'SERVER_ERROR',
-				error: error.message,
-			})
+			return error
 		}
 	}
 

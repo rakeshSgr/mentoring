@@ -66,14 +66,14 @@ module.exports = class Reports {
 				req.query.end_date ? req.query.end_date : '',
 				req.query.session_type ? req.query.session_type : common.ALL,
 				req.query.entities_value,
-				req.query.sort_column ? req.query.sort_column : '',
+				req.query.sort_column,
 				req.query.sort_type ? req.query.sort_type : '',
-				req.query.search_column ? req.query.search_column : '',
-				req.query.search_value ? req.query.search_value : '',
+				req.body.search_column,
+				req.body.search_value,
 				req.query.download_csv ? req.query.download_csv : 'false',
 				req.query.group_by ? req.query.group_by : 'month',
-				req.query.filter_column,
-				req.query.filter_value
+				req.body.filter_column,
+				req.body.filter_value
 			)
 			return reportData
 		} catch (error) {
