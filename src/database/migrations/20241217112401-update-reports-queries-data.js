@@ -150,8 +150,8 @@ module.exports = {
                 s.type AS "session_type",
                 ARRAY_TO_STRING(s.categories, ', ') AS "categories", -- Converts array to a comma-separated string
                 ARRAY_TO_STRING(s.recommended_for, ', ') AS "recommended_for",
-                CASE WHEN sa.joined_at IS NOT NULL THEN 'Yes' ELSE 'No' END AS "session_attended",
-                ROUND(EXTRACT(EPOCH FROM(TO_TIMESTAMP(s.end_date)-TO_TIMESTAMP(s.start_date)))/60) AS "duration_of_sessions_attended_in_minutes"
+            CASE WHEN sa.joined_at IS NOT NULL THEN 'Yes' ELSE 'No' END AS "session_attended",
+            ROUND(EXTRACT(EPOCH FROM(TO_TIMESTAMP(s.end_date)-TO_TIMESTAMP(s.start_date)))/60) AS "duration_of_sessions_attended_in_minutes"
             FROM public.session_attendees AS sa
             JOIN public.sessions AS s ON sa.session_id = s.id
             LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id 
@@ -169,7 +169,8 @@ module.exports = {
                     :session_type = 'All' AND s.type IN ('PUBLIC', 'PRIVATE')
                     OR :session_type = 'Public' AND s.type = 'PUBLIC'
                     OR :session_type = 'Private' AND s.type = 'PRIVATE'
-                );
+                )
+            ;
             `,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -370,21 +371,21 @@ module.exports = {
 				query: `SELECT 
                 s.title AS "sessions_title",
                 ue.name AS "sessions_created_by",
-                s.seats_limit - s.seats_remaining AS "number_of_mentees",
+                s.seats_limit-s.seats_remaining AS "number_of_mentees",
                 TO_TIMESTAMP(s.start_date)::DATE AS "date_of_session",
                 s.type AS "session_type",
                 CASE 
                     WHEN s.started_at IS NOT NULL THEN 'Yes'
                     ELSE 'No'
                 END AS "session_conducted",
-                ROUND(EXTRACT(EPOCH FROM (TO_TIMESTAMP(s.end_date) - TO_TIMESTAMP(s.start_date))) / 60) AS "duration_of_sessions_attended_in_minutes",
+                ROUND(EXTRACT(EPOCH FROM(TO_TIMESTAMP(s.end_date)-TO_TIMESTAMP(s.start_date)))/60) AS "duration_of_sessions_attended_in_minutes",
                 f.response AS "mentor_rating"
-            FROM public.session_ownerships AS so
-            JOIN public.sessions AS s ON so.session_id = s.id
+            FROM public.session_attendees AS sa
+            JOIN public.sessions AS s ON sa.session_id = s.id
             LEFT JOIN public.user_extensions AS ue ON s.created_by = ue.user_id
             LEFT JOIN public.feedbacks AS f ON s.id = f.session_id
             WHERE 
-                (CASE WHEN :userId IS NOT NULL THEN so.user_id = :userId ELSE TRUE END)
+                (CASE WHEN :userId IS NOT NULL THEN sa.mentee_id = :userId ELSE TRUE END)
                 AND (CASE WHEN :start_date IS NOT NULL THEN s.start_date > :start_date ELSE TRUE END)
                 AND (CASE WHEN :end_date IS NOT NULL THEN s.end_date < :end_date ELSE TRUE END)
                 AND (CASE WHEN :entities_value IS NOT NULL THEN s.categories = :entities_value ELSE TRUE END)
@@ -395,7 +396,8 @@ module.exports = {
                         WHEN :session_type = 'PRIVATE' THEN s.type = 'PRIVATE'
                         ELSE TRUE
                     END
-                );`,
+                )
+;`,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -593,18 +595,16 @@ module.exports = {
                 subquery.mentor_name AS "mentor_name",
                 subquery."number_of_mentoring_sessions",
                 subquery."hours_of_mentoring_sessions",
-                subquery."avg_mentor_rating"
+                subquery."avg_mentor_rating" 
             FROM (
                 SELECT 
                     s.mentor_name,
                     COUNT(*) OVER (PARTITION BY so.user_id) AS "number_of_mentoring_sessions",
-                    CASE 
-                        -- If the total hours is a whole number, remove the decimal (e.g., 1.0 -> 1)
-                        WHEN ROUND(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0) = FLOOR(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0)
-                        THEN CAST(FLOOR(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0) AS TEXT)  -- Removes .0 for whole numbers
-                        ELSE CAST(ROUND(SUM(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) / 3600.0, 1) AS TEXT)  -- Keeps decimals for non-whole numbers
+                    CASE WHEN ROUND(SUM(EXTRACT(EPOCH FROM(s.completed_at-s.started_at)))/3600.0)=FLOOR(SUM(EXTRACT(EPOCH FROM(s.completed_at-s.started_at)))/3600.0)
+                        THEN CAST(FLOOR(SUM(EXTRACT(EPOCH FROM(s.completed_at-s.started_at)))/3600.0) AS TEXT)  -- Removes .0 for whole numbers
+                        ELSE CAST(ROUND(SUM(EXTRACT(EPOCH FROM(s.completed_at-s.started_at)))/3600.0, 1) AS TEXT)  -- Keeps decimals for non-whole numbers
                     END AS "hours_of_mentoring_sessions",
-                    COALESCE(CAST(ue.rating ->> 'average' AS NUMERIC), 0) AS "avg_mentor_rating" 
+                    COALESCE(CAST(ue.rating ->>'average'AS NUMERIC),0) AS "avg_mentor_rating" 
                 FROM 
                     public.sessions AS s
                 JOIN 
@@ -638,8 +638,7 @@ module.exports = {
                     s.mentor_name, 
                     COALESCE(CAST(ue.rating ->> 'average' AS NUMERIC), 0)
             ) AS subquery
-            ;
-            `,
+            ;`,
 				status: 'ACTIVE',
 				created_at: Sequelize.literal('CURRENT_TIMESTAMP'),
 				updated_at: Sequelize.literal('CURRENT_TIMESTAMP'),
