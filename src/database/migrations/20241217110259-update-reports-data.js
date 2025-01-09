@@ -56,7 +56,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'sessions_created_by',
@@ -65,7 +64,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'mentor_name',
@@ -74,7 +72,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'date_of_session',
@@ -92,7 +89,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'categories',
@@ -101,7 +97,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'recommended_for',
@@ -110,7 +105,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'session_attended',
@@ -119,7 +113,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'duration_of_sessions_attended_in_minutes',
@@ -128,7 +121,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '<=',
-							dataType: '',
 						},
 					],
 				}),
@@ -180,7 +172,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'sessions_title',
@@ -189,7 +180,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'date_of_session',
@@ -207,7 +197,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'number_of_mentees',
@@ -216,7 +205,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '<=',
-							dataType: '',
 						},
 						{
 							key: 'session_conducted',
@@ -225,7 +213,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'duration_of_sessions_attended_in_minutes',
@@ -234,7 +221,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '<=',
-							dataType: '',
 						},
 						{
 							key: 'mentor_rating',
@@ -243,7 +229,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 					],
 				}),
@@ -297,7 +282,6 @@ module.exports = {
 							sort: true,
 							search: true,
 							filterType: '=',
-							dataType: '',
 						},
 						{
 							key: 'number_of_mentoring_sessions',
@@ -306,7 +290,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '<=',
-							dataType: '',
 						},
 						{
 							key: 'hours_of_mentoring_sessions',
@@ -315,7 +298,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '<=',
-							dataType: '',
 						},
 						{
 							key: 'avg_mentor_rating',
@@ -324,7 +306,6 @@ module.exports = {
 							sort: true,
 							search: false,
 							filterType: '=',
-							dataType: '',
 						},
 					],
 				}),
