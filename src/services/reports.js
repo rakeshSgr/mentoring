@@ -305,7 +305,7 @@ module.exports = class ReportsHelper {
 				}
 
 				// Handle CSV download
-				if (resultWithoutPagination?.length && downloadCsv === 'true') {
+				if (resultWithoutPagination?.length) {
 					const defaultOrgId = await getDefaultOrgId()
 					if (!defaultOrgId)
 						return responses.failureResponse({
@@ -393,10 +393,11 @@ module.exports = class ReportsHelper {
 							])
 						)
 					)
-
-					const outputFilePath = await this.generateAndUploadCSV(transformedResult, userId, orgId)
-					reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
-					utils.clearFile(outputFilePath)
+					if (downloadCsv === 'true') {
+						const outputFilePath = await this.generateAndUploadCSV(transformedResult, userId, orgId)
+						reportDataResult.reportsDownloadUrl = await utils.getDownloadableUrl(outputFilePath)
+						utils.clearFile(outputFilePath)
+					}
 				}
 			}
 
