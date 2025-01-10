@@ -32,6 +32,7 @@ module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
 		DEFAULT_PAGE_SIZE: 100,
+		DEFAULT_LIMIT: 5,
 	},
 	getPaginationOffset,
 	DELETE_METHOD: 'DELETE',
@@ -86,6 +87,7 @@ module.exports = {
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',
+	BAR_CHART: 'bar_chart',
 	jobsToCreate: [
 		{
 			jobId: 'mentoring_session_one_hour_',
@@ -117,8 +119,11 @@ module.exports = {
 
 	// Default organization policies
 	getDefaultOrgPolicies: defaultOrgPolicies,
+	REPORT_TABLE: 'table',
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
+	All: 'All',
+	SYSTEM: 'SYSTEM',
 	ASSOCIATED: 'ASSOCIATED',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
@@ -140,6 +145,7 @@ module.exports = {
 	BACK_OFF_RETRY_QUEUE: 600000,
 	tempFolderForBulkUpload: 'public/invites',
 	sessionOutputFile: 'output-session-creation',
+	reportOutputFile: 'output-report-data',
 	csvExtension: '.csv',
 	responseType: 'stream',
 	azureBlobType: 'BlockBlob',
@@ -162,6 +168,7 @@ module.exports = {
 		BBB_PLATFORM_VALUES: ['bigbluebutton', 'bbb'],
 		GOOGLE_MEET_VALUES: ['googlemeet', 'gmeet'],
 	},
+	report_session_message: 'No sessions',
 	SESSION: 'session',
 	PLATFORMS_REGEX: /https:\/\/(?:meet|call|us\d{2}web)\.(\w+)\.com/,
 	ZOOM_REGEX: /https:\/\/(?:meet|call|us\d{2}web|zoom)\.(\w+)\.us\/j\/(\d+)\?/,

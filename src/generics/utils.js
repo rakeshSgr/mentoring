@@ -704,6 +704,401 @@ function convertExpiryTimeToSeconds(expiryTime) {
 	}
 }
 
+function convertEntitiesForFilter(entityTypes) {
+	const result = {}
+
+	entityTypes.forEach((entityType) => {
+		const key = entityType.value
+
+		if (!result[key]) {
+			result[key] = []
+		}
+
+		const newObj = {
+			id: entityType.id,
+			label: entityType.label,
+			value: entityType.value,
+			parent_id: entityType.parent_id,
+			organization_id: entityType.organization_id,
+			entities: entityType.entities || [],
+		}
+
+		result[key].push(newObj)
+	})
+	return result
+}
+
+function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) {
+	let result = {}
+
+	for (let key in data) {
+		let countWithParentId = 0
+		let countOfEachKey = data[key].length
+		data[key].forEach((obj) => {
+			if (obj.parent_id !== null && obj.organization_id != defaultOrgId) {
+				countWithParentId++
+			}
+		})
+
+		let outputArray = data[key]
+		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1 && !doNotRemoveDefaultOrg) {
+			outputArray = data[key].filter((obj) => !(obj.organization_id === defaultOrgId && obj.parent_id === null))
+		}
+
+		result[key] = outputArray
+	}
+	return result
+}
+
+function convertToTitleCase(str) {
+	return str.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+}
+
+function removeLimitAndOffset(sql) {
+	return sql.replace(/\s*LIMIT\s+\S+\s+OFFSET\s+\S+/, '')
+}
+
+function calculateStartOfWeek(startDate) {
+	const dayOfWeek = startDate.getDay()
+	const startOfWeek = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfWeek.setDate(startDate.getDate() - dayOfWeek)
+	startOfWeek.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfWeek
+}
+
+function calculateEndOfWeek(startOfWeek) {
+	const endOfWeek = new Date(startOfWeek)
+	endOfWeek.setDate(startOfWeek.getDate() + 6) // Saturday
+	endOfWeek.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfWeek
+}
+
+function calculateStartOfMonth(startDate) {
+	const startOfMonth = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfMonth.setFullYear(startDate.getFullYear(), startDate.getMonth(), 1) // First day of the month
+	startOfMonth.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfMonth
+}
+
+function calculateEndOfMonth(startOfMonth) {
+	const endOfMonth = new Date(startOfMonth)
+	endOfMonth.setMonth(startOfMonth.getMonth() + 1)
+	endOfMonth.setDate(0) // Last day of the current month
+	endOfMonth.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfMonth
+}
+
+function calculateStartOfDay(startDate) {
+	const startOfDay = new Date(startDate * 1000) // Convert epoch seconds to milliseconds for Date object
+	startOfDay.setHours(0, 0, 1, 0) // Set time to 00:00:01
+	return startOfDay
+}
+
+function calculateEndOfDay(startOfDay) {
+	const endOfDay = new Date(startOfDay)
+	endOfDay.setHours(23, 59, 59, 999) // Set time to 23:59:59
+	return endOfDay
+}
+
+function getEpochDates(startDateEpoch, option) {
+	const startDate = new Date(startDateEpoch * 1000) // Convert epoch seconds to Date object
+
+	let fromDateEpoch, toDateEpoch
+
+	switch (option) {
+		case 'week':
+			const startOfWeek = calculateStartOfWeek(startDate)
+			const endOfWeek = calculateEndOfWeek(startOfWeek)
+			fromDateEpoch = Math.floor(startOfWeek.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfWeek.getTime() / 1000) // Convert to seconds
+			break
+
+		case 'month':
+			const startOfMonth = calculateStartOfMonth(startDate)
+			const endOfMonth = calculateEndOfMonth(startOfMonth)
+			fromDateEpoch = Math.floor(startOfMonth.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfMonth.getTime() / 1000) // Convert to seconds
+			break
+
+		case 'day':
+			const startOfDay = calculateStartOfDay(startDate)
+			const endOfDay = calculateEndOfDay(startOfDay)
+			fromDateEpoch = Math.floor(startOfDay.getTime() / 1000) // Convert to seconds
+			toDateEpoch = Math.floor(endOfDay.getTime() / 1000) // Convert to seconds
+			break
+	}
+
+	return {
+		start_date: fromDateEpoch,
+		end_date: toDateEpoch,
+	}
+}
+
+function getAllEpochDates(startDateEpoch, endDateEpoch, option) {
+	const dateArray = []
+	let currentStartDate = startDateEpoch
+
+	// Loop until we reach the end date
+	while (currentStartDate <= endDateEpoch) {
+		const { start_date, end_date } = getEpochDates(currentStartDate, option)
+		dateArray.push({ start_date, end_date })
+
+		// Move the currentStartDate to the next interval (week, month, or day)
+		currentStartDate = end_date + 1 // Increment by 1 second to move to next interval
+	}
+
+	return dateArray
+}
+
+const generateFilters = (data) => {
+	const filters = {}
+	for (const key in data[0]) {
+		const uniqueValues = [...new Set(data.map((item) => item[key]))]
+		filters[key] = uniqueValues
+	}
+	return filters
+}
+
+const mapEntityTypesToData = (data, entityTypes) => {
+	return data.map((item) => {
+		const newItem = { ...item }
+		entityTypes.forEach((entityType) => {
+			const key = entityType.value
+			if (newItem[key]) {
+				const values = newItem[key].split(',').map((val) => val.trim())
+				const mappedValues = values
+					.map((value) => {
+						const entity = entityType.entities.find((e) => e.value === value)
+						return entity ? entity.label : value
+					})
+					.join(', ')
+
+				newItem[key] = mappedValues
+			}
+		})
+		return newItem
+	})
+}
+
+function extractColumnMappings(sqlQuery) {
+	// Match the SELECT part of the query
+	const selectMatch = sqlQuery.match(/SELECT\s+(.*?)\s+FROM /is)
+	if (!selectMatch) return {} // Return an empty object if no match is found
+
+	const selectPart = selectMatch[1]
+
+	// Split columns by commas, but ignore commas inside parentheses (to avoid splitting function calls)
+	const columns = selectPart.split(/,(?![^\(\)]*\))/).map((col) => col.trim())
+
+	const columnMappings = {}
+
+	columns.forEach((column) => {
+		// Match alias expressions like 'TO_TIMESTAMP(s.start_date)::DATE AS "date_of_session"'
+		const aliasMatch = column.match(/(.*?)\s+AS\s+"(.*?)"/i)
+
+		if (aliasMatch) {
+			const original = aliasMatch[1].trim()
+			const alias = aliasMatch[2].trim()
+
+			// If the original expression contains complex SQL like CASE, ROUND, or EXTRACT, preserve the format
+			if (
+				original.includes('\n') ||
+				original.includes('CASE') ||
+				original.includes('ROUND') ||
+				original.includes('EXTRACT')
+			) {
+				columnMappings[alias] = `\n    ${original.replace(/\n/g, '\n    ')}\n`
+			} else {
+				columnMappings[alias] = original
+			}
+		} else {
+			// Handle case where there is no alias (if any)
+			let cleanColumn = column.trim()
+
+			// Remove 'subquery.' and quotes around column names using a regex
+			cleanColumn = cleanColumn.replace(/^subquery\."(.*?)"$/, '$1') // Remove 'subquery.' and quotes
+
+			// Save the cleaned column
+			columnMappings[cleanColumn] = column.trim()
+		}
+	})
+
+	// Clean up spaces and trim extra spaces from column mappings
+	Object.keys(columnMappings).forEach((key) => {
+		columnMappings[key] = columnMappings[key].replace(/\s+/g, ' ').trim()
+	})
+
+	return columnMappings
+}
+
+function getDynamicFilterCondition(filters, columnMappings, baseQuery, columnConfig) {
+	if (!filters || typeof filters !== 'object') {
+		console.log('Filters is not an object or is empty')
+		return '' // Early exit if filters are not valid
+	}
+
+	const conditions = Object.entries(filters)
+		.map(([column, value]) => {
+			const mappedColumn = columnMappings[column]
+			if (!mappedColumn) {
+				console.log(`No mapping found for column: ${column}`)
+				return null // Skip if no mapping is found for the column
+			}
+
+			// Find the filterType for the column from columnConfig
+			const columnConfigEntry = columnConfig.find((config) => config.key === column)
+			const filterType = columnConfigEntry ? columnConfigEntry.filterType || '=' : '=' // Default to '=' if not found
+
+			// Special case: Handle the column with ROUND(EXTRACT...) logic
+			if (mappedColumn.includes('ROUND(EXTRACT')) {
+				if (typeof value !== 'string') {
+					console.error(
+						`Invalid filter value for column ${column}. Expected a string but received ${typeof value}.`
+					)
+					return null
+				}
+				return `${mappedColumn} ${filterType} '${value}'`
+			}
+
+			if (value) {
+				if (Array.isArray(value)) {
+					// If value is an array, combine with OR for multiple values
+					const arrayConditions = value
+						.map((val) => {
+							if (val instanceof Date) {
+								// Handle Date objects
+								return `${mappedColumn} ${filterType} TO_TIMESTAMP('${val.toISOString()}', 'YYYY-MM-DD"T"HH24:MI:SS')`
+							} else if (typeof val === 'string' && isStrictValidDate(val)) {
+								// Handle string-based date values
+								return `${mappedColumn} ${filterType} TO_TIMESTAMP('${val}', 'YYYY-MM-DD')`
+							} else if (typeof val === 'number') {
+								// Handle numeric values
+								return `${mappedColumn} ${filterType} ${val}`
+							}
+							// Handle general string values
+							return `${mappedColumn} ${filterType} '${val}'`
+						})
+						.join(' OR ') // Join array conditions with OR
+					return `(${arrayConditions})`
+				} else if (value instanceof Date) {
+					// Handle single Date object
+					return `${mappedColumn} ${filterType} TO_TIMESTAMP('${value.toISOString()}', 'YYYY-MM-DD"T"HH24:MI:SS')`
+				} else if (typeof value === 'string' && isStrictValidDate(value)) {
+					// Handle single string-based date values
+					return `${mappedColumn} ${filterType} TO_TIMESTAMP('${value}', 'YYYY-MM-DD')`
+				} else if (typeof value === 'number') {
+					// Handle single numeric values
+					return `${mappedColumn} ${filterType} ${value}`
+				}
+				// Handle other value types as strings
+				return `${mappedColumn} ${filterType} '${value}'`
+			}
+
+			return null // Return null if no valid value exists for the filter
+		})
+		.filter(Boolean) // Remove null entries (where no condition was generated)
+
+	const conditionsString = conditions.join('\nAND ') // Join all conditions with AND
+
+	// Check if baseQuery already has WHERE conditions
+	const hasWhereClause = baseQuery.includes('WHERE')
+	const hasGroupBy = baseQuery.includes('GROUP BY')
+
+	// Append conditions to the query
+	if (conditionsString) {
+		if (hasGroupBy) {
+			// Append before GROUP BY clause if it exists
+			return `${hasWhereClause ? 'AND' : 'WHERE'} ${conditionsString}`
+		} else {
+			// Standard WHERE clause logic
+			return `${hasWhereClause ? 'AND' : 'WHERE'} ${conditionsString}`
+		}
+	}
+
+	// Return an empty string if no conditions were generated
+	return ''
+}
+
+// Utility function to check strict date validity
+function isStrictValidDate(dateString) {
+	// Match dates in 'YYYY-MM-DD' format
+	const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+	return dateRegex.test(dateString) && !isNaN(new Date(dateString).getTime())
+}
+
+function getDynamicSearchCondition(search, columnMappings, baseQuery) {
+	if (!search || typeof search !== 'object') {
+		console.log('Search is not an object or is empty')
+		return '' // Early exit if search is not valid
+	}
+
+	const conditions = Object.entries(search)
+		.map(([column, value]) => {
+			const mappedColumn = columnMappings[column]
+			if (!mappedColumn) {
+				console.log(`No mapping found for column: ${column}`)
+				return null // Skip if no mapping is found for the column
+			}
+
+			if (value) {
+				if (Array.isArray(value)) {
+					// If value is an array, combine with OR for multiple values
+					const arrayConditions = value
+						.map((val) => {
+							if (mappedColumn === 's.seats_limit-s.seats_remaining') {
+								// Ensure both seats_limit and seats_remaining are treated as integers and subtract
+								return `((s.seats_limit - s.seats_remaining)::TEXT ILIKE '%${val}%')`
+							} else if (val instanceof Date) {
+								return `${mappedColumn} = TO_TIMESTAMP('${val.toISOString()}', 'YYYY-MM-DD"T"HH24:MI:SS')`
+							} else if (typeof val === 'string' && isStrictValidDate(val)) {
+								return `${mappedColumn} = TO_TIMESTAMP('${val}', 'YYYY-MM-DD')`
+							} else if (typeof val === 'string') {
+								return `${mappedColumn}::TEXT ILIKE '%${val}%'` // Partial text match
+							} else {
+								return `${mappedColumn} = '${val}'` // Exact match for other types
+							}
+						})
+						.join(' OR ')
+					return `(${arrayConditions})`
+				} else {
+					// If it's a single value, handle accordingly
+					if (mappedColumn === 's.seats_limit-s.seats_remaining') {
+						return `((s.seats_limit - s.seats_remaining)::TEXT ILIKE '%${value}%')`
+					} else if (value instanceof Date) {
+						return `${mappedColumn} = TO_TIMESTAMP('${value.toISOString()}', 'YYYY-MM-DD"T"HH24:MI:SS')`
+					} else if (typeof value === 'string' && isStrictValidDate(value)) {
+						return `${mappedColumn} = TO_TIMESTAMP('${value}', 'YYYY-MM-DD')`
+					} else if (typeof value === 'string') {
+						return `${mappedColumn}::TEXT ILIKE '%${value}%'` // Partial text match
+					} else {
+						return `${mappedColumn} = '${value}'` // Exact match for other types
+					}
+				}
+			}
+
+			return null // Return null if no valid value exists for the search
+		})
+		.filter(Boolean) // Remove null entries
+
+	const conditionsString = conditions.join('\nAND ') // Join all conditions with AND
+
+	// Check if baseQuery already has WHERE conditions
+	const hasWhereClause = baseQuery.includes('WHERE')
+	const hasGroupBy = baseQuery.includes('GROUP BY')
+
+	// Append conditions to the query
+	if (conditionsString) {
+		if (hasGroupBy === false) {
+			return `${hasWhereClause ? 'AND' : 'WHERE'} ${conditionsString}`
+		} else {
+			return `${hasWhereClause ? 'WHERE' : 'AND'} ${conditionsString}`
+		}
+	}
+
+	// Return an empty string if no conditions were generated
+	return ''
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -751,4 +1146,14 @@ module.exports = {
 	validateProfileData,
 	validateAndBuildFilters,
 	convertExpiryTimeToSeconds,
+	convertEntitiesForFilter,
+	filterEntitiesBasedOnParent,
+	convertToTitleCase,
+	removeLimitAndOffset,
+	getAllEpochDates,
+	generateFilters,
+	mapEntityTypesToData,
+	extractColumnMappings,
+	getDynamicFilterCondition,
+	getDynamicSearchCondition,
 }
