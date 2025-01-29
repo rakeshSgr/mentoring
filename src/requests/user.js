@@ -186,8 +186,12 @@ const fetchUserDetails = async ({ token, userId }) => {
 const getUserDetails = async (userId) => {
 	try {
 		const userDetails = await menteeQueries.getMenteeExtension(userId)
+
+		console.log("------------- userDetails ---------",userDetails);
+		console.log("============ userDetails.image =============",userDetails.image);
 		if (userDetails.image) {
 			const downloadImageResponse = await getDownloadableUrl(userDetails.image)
+			console.log("  downloadImageResponse ", downloadImageResponse.result);
 			userDetails.image = downloadImageResponse.result
 		}
 		userDetails.user_roles = [{ title: common.MENTEE_ROLE }]
