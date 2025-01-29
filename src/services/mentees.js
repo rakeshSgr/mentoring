@@ -42,7 +42,11 @@ module.exports = class MenteesHelper {
 	 */
 	static async read(id, orgId, roles) {
 		const menteeDetails = await userRequests.getUserDetails(id)
+		console.log("menteeDetails mentee read : ",menteeDetails.data.result);
 		const mentee = await menteeQueries.getMenteeExtension(id)
+
+		console.log("mentee :  mentee read : ",mentee);
+		
 		delete mentee.user_id
 		delete mentee.visible_to_organizations
 		delete mentee.image
@@ -67,6 +71,8 @@ module.exports = class MenteesHelper {
 		//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
 		const processDbResponse = utils.processDbResponse(mentee, validationData)
+
+		console.log("processDbResponse :  mentee read",processDbResponse);
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
