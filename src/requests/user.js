@@ -690,7 +690,7 @@ const organizationList = function (organizationIds = []) {
 const getDownloadableUrl = function (path) {
 	return new Promise(async (resolve, reject) => {
 		if (/^http/i.test(path)) {
-			return resolve(path)
+			return resolve({ result: path })
 		} else {
 			const options = {
 				headers: {
