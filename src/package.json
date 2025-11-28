@@ -30,7 +30,7 @@
 		"dotenv": "^10.0.0",
 		"elevate-node-cache": "^1.0.6",
 		"express": "^4.17.1",
-		"express-validator": "^5.3.1",
+		"express-validator": "^6.5.0",
 		"files-cloud-storage": "^1.2.2",
 		"fn-args": "^4.0.0",
 		"fs-extra": "^9.0.1",
